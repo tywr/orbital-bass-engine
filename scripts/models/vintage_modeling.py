@@ -18,21 +18,26 @@ if __name__ == "__main__":
     print("Demonstrating the DAFx 2020 CMOS Inverter Model.")
 
     sample_rate = 44100
-    model = ModelLlama(sample_rate=sample_rate, V_dd=9.0, delta=0.06)
-    diode = DiodeClipper(sample_rate, side="both")
+    model = ModelLlama(V_dd=9.0, delta=0.06)
+    diode_plus = DiodeClipper(sample_rate, side="up")
+    diode_minus = DiodeClipper(sample_rate, side="down")
 
     frequency = 440
     max_t = 10 / frequency
     dt = 1.0 / sample_rate
     t = np.arange(0, max_t, dt)
 
-    input = 0.5 * np.sin(2 * np.pi * frequency * t)
-    # output_diode = 4.5 + np.array([diode.process_sample(v) for v in input])
-    # output_cmos = np.array([model.solve(v) for v in output_diode])
+    input = .5 * np.sin(2 * np.pi * frequency * t)
+    output_diode = np.array(
+        [diode_minus.process_sample(.5 * s + .5 * diode_plus.process_sample(s)) for s in input]
+    )
+    output_diode_offset = 4.5 + output_diode
+    output_cmos = np.array([model.solve(v) for v in output_diode])
     output_cmos = np.array([model.solve(v) for v in input])
 
-    # plt.plot(t, input, color="blue", alpha=0.5, label="Input")
-    # plt.plot(t, output_diode, color="green", alpha=0.5, label="Diode Clipping Vout")
+    plt.plot(t, input, color="blue", alpha=0.5, label="Input")
+    plt.plot(t, output_diode, color="green", alpha=0.5, label="Diode Clipping Vout")
+    plt.show()
     # plt.plot(t, output_cmos, color="red", alpha=0.5, label="CMOS Inverter Out")
 
     # plt.plot(input, output_cmos, alpha=0.5)
@@ -62,13 +67,13 @@ if __name__ == "__main__":
     # plt.legend()
     # plt.show()
 
-    n = len(output_cmos)
-    Y = np.fft.fft(output_cmos)
-    xf = np.fft.fftfreq(n, 1 / sample_rate)
-    xf_pos = xf[: n // 2]
-    Y_abs = np.abs(Y[: n // 2])
-    Y_norm = Y_abs / n
-    Y_norm[1:] = Y_norm[1:] * 2
-
-    plt.plot(xf_pos, Y_norm, label="Output Spectrum", alpha=0.5)
-    plt.show()
+    # n = len(output_cmos)
+    # Y = np.fft.fft(output_cmos)
+    # xf = np.fft.fftfreq(n, 1 / sample_rate)
+    # xf_pos = xf[: n // 2]
+    # Y_abs = np.abs(Y[: n // 2])
+    # Y_norm = Y_abs / n
+    # Y_norm[1:] = Y_norm[1:] * 2
+    #
+    # plt.plot(xf_pos, Y_norm, label="Output Spectrum", alpha=0.5)
+    # plt.show()

@@ -2,7 +2,6 @@
 
 #include "../circuits/cmos.h"
 #include "../circuits/silicon_diode.h"
-#include "../circuits/triode.h"
 #include "overdrive.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_dsp/juce_dsp.h>
@@ -18,15 +17,24 @@ class HeliosOverdrive : public Overdrive
 
   private:
     juce::dsp::IIR::Filter<float> pre_hpf;
-    float pre_hpf_cutoff = 30.0f;
+    float pre_hpf_cutoff = 50.0f;
 
-    juce::dsp::IIR::Filter<float> mid_scoop;
-    float mid_scoop_frequency = 600.0f;
-    float mid_scoop_q = 0.5f;
-    float mid_scoop_gain = juce::Decibels::decibelsToGain(-3.0f);
+    juce::dsp::IIR::Filter<float> pre_lpf;
+    // float pre_lpf_cutoff = 1540.0f;
+    float pre_lpf_cutoff = 7400.0f;
+    float pre_lpf_q = 0.5f;
 
-    juce::dsp::IIR::Filter<float> tone_lpf;
-    float tone_lpf_cutoff = 1.0f;
+    juce::dsp::IIR::Filter<float> lowmids_lpf;
+    // float lowmids_lpf_cutoff = 330.0f;
+    float lowmids_lpf_cutoff = 250.0f;
+
+    juce::dsp::IIR::Filter<float> mid_hpf;
+    // float mid_hpf_cutoff = 219.0f;
+    float mid_hpf_cutoff = 219.0f;
+
+    juce::dsp::IIR::Filter<float> era_lpf;
+    float era_lpf_cutoff = 1.0f;
+    float era_lpf_q = 0.5f;
 
     juce::dsp::IIR::Filter<float> dc_hpf;
     float dc_hpf_cutoff = 20.0f;
@@ -35,8 +43,11 @@ class HeliosOverdrive : public Overdrive
     float dc_hpf2_cutoff = 20.0f;
 
     juce::dsp::IIR::Filter<float> post_lpf;
-    // float post_lpf_cutoff = 3400.0f;
-    float post_lpf_cutoff = 2192.0f;
+    float post_lpf_cutoff = 500.0f;
+    float post_lpf_q = 0.1f;
+
+    juce::dsp::IIR::Filter<float> post_lpf2;
+    float post_lpf2_cutoff = 7400.0f;
 
     // triode parameters
 
@@ -44,11 +55,8 @@ class HeliosOverdrive : public Overdrive
     float padding = juce::Decibels::decibelsToGain(12.0f);
 
     CMOS cmos = CMOS();
-    SiliconDiode diode = SiliconDiode(44100.0f);
-    Triode triode = Triode(44100);
-    Triode triode2 = Triode(44100);
-    Triode triode_pre = Triode(44100);
-    Triode triode_pre2 = Triode(44100);
+    SiliconDiode diode_plus = SiliconDiode(44100.0f, true);
+    SiliconDiode diode_minus = SiliconDiode(44100.0f, false);
 
     juce::dsp::Oversampling<float> oversampler2x{
         2, 2,

@@ -21,8 +21,7 @@ class ModelLlama:
         The corresponding output voltage from the inverter.
     """
 
-    def __init__(self, sample_rate, V_dd=9.0, delta=0.06):
-        self.sample_rate = sample_rate
+    def __init__(self, V_dd=9.0, delta=0.06):
         self.V_dd = V_dd
         self.delta = 0.06
         self.r = 330e3
@@ -117,204 +116,23 @@ class ModelLlama:
         return vout
 
 
-# def sigmoid_model(vin, A, k, v_mid, C):
-#     """A sigmoid model based on the hyperbolic tangent function."""
-#     return A * np.tanh(k * (vin - v_mid)) + C
-#
-#
-# def regression():
-#     model = ModelLlama(V_dd=9.0, delta=0.06)
-#     input = np.linspace(1.5, 9, 100000)
-#     output = np.array([model.solve(v) for v in input])
-#
-#     X = input.reshape(-1, 1)
-#     y = output
-#
-#     scaler = StandardScaler()
-#     X_scaled = scaler.fit_transform(X)
-#
-#     nn_model = MLPRegressor(
-#         hidden_layer_sizes=(16, 8),
-#         activation="tanh",  # The 'tanh' activation is a great choice for S-curves
-#         solver="adam",  # A standard, robust optimizer
-#         max_iter=100000,  # Increase iterations to ensure convergence
-#         random_state=42,  # For reproducibility
-#         learning_rate_init=0.005,
-#         tol=1e-9,
-#     )
-#     nn_model.fit(X_scaled, y)
-#
-#     new_input = np.linspace(1.5, 9, 1000).reshape(-1, 1)
-#     in_scaled = scaler.transform(new_input)
-#     out_predicted = nn_model.predict(in_scaled)
-#
-#     plt.plot(input, output, label="CMOS Inverter Output V(out)")
-#     plt.plot(new_input, out_predicted)
-#     plt.legend()
-#     plt.show()
-#
-#     scaler_mean = scaler.mean_[0]
-#     scaler_scale = scaler.scale_[0]
-#
-#     with open("scaler_params.txt", "w") as f:
-#         f.write(f"{scaler_mean}\n")
-#         f.write(f"{scaler_scale}\n")
-#
-#     print("\nScaler parameters saved to scaler_params.txt")
-#     print(f"Mean: {scaler_mean}")
-#     print(f"Scale: {scaler_scale}")
-#
-#     initial_type = [("float_input", FloatTensorType([None, 1]))]
-#     onnx_model = convert_sklearn(nn_model, initial_types=initial_type)
-#     model_filename = "vtc_model.onnx"
-#     with open(model_filename, "wb") as f:
-#         f.write(onnx_model.SerializeToString())
-
-
 # --- Demonstration of the function ---
 if __name__ == "__main__":
-    print("Demonstrating the DAFx 2020 CMOS Inverter Model.")
-
-    # Vin = np.linspace(0, 9, 9)
-    # plt.axhline(y=0, color="r", linestyle="-", alpha=0.1)
-    # for vin in Vin:
-    #     Vout = np.linspace(-5, 30, 1000)
-    #     pmos = np.array([model.pmos(vin - 9, vout - 9)[0] for vout in Vout])
-    #     nmos = np.array([model.nmos(vin, vout)[0] for vout in Vout])
-    #     # fx = nmos - pmos
-    #     # plt.plot(Vds, pmos, label=f"pmos vin={vin} V")
-    #     # plt.plot(Vds, nmos, label=f"nmos vin={vin} V")
-    #     plt.plot(Vout, nmos + pmos, label=f"$v_{{in}}$={vin}V")
-    #     plt.ylabel("$f(x)$")
-    #     plt.xlabel("$v_{out}$")
-    #
-    # plt.legend()
-    # plt.show()
-
-    # alpha-graph for p-channel
-    # X = np.linspace(-6, -2.5, 500)
-    # V_t = np.array([model.pmos(x, 0)[3] for x in X])
-    # plt.plot(X, V_t)
-    # plt.title("PMOS alpha vs. Vgs")
-    # plt.show()
-
-    # vt vs vgs graph for p-channel
-    # X = np.linspace(-6, 2.5, 500)
-    # V_t = np.array([model.pmos(x, 0)[2] for x in X])
-    # plt.plot(X, V_t)
-    # plt.title("PMOS Threshold Voltage vs. Vgs")
-    # plt.show()
-
-    # vt vs vgs graph for n-channel
-    # X = np.linspace(2.5, 6, 500)
-    # V_t = np.array([model.nmos(x, 0)[2] for x in X])
-    # plt.plot(X, V_t)
-    # plt.title("NMOS Threshold Voltage vs. Vgs")
-    # plt.show()
-
-    # id vs vds graph for p-channel
-    # Vds = np.linspace(-9, 0, 500)
-    # Vgs = np.linspace(-6, -2.5, 15)
-    # ids_vgs = []
-    # for vgs in Vgs:
-    #     ids = np.array([model.pmos(vgs, vds)[0] for vds in Vds])
-    #     ids_vgs.append(ids)
-    # for i, vgs in enumerate(zip(Vgs, ids_vgs)):
-    #     plt.plot(Vds, vgs[1], label=f"Vgs={vgs[0]:.2f} V", alpha=0.5)
-    # plt.legend()
-    # plt.show()
-
-    # id vs vds graph for n-channel
-    # Vds = np.linspace(0, 9, 500)
-    # Vgs = np.linspace(2.5, 6, 15)
-    # ids_vgs = []
-    # for vgs in Vgs:
-    #     ids = np.array([model.nmos(vgs, vds)[0] for vds in Vds])
-    #     ids_vgs.append(ids)
-    # for i, vgs in enumerate(zip(Vgs, ids_vgs)):
-    #     plt.plot(Vds, vgs[1], label=f"Vgs={vgs[0]:.2f} V", alpha=0.5)
-    # plt.legend()
-    # plt.show()
-
-    # Vout / Vin curve
-    # vgs = np.linspace(0, 9, 10000)
-    # vout = np.array([model.solve(v) for v in vgs])
-    # plt.plot(vgs, vout)
-    # plt.show()
-
-    # # Vout / Vin curve
-    sample_rate = 44100
-    model = ModelLlama(sample_rate=sample_rate, V_dd=9.0, delta=0.06)
-    # model_rc = ModelLlama(sample_rate=sample_rate, V_dd=9.0, delta=0.06)
-
-    frequency = 1000
-    max_t = 10 / frequency
-    dt = 1.0 / sample_rate
-    t = np.arange(0, max_t, dt)
-
-    input = 4.5 + 1.25 * np.sin(2 * np.pi * frequency * t)
-    # output_rc = np.array([model_rc.solve_rc(v) for v in input])
+    model = ModelLlama(V_dd=9.0, delta=0.06)
+    input = np.linspace(3.6, 10, 5000)
     output = np.array([model.solve(v) for v in input])
+
+    for degree in range(1, 4):
+        coeffs = np.polyfit(input, output, degree)
+        polynomial = np.poly1d(coeffs)
+        x_fit = np.linspace(input.min(), input.max(), 500)
+        y_fit = polynomial(x_fit)
+        y_pred = polynomial(input)
+        error = np.mean((y_pred - output) ** 2)
+        print(f"Degree: {degree}, MSE: {error}")
+
     plt.figure(figsize=(10, 6))
-    # plt.scatter(input, output_rc, color="red", alpha=0.5)
-    plt.scatter(input, output, color="blue", alpha=0.5)
-    # plt.plot(input, output, label="CMOS Inverter Output V(out)")
-    # plt.plot(
-    #     input,
-    #     output_rc,
-    #     label="CMOS Inverter Output V(out) with Resistance",
-    #     color="orange",
-    # )
-    # plt.plot(input, input, "r--", label="V(out) = V(in)", alpha=0.5)
-    # plt.axhline(y=9, color="gray", linestyle="--", label="Vdd")
-    # plt.axhline(y=0.0, color="gray", linestyle="--")
-    plt.title("DC Transfer Curve of the Red LLAMA")
-    plt.xlabel("Input Voltage (Vin)")
-    plt.ylabel("Output Voltage (Vout)")
-    plt.grid(True)
-    plt.legend()
+    plt.plot(input, y_pred - output, color="green", label="Error")
+    # plt.plot(input, output, color="blue", alpha=0.5)
+    # plt.plot(x_fit, y_fit, color="red", alpha=0.5)
     plt.show()
-
-    # Sine wave processing
-    # SAMPLE_RATE = 48000
-    # duration = 0.02
-    # frequency = 500
-    # t = np.linspace(0.0, duration, int(SAMPLE_RATE * duration), endpoint=False)
-    #
-    # # Input sine wave centered around Vdd/2 with large amplitude to show clipping
-    # input_sine = 4.5 + 5 * np.sin(2.0 * np.pi * frequency * t)
-    #
-    # output_sine = np.array([model_dafx_cmos(s) for s in input_sine])
-    #
-    # plt.figure(figsize=(12, 7))
-    # plt.plot(t, input_sine, label="Input Signal (Vin)")
-    # plt.plot(t, output_sine, label="Output Signal (Vout)")
-    # plt.title("CMOS Inverter Processing a Sine Wave with Red LLAMA")
-    # plt.xlabel("Time (s)")
-    # plt.ylabel("Voltage (V)")
-    # plt.grid(True)
-    # plt.legend()
-    # plt.show()
-
-    # fs = 44100
-    # freq = 440
-    # T = 10 / freq
-    # N = int(T * fs)
-    # t = np.linspace(0, T, N)
-    # input = 4.5 + 5 * np.sin(2 * np.pi * freq * t)
-    # output = np.array([model.solve(v) for v in input])
-
-    # plt.plot(t, input, label="Input Signal (Vin)", alpha=1)
-    # plt.plot(t, output, label="Output Signal (Vout)", alpha=0.5)
-    # plt.show()
-
-    # n = len(output)
-    # Y = np.fft.fft(output)
-    # xf = np.fft.fftfreq(n, 1 / fs)
-    # xf_pos = xf[: n // 2]
-    # Y_abs = np.abs(Y[: n // 2])
-    # Y_norm = Y_abs / n
-    # Y_norm[1:] = Y_norm[1:] * 2
-    #
-    # plt.plot(xf_pos, Y_norm, label="Output Spectrum", alpha=0.5)
-    # plt.show()

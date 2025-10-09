@@ -1,6 +1,5 @@
 #include "Helios.h"
 #include "../circuits/silicon_diode.h"
-#include "../circuits/triode.h"
 
 #include <juce_dsp/juce_dsp.h>
 
@@ -27,6 +26,27 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
         );
     *dc_hpf2.coefficients = *dc_hpf2_coefficients;
 
+    pre_lpf.prepare(oversampled_spec);
+    auto pre_lpf_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeLowPass(
+            oversampled_spec.sampleRate, pre_lpf_cutoff, pre_lpf_q
+        );
+    *pre_lpf.coefficients = *pre_lpf_coefficients;
+
+    lowmids_lpf.prepare(oversampled_spec);
+    auto lowmids_lpf_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeLowPass(
+            oversampled_spec.sampleRate, lowmids_lpf_cutoff
+        );
+    *lowmids_lpf.coefficients = *lowmids_lpf_coefficients;
+
+    mid_hpf.prepare(oversampled_spec);
+    auto mid_hpf_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeHighPass(
+            oversampled_spec.sampleRate, mid_hpf_cutoff
+        );
+    *mid_hpf.coefficients = *mid_hpf_coefficients;
+
     pre_hpf.prepare(oversampled_spec);
     auto pre_hpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeHighPass(
@@ -34,32 +54,29 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
         );
     *pre_hpf.coefficients = *pre_hpf_coefficients;
 
-    mid_scoop.prepare(oversampled_spec);
-    auto mid_scoop_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
-            oversampled_spec.sampleRate, mid_scoop_frequency, mid_scoop_q,
-            mid_scoop_gain
-        );
-    *mid_scoop.coefficients = *mid_scoop_coefficients;
-
-    tone_lpf.prepare(oversampled_spec);
-    auto tone_lpf_coefficients =
+    era_lpf.prepare(oversampled_spec);
+    auto era_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            oversampled_spec.sampleRate, tone_lpf_cutoff
+            oversampled_spec.sampleRate, era_lpf_cutoff, era_lpf_q
         );
-    *tone_lpf.coefficients = *tone_lpf_coefficients;
+    *era_lpf.coefficients = *era_lpf_coefficients;
 
     post_lpf.prepare(oversampled_spec);
     auto post_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            oversampled_spec.sampleRate, post_lpf_cutoff
+            oversampled_spec.sampleRate, post_lpf_cutoff, post_lpf_q
         );
     *post_lpf.coefficients = *post_lpf_coefficients;
 
-    triode = Triode(oversampled_spec.sampleRate);
-    triode2 = Triode(oversampled_spec.sampleRate);
-    triode_pre = Triode(oversampled_spec.sampleRate);
-    triode_pre2 = Triode(oversampled_spec.sampleRate);
+    post_lpf2.prepare(oversampled_spec);
+    auto post_lpf2_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeLowPass(
+            oversampled_spec.sampleRate, post_lpf2_cutoff
+        );
+    *post_lpf2.coefficients = *post_lpf2_coefficients;
+
+    diode_plus = SiliconDiode(oversampled_spec.sampleRate, true);
+    diode_minus = SiliconDiode(oversampled_spec.sampleRate, false);
 }
 
 float HeliosOverdrive::driveToGain(float d)
@@ -69,16 +86,16 @@ float HeliosOverdrive::driveToGain(float d)
     // float min_gain = juce::Decibels::decibelsToGain(3.0f);
     // float max_gain = juce::Decibels::decibelsToGain(18.0f);
     // version 2
-    float min_gain = juce::Decibels::decibelsToGain(-24.0f);
-    float max_gain = juce::Decibels::decibelsToGain(24.0f);
-    return min_gain + std::pow(t, 1.0f) * (max_gain - min_gain);
+    float min_gain = juce::Decibels::decibelsToGain(0.0f);
+    float max_gain = juce::Decibels::decibelsToGain(36.0f);
+    return min_gain + std::pow(t, 2.0f) * (max_gain - min_gain);
 }
 
 float HeliosOverdrive::charToFreq(float c)
 {
     float t = character / 10.0f;
-    float max_value = 8000.0f;
-    float min_value = 800.0f;
+    float max_value = 10000.0f;
+    float min_value = 1600.0f;
     return min_value + std::pow(t, 2) * (max_value - min_value);
 }
 
@@ -93,17 +110,17 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
 
     // applyGain(buffer, previous_drive_gain, drive_gain);
     float sampleRate = static_cast<float>(processSpec.sampleRate);
-    // Update tone cutoff
-    float new_tone_lpf_cutoff = charToFreq(character);
+    // Update era cutoff
+    float new_era_lpf_cutoff = charToFreq(character);
 
-    if (!juce::approximatelyEqual(tone_lpf_cutoff, new_tone_lpf_cutoff))
+    if (!juce::approximatelyEqual(era_lpf_cutoff, new_era_lpf_cutoff))
     {
-        tone_lpf_cutoff = new_tone_lpf_cutoff;
-        auto tone_lpf_coefficients =
+        era_lpf_cutoff = new_era_lpf_cutoff;
+        auto era_lpf_coefficients =
             juce::dsp::IIR::Coefficients<float>::makeLowPass(
-                sampleRate, tone_lpf_cutoff
+                sampleRate, era_lpf_cutoff
             );
-        *tone_lpf.coefficients = *tone_lpf_coefficients;
+        *era_lpf.coefficients = *era_lpf_coefficients;
     }
 
     juce::dsp::AudioBlock<float> block(buffer);
@@ -128,27 +145,30 @@ void HeliosOverdrive::applyOverdrive(float& sample, float sampleRate)
 {
     juce::ignoreUnused(sampleRate);
 
-    // First triode algorithm test
-    //
-    // float drive_gain = driveToGain(drive);
-    // float hpfed = pre_hpf.processSample(sample);
-    // float filtered = mid_scoop.processSample(tone_lpf.processSample(hpfed));
-    // float preamped1 =
-    //     drive_gain *
-    //     dc_hpf.processSample(triode_pre.processSample(filtered));
-    // float preamped2 =
-    //     dc_hpf2.processSample(triode_pre2.processSample(preamped1));
-    // float out = post_lpf.processSample(preamped2);
-    // sample = out * padding;
-
     float drive_gain = driveToGain(drive);
-    float filtered = pre_hpf.processSample(sample);
-    // Pass signal through silicon diode circuit to limit signal between +0.7
-    // and -0.7. Below diode cutting point of 0.7V, we only get CMOS inverter
+
+    float input_padding = juce::Decibels::decibelsToGain(12.0f);
+    float filtered =
+        pre_lpf.processSample(pre_hpf.processSample(input_padding * sample));
+    // Only drive low-mids and up
+    float drived = mid_hpf.processSample(drive_gain * filtered);
+    // Filter low mids on "clean" signal
+    float lowmids = lowmids_lpf.processSample(filtered);
+    // Combine both driven and clean signal before overdrive
+    // Add a bit more clean signal to keep lowend
+    float input = drived + lowmids;
+    // Pass signal through silicon diode circuit to limit signal above -0.7
+    // Below diode cutting point of 0.7V, we only get CMOS inverter
     // saturation.
-    float gated = diode.processSample(drive_gain * filtered);
+    float soft_clipped = .5 * (diode_plus.processSample(input) + input);
+    float hard_clipped = diode_minus.processSample(soft_clipped);
     // Pass signal through CMOS inverter on linear region
-    float distorted = cmos.processSample(4.5f + gated);
-    float out = post_lpf.processSample(dc_hpf.processSample(distorted));
+    float distorted =
+        dc_hpf.processSample(cmos.processSample(4.5f + hard_clipped));
+    // Apply tone control "era"
+    float era = .5 * (era_lpf.processSample(distorted) + distorted);
+    // Apply first post filter (remove hiss and high frequency noise)
+    float lpfed = post_lpf.processSample(era);
+    float out = post_lpf2.processSample(lpfed);
     sample = padding * out;
 }

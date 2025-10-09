@@ -6,8 +6,9 @@
 class SiliconDiode
 {
   public:
-    SiliconDiode(float fs);
+    SiliconDiode(float fs, bool positive);
     float processSample(float);
+    float omega(float);
 
   private:
     // Fixed variables
@@ -22,6 +23,7 @@ class SiliconDiode
 
     // Main parameters
     float fs;
+    bool positive;
 
     // Fixed variables for computation
     float b0;
@@ -37,7 +39,7 @@ class SiliconDiode
     float k6;
 };
 
-inline float omega(float x)
+inline float SiliconDiode::omega(float x)
 {
     if (std::abs(x) > 1.5f)
     {
@@ -58,9 +60,10 @@ inline float omega(float x)
     }
 }
 
-inline SiliconDiode::SiliconDiode(float t_fs)
+inline SiliconDiode::SiliconDiode(float t_fs, bool t_positive)
 {
     fs = t_fs;
+    positive = t_positive;
 
     b0 = 2.0f / fs;
     b1 = -2.0f / fs;
@@ -80,6 +83,14 @@ inline SiliconDiode::SiliconDiode(float t_fs)
 
 inline float SiliconDiode::processSample(float vin)
 {
+    if (positive && vin < 0.0f)
+    {
+        return vin;
+    }
+    else if (!positive && vin > 0.0f)
+    {
+        return vin;
+    }
     if (std::abs(vin) < 0.1f)
     {
         float p = k6 * vin - a1 * prev_p;

@@ -8,6 +8,7 @@ class GermaniumDiode
   public:
     GermaniumDiode(float fs);
     float processSample(float);
+    float omega(float);
 
   private:
     // Fixed variables
@@ -37,7 +38,7 @@ class GermaniumDiode
     float k6;
 };
 
-inline float omega(float x)
+inline float GermaniumDiode::omega(float x)
 {
     if (std::abs(x) > 1.5f)
     {
