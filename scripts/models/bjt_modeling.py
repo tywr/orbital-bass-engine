@@ -1,6 +1,7 @@
 import numpy as np
 import ctypes
 
+
 lib = ctypes.CDLL("scripts/bin/omega.so")
 
 lib.omega4_py.argtypes = [ctypes.c_float]
@@ -23,7 +24,7 @@ def omega_small(x):
 
 
 def omega(x: float) -> float:
-    if x > 1.5 or x < -1.5:
+    if np.abs(x) > 0.5:
         return lib.omega4_py(x)
     else:
         print("Using small x approximation for omega")
@@ -41,6 +42,20 @@ class BJT:
         self.beta_f = beta_f
         self.re = re
         self.k = np.log((self.i_s * self.re / self.vt) * (1 + 1 / self.beta_f))
+        self.v_sat = 9.8
+        self.y_sat = self._process_sample(self.v_sat)
+        self.dy_sat = self.get_v_sat_derivative()
+
+    def get_v_sat_derivative(self):
+        dx = 1e-4
+        dv = self._process_sample(self.v_sat + dx / 2) - self._process_sample(
+            self.v_sat - dx / 2
+        )
+        return dv / dx
+
+    def approximate_sat_function(self, vin):
+        alpha = self.dy_sat / (self.vp - self.y_sat)
+        return self.y_sat + (self.vp - self.y_sat) * np.tanh(alpha * (vin - self.v_sat))
 
     def process(self, input_signal: np.array):
         output = np.zeros_like(input_signal)
@@ -52,35 +67,46 @@ class BJT:
     def process_buffer(self, buffer: np.array):
         return np.array([self.process_sample(sample) for sample in buffer])
 
-    def process_sample(self, vin):
-        vref = self.vp / 2
-        vin = vin + vref
-        if vin >= self.vp:
-            v_x = self.i_s * self.re * (1 + 1 / self.beta_f)
-            v_out = self.vt * omega(((self.vp + v_x) / self.vt) + self.k) - v_x
-            return v_out - vref
-
-        v_x = self.i_s * self.re * (np.exp((vin - self.vp) / self.vt) + 1 / self.beta_f)
+    def _process_sample(self, vin):
+        exp_in = (vin - self.vp) / self.vt
+        v_x = self.i_s * self.re * (np.exp(exp_in) + 1 / self.beta_f)
         v_out = self.vt * omega(((vin + v_x) / self.vt) + self.k) - v_x
-        return v_out - vref
+        return v_out
+
+    def process_sample(self, vin):
+        if vin >= self.v_sat:
+            return self.approximate_sat_function(vin)
+        else:
+            return self._process_sample(vin)
 
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
-    frequency = 120
+    frequency = 880
     sample_rate = 44100
     duration = 5 / frequency
     n_samples = int(duration * sample_rate)
 
+    bjt = BJT()
     t = np.linspace(0, duration, n_samples, endpoint=False)
     y = 5 * np.sin(2 * np.pi * frequency * t)
+    y_clipped = [bjt.process_sample(4.5 + v) for v in y]
 
-    bjt = BJT()
-    y_clipped = bjt.process(y)
-    print(y_clipped[0])
+    # plt.plot(t, y, color="blue", label="input")
+    # plt.plot(t, vout, color="red", label="output")
+    # plt.legend()
+    # plt.show()
 
-    plt.plot(t, y, label="input")
-    plt.plot(t, y_clipped, label="output")
-    plt.legend()
+    Y = np.fft.fft(y)
+    Y_clipped = np.fft.fft(y_clipped)
+    xf = np.fft.fftfreq(n_samples, 1 / sample_rate)
+
+    Y_norm = 2 / n_samples * np.abs(Y[0 : n_samples // 2])
+    Y_clipped_norm = 2 / n_samples * np.abs(Y_clipped[0 : n_samples // 2])
+    xf_pos = xf[0 : n_samples // 2]
+
+    plt.plot(xf_pos, Y_norm, alpha=0.5)
+    plt.plot(xf_pos, Y_clipped_norm, alpha=0.5, color="red")
+    plt.xlim(0, 8000)
     plt.show()

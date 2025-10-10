@@ -1,0 +1,37 @@
+* TL074 JFET-INPUT OPERATIONAL AMPLIFIER - DEFINITIVELY COMPATIBLE MODEL
+* This model uses only fundamental components (no behavioral sources)
+* and standard syntax to ensure maximum compatibility.
+*
+* CONNECTIONS:
+* NON-INVERTING INPUT
+* | INVERTING INPUT
+* | | POSITIVE POWER SUPPLY
+* | | | NEGATIVE POWER SUPPLY
+* | | | | OUTPUT
+* | | | | |
+.SUBCKT TL074    1 2 3 4 5
+* INPUT STAGE
+* --- FIX APPLIED HERE ---
+* The non-standard input offset voltage source (EOS) has been replaced with a
+* standard V-source in series with the input. Node '1_internal' is a new internal node.
+  VOS 1 1_internal -0.002
+  J1 101 1_internal 100 JFET
+* --- END OF FIX ---
+  J2 102 2 100 JFET
+  R1 3 101 5.6k
+  R2 3 102 5.6k
+  I1 100 4 1mA
+* GAIN STAGE
+  Q1 103 101 4 NPN
+  Q2 5 102 103 PNP
+  R3 3 103 1k
+  C1 101 102 10p
+* OUTPUT STAGE
+  Q3 3 5 5 NPN_OUT
+  Q4 5 5 4 PNP_OUT
+.MODEL JFET NJF(VTO=-2 BETA=0.5m)
+.MODEL NPN NPN(BF=100)
+.MODEL PNP PNP(BF=50)
+.MODEL NPN_OUT NPN(BF=200 IS=1E-13)
+.MODEL PNP_OUT PNP(BF=150 IS=1E-13)
+.ENDS TL074

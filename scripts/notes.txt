@@ -1,0 +1,4 @@
+# Alpha path
+
+1. Peak at 650Hz, -3.5dB, Q ~1.0
+2. DC filtering
