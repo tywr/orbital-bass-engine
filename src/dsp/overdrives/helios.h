@@ -12,44 +12,47 @@ class HeliosOverdrive : public Overdrive
     void prepare(const juce::dsp::ProcessSpec& spec) override;
     void process(juce::AudioBuffer<float>& buffer) override;
     float driveToGain(float) override;
-    float charToFreq(float);
+    void updateEraFilter(float sampleRate);
     void applyOverdrive(float& sample, float sampleRate) override;
 
   private:
+    float era;
+
     juce::dsp::IIR::Filter<float> pre_hpf;
     float pre_hpf_cutoff = 50.0f;
 
     juce::dsp::IIR::Filter<float> pre_lpf;
-    // float pre_lpf_cutoff = 1540.0f;
-    float pre_lpf_cutoff = 7400.0f;
+    float pre_lpf_cutoff = 1540.0f;
     float pre_lpf_q = 0.5f;
 
     juce::dsp::IIR::Filter<float> lowmids_lpf;
-    // float lowmids_lpf_cutoff = 330.0f;
-    float lowmids_lpf_cutoff = 250.0f;
+    float lowmids_lpf_cutoff = 330.0f;
 
     juce::dsp::IIR::Filter<float> mid_hpf;
-    // float mid_hpf_cutoff = 219.0f;
     float mid_hpf_cutoff = 219.0f;
 
-    juce::dsp::IIR::Filter<float> era_lpf;
-    float era_lpf_cutoff = 1.0f;
-    float era_lpf_q = 0.5f;
+    juce::dsp::IIR::Filter<float> era_mid_scoop;
+    float era_mid_scoop_frequency = 1200.0f;
+    float era_mid_scoop_q = 0.5f;
+    float era_mid_scoop_gain = juce::Decibels::decibelsToGain(-4.0f);
+
+    juce::dsp::IIR::Filter<float> era_shelf;
+    float era_shelf_cutoff = 500.0f;
+    float era_shelf_q = 0.7f;
+    float era_shelf_gain = juce::Decibels::decibelsToGain(-18.0f);
 
     juce::dsp::IIR::Filter<float> dc_hpf;
     float dc_hpf_cutoff = 20.0f;
 
-    juce::dsp::IIR::Filter<float> dc_hpf2;
-    float dc_hpf2_cutoff = 20.0f;
-
     juce::dsp::IIR::Filter<float> post_lpf;
-    float post_lpf_cutoff = 500.0f;
-    float post_lpf_q = 0.1f;
+    float post_lpf_cutoff = 1600.0f;
+    float post_lpf_q = 0.5f;
 
     juce::dsp::IIR::Filter<float> post_lpf2;
-    float post_lpf2_cutoff = 7400.0f;
+    float post_lpf2_cutoff = 3300.0f;
 
-    // triode parameters
+    juce::dsp::IIR::Filter<float> post_lpf3;
+    float post_lpf3_cutoff = 7200.0f;
 
     // float padding = juce::Decibels::decibelsToGain(-16.0f);
     float padding = juce::Decibels::decibelsToGain(12.0f);

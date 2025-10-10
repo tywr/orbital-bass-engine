@@ -12,19 +12,18 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
     oversampler2x.reset();
     oversampler2x.initProcessing(static_cast<size_t>(spec.maximumBlockSize));
 
+    // set era and update filters that depend on it
+    float era = character / 10.0f;
+    era_mid_scoop.prepare(oversampled_spec);
+    era_shelf.prepare(oversampled_spec);
+    updateEraFilter(oversampled_spec.sampleRate);
+
     dc_hpf.prepare(oversampled_spec);
     auto dc_hpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeHighPass(
             oversampled_spec.sampleRate, dc_hpf_cutoff
         );
     *dc_hpf.coefficients = *dc_hpf_coefficients;
-
-    dc_hpf2.prepare(oversampled_spec);
-    auto dc_hpf2_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeHighPass(
-            oversampled_spec.sampleRate, dc_hpf2_cutoff
-        );
-    *dc_hpf2.coefficients = *dc_hpf2_coefficients;
 
     pre_lpf.prepare(oversampled_spec);
     auto pre_lpf_coefficients =
@@ -54,13 +53,6 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
         );
     *pre_hpf.coefficients = *pre_hpf_coefficients;
 
-    era_lpf.prepare(oversampled_spec);
-    auto era_lpf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            oversampled_spec.sampleRate, era_lpf_cutoff, era_lpf_q
-        );
-    *era_lpf.coefficients = *era_lpf_coefficients;
-
     post_lpf.prepare(oversampled_spec);
     auto post_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
@@ -75,6 +67,13 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
         );
     *post_lpf2.coefficients = *post_lpf2_coefficients;
 
+    post_lpf3.prepare(oversampled_spec);
+    auto post_lpf3_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeLowPass(
+            oversampled_spec.sampleRate, post_lpf3_cutoff
+        );
+    *post_lpf3.coefficients = *post_lpf3_coefficients;
+
     diode_plus = SiliconDiode(oversampled_spec.sampleRate, true);
     diode_minus = SiliconDiode(oversampled_spec.sampleRate, false);
 }
@@ -88,15 +87,38 @@ float HeliosOverdrive::driveToGain(float d)
     // version 2
     float min_gain = juce::Decibels::decibelsToGain(0.0f);
     float max_gain = juce::Decibels::decibelsToGain(36.0f);
-    return min_gain + std::pow(t, 2.0f) * (max_gain - min_gain);
+    return min_gain + std::pow(t, 3.0f) * (max_gain - min_gain);
 }
 
-float HeliosOverdrive::charToFreq(float c)
+void HeliosOverdrive::updateEraFilter(float sampleRate)
 {
-    float t = character / 10.0f;
-    float max_value = 10000.0f;
-    float min_value = 1600.0f;
-    return min_value + std::pow(t, 2) * (max_value - min_value);
+    // A bit of a complex filter happening there, the era control
+    // is a combination of a mid scoop and a high shelf filters.
+    // When the era knob is turned, it shifts the mid scoop frequency
+    // from ~1200Hz down to 700Hz and reduces the width of the scoop as well
+    // as the gain.
+    // The high shelf is fixed at ~500Hz, and adjust the amount of
+    // hi-mids and treble cut.
+    era_mid_scoop_frequency = 1200.0f - 500.0f * era;
+    era_mid_scoop_gain = juce::Decibels::decibelsToGain(-4.0 - 4.0f * era);
+    era_mid_scoop_q = 0.5f + 0.5f * era;
+
+    auto era_mid_scoop_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+            sampleRate, era_mid_scoop_frequency, era_mid_scoop_q,
+            era_mid_scoop_gain
+        );
+    *era_mid_scoop.coefficients = *era_mid_scoop_coefficients;
+
+    era_shelf_cutoff = 500.0f;
+    era_shelf_gain = juce::Decibels::decibelsToGain(-18.0f + 10.0f * era);
+    era_shelf_q = 0.7f;
+
+    auto era_shelf_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeHighShelf(
+            sampleRate, era_shelf_cutoff, era_shelf_q, era_shelf_gain
+        );
+    *era_shelf.coefficients = *era_shelf_coefficients;
 }
 
 void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
@@ -110,17 +132,10 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
 
     // applyGain(buffer, previous_drive_gain, drive_gain);
     float sampleRate = static_cast<float>(processSpec.sampleRate);
-    // Update era cutoff
-    float new_era_lpf_cutoff = charToFreq(character);
-
-    if (!juce::approximatelyEqual(era_lpf_cutoff, new_era_lpf_cutoff))
+    if (!juce::approximatelyEqual(character / 10.0f, era))
     {
-        era_lpf_cutoff = new_era_lpf_cutoff;
-        auto era_lpf_coefficients =
-            juce::dsp::IIR::Coefficients<float>::makeLowPass(
-                sampleRate, era_lpf_cutoff
-            );
-        *era_lpf.coefficients = *era_lpf_coefficients;
+        era = era + (character - era) * 0.1f;
+        updateEraFilter(sampleRate);
     }
 
     juce::dsp::AudioBlock<float> block(buffer);
@@ -150,7 +165,7 @@ void HeliosOverdrive::applyOverdrive(float& sample, float sampleRate)
     float input_padding = juce::Decibels::decibelsToGain(12.0f);
     float filtered =
         pre_lpf.processSample(pre_hpf.processSample(input_padding * sample));
-    // Only drive low-mids and up
+    // Only drive between low-mids and highs
     float drived = mid_hpf.processSample(drive_gain * filtered);
     // Filter low mids on "clean" signal
     float lowmids = lowmids_lpf.processSample(filtered);
@@ -166,9 +181,11 @@ void HeliosOverdrive::applyOverdrive(float& sample, float sampleRate)
     float distorted =
         dc_hpf.processSample(cmos.processSample(4.5f + hard_clipped));
     // Apply tone control "era"
-    float era = .5 * (era_lpf.processSample(distorted) + distorted);
-    // Apply first post filter (remove hiss and high frequency noise)
-    float lpfed = post_lpf.processSample(era);
-    float out = post_lpf2.processSample(lpfed);
+    float era_scoop = era_mid_scoop.processSample(distorted);
+    float era = era_shelf.processSample(era_scoop);
+    // Apply three consecutive LPF to smooth out top-end
+    float lpfed1 = post_lpf.processSample(era);
+    float lpfed2 = post_lpf2.processSample(lpfed1);
+    float out = post_lpf3.processSample(lpfed2);
     sample = padding * out;
 }
