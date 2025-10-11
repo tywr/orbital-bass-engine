@@ -68,6 +68,7 @@ class PluginAudioProcessor final
     Overdrive* current_overdrive = nullptr;
     HeliosOverdrive helios_overdrive;
     BorealisOverdrive borealis_overdrive;
+    HeliosOverdrive nebula_overdrive;
 
     AmpEQ amp_eq;
 
@@ -82,7 +83,7 @@ class PluginAudioProcessor final
     bool isAmpBypassed = false;
 
     std::vector<Overdrive*> overdrives = {
-        &helios_overdrive, &borealis_overdrive
+        &helios_overdrive, &borealis_overdrive, &nebula_overdrive
     };
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginAudioProcessor)
 };

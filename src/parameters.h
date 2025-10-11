@@ -38,9 +38,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
             juce::NormalisableRange<float>(0, 100, 1, 1.0f), 50
         ),
         std::make_unique<juce::AudioParameterChoice>(
-            "amp_type",                              // Parameter ID
-            "Amp Type",                              // Display name
-            juce::StringArray{"helios", "borealis"}, // Choice options
+            "amp_type",                                        // Parameter ID
+            "Amp Type",                                        // Display name
+            juce::StringArray{"helios", "borealis", "nebula"}, // Choice options
             0
         ),
         std::make_unique<juce::AudioParameterFloat>(

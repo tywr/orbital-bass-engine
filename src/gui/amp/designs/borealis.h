@@ -1,31 +1,6 @@
 #pragma once
+#include "../utils/graphics.h"
 #include "../utils/voronoi.h"
-
-inline double getAverageY(const juce::Path& path)
-{
-    if (path.isEmpty())
-        return 0.0;
-
-    double totalY = 0.0;
-    int pointCount = 0;
-
-    // PathFlatteningIterator walks along the path, converting curves to line
-    // segments.
-    juce::PathFlatteningIterator iterator(path);
-
-    while (iterator.next())
-    {
-        // For each point in the flattened version of the path...
-        totalY += iterator.y1;
-        pointCount++;
-    }
-
-    // Avoid division by zero for valid but non-advancing paths.
-    if (pointCount == 0)
-        return 0.0;
-
-    return totalY / pointCount;
-}
 
 inline void paintIconBorealis(
     juce::Graphics& g, juce::Rectangle<float> bounds, juce::Colour c1,
@@ -74,7 +49,7 @@ inline void paintIconBorealis(
 
     for (size_t i = 0; i < cells.size(); ++i)
     {
-        float stroke_width = 0.01f * maxRadius;
+        float stroke_width = 0.003f * maxRadius;
         double y = getAverageY(cells[i]);
         float proportion = (float)(y / templateBounds.getHeight());
         juce::Colour currentColour = c1.interpolatedWith(c2, proportion);
@@ -97,8 +72,6 @@ inline void paintDesignBorealis(
 {
     juce::Graphics::ScopedSaveState state(g);
 
-    std::vector<juce::Path> cells = getVoronoiCells();
-
     auto center = bounds.getCentre();
     float maxRadius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * 0.45f;
 
@@ -106,18 +79,38 @@ inline void paintDesignBorealis(
     boxPath.addRectangle(bounds);
     g.reduceClipRegion(boxPath);
 
+    const float hexRadius =
+        12.0f; // The radius of the hexagon (center to vertex)
+    const float hexWidth = std::sqrt(3.0f) * hexRadius;
+    const float hexHeight = 2.0f * hexRadius;
+
+    const float horizontalDist = hexWidth;
+    // Vertical distance between the centers of two rows
+    const float verticalDist = hexHeight * 0.75f;
+
+    // 3. Create a vector to hold all the hexagon paths
+    std::vector<juce::Path> cells;
+
     const juce::Rectangle<float> templateBounds(0.0f, 0.0f, 1000.0f, 1000.0f);
-    float scaleX = bounds.getWidth() / templateBounds.getWidth();
-    float scaleY = bounds.getHeight() / templateBounds.getHeight();
 
-    juce::AffineTransform transform =
-        juce::AffineTransform::scale(scaleX, scaleY)
-            .translated(bounds.getX(), bounds.getY());
-
-    for (size_t i = 0; i < cells.size(); ++i)
+    int row = 0;
+    for (float y = -hexHeight / 2.0f;
+         y < templateBounds.getBottom() + hexHeight / 2.0f; y += verticalDist)
     {
-        g.setColour(GuiColours::DEFAULT_INACTIVE_COLOUR);
-        g.strokePath(cells[i], juce::PathStrokeType(1.0f), transform);
+        // Apply a horizontal offset for every odd row
+        float xOffset = (row % 2 == 0) ? 0.0f : horizontalDist / 2.0f;
+
+        // Iterate horizontally
+        for (float x = -hexWidth / 2.0f + xOffset;
+             x < templateBounds.getRight() + hexWidth / 2.0f;
+             x += horizontalDist)
+        {
+            g.setColour(GuiColours::DEFAULT_INACTIVE_COLOUR);
+            g.strokePath(
+                createHexagonPath({x, y}, hexRadius), juce::PathStrokeType(1.0f)
+            );
+        }
+        row++;
     }
 
     paintIconBorealis(

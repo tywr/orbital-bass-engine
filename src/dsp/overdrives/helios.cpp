@@ -13,7 +13,6 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
     oversampler2x.initProcessing(static_cast<size_t>(spec.maximumBlockSize));
 
     // set era and update filters that depend on it
-    float era = character / 10.0f;
     era_mid_scoop.prepare(oversampled_spec);
     era_shelf.prepare(oversampled_spec);
     updateEraFilter(oversampled_spec.sampleRate);
@@ -99,6 +98,7 @@ void HeliosOverdrive::updateEraFilter(float sampleRate)
     // as the gain.
     // The high shelf is fixed at ~500Hz, and adjust the amount of
     // hi-mids and treble cut.
+    era = (character / 10.0f);
     era_mid_scoop_frequency = 1200.0f - 500.0f * era;
     era_mid_scoop_gain = juce::Decibels::decibelsToGain(-4.0 - 4.0f * era);
     era_mid_scoop_q = 0.5f + 0.5f * era;

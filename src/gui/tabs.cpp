@@ -24,10 +24,10 @@ Tabs::Tabs(
         juce::TabbedComponent::outlineColourId, juce::Colours::transparentBlack
     );
 
-    addTab("COMP", ColourCodes::bg, &compressor_component, false);
+    // addTab("COMP", ColourCodes::bg, &compressor_component, false);
     addTab("AMP", ColourCodes::bg, &amp_component, true);
     // addTab("CHORUS", AuroraColors::bg, new juce::Component(), true);
-    addTab("IR", ColourCodes::bg, new IRLoader(params), true);
+    // addTab("IR", ColourCodes::bg, new IRLoader(params), true);
     setTabBarDepth(60);
 }
 
