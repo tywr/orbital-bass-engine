@@ -80,7 +80,7 @@ inline void paintDesignBorealis(
     g.reduceClipRegion(boxPath);
 
     const float hexRadius =
-        12.0f; // The radius of the hexagon (center to vertex)
+        20.0f; // The radius of the hexagon (center to vertex)
     const float hexWidth = std::sqrt(3.0f) * hexRadius;
     const float hexHeight = 2.0f * hexRadius;
 

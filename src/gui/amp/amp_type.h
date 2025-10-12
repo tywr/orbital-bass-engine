@@ -102,7 +102,7 @@ class NebulaToggleButton : public juce::ToggleButton
             c1 = findColour(juce::ToggleButton::textColourId);
             c2 = findColour(juce::ToggleButton::textColourId);
         }
-        paintSmallIconNebula(g, bounds, c1, c2);
+        paintIconNebula(g, bounds, c1, c2);
     };
 
   private:

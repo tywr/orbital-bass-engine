@@ -17,7 +17,7 @@ circuit.include(os.path.join(script_path, "TL074.lib"))
 circuit.V("cc", "vcc", circuit.gnd, 9 @ u_V)
 circuit.V("ee", "vee", circuit.gnd, 0)
 
-circuit.V("input", "in_node", circuit.gnd, "DC 0V AC 1V")
+circuit.V("input", "in_node", circuit.gnd, "DC 0V AC 5V")
 
 circuit.X(
     "U1",
