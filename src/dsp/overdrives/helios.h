@@ -22,7 +22,7 @@ class HeliosOverdrive : public Overdrive
     float pre_hpf_cutoff = 50.0f;
 
     juce::dsp::IIR::Filter<float> pre_lpf;
-    float pre_lpf_cutoff = 1540.0f;
+    float pre_lpf_cutoff = 3300.0f;
     float pre_lpf_q = 0.5f;
 
     juce::dsp::IIR::Filter<float> lowmids_lpf;
@@ -45,7 +45,7 @@ class HeliosOverdrive : public Overdrive
     float dc_hpf_cutoff = 20.0f;
 
     juce::dsp::IIR::Filter<float> post_lpf;
-    float post_lpf_cutoff = 1600.0f;
+    float post_lpf_cutoff = 3300.0f;
     float post_lpf_q = 0.5f;
 
     juce::dsp::IIR::Filter<float> post_lpf2;

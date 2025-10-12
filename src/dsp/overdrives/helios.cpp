@@ -85,7 +85,7 @@ float HeliosOverdrive::driveToGain(float d)
     // float max_gain = juce::Decibels::decibelsToGain(18.0f);
     // version 2
     float min_gain = juce::Decibels::decibelsToGain(0.0f);
-    float max_gain = juce::Decibels::decibelsToGain(36.0f);
+    float max_gain = juce::Decibels::decibelsToGain(42.0f);
     return min_gain + std::pow(t, 3.0f) * (max_gain - min_gain);
 }
 
@@ -100,7 +100,8 @@ void HeliosOverdrive::updateEraFilter(float sampleRate)
     // hi-mids and treble cut.
     era = (character / 10.0f);
     era_mid_scoop_frequency = 1200.0f - 500.0f * era;
-    era_mid_scoop_gain = juce::Decibels::decibelsToGain(-4.0 - 4.0f * era);
+    // era_mid_scoop_gain = juce::Decibels::decibelsToGain(-4.0 - 4.0f * era);
+    era_mid_scoop_gain = 1.0f;
     era_mid_scoop_q = 0.5f + 0.5f * era;
 
     auto era_mid_scoop_coefficients =
@@ -110,9 +111,9 @@ void HeliosOverdrive::updateEraFilter(float sampleRate)
         );
     *era_mid_scoop.coefficients = *era_mid_scoop_coefficients;
 
-    era_shelf_cutoff = 500.0f;
-    era_shelf_gain = juce::Decibels::decibelsToGain(-18.0f + 10.0f * era);
-    era_shelf_q = 0.7f;
+    era_shelf_cutoff = 250.0f - era * 100.0f;
+    era_shelf_gain = juce::Decibels::decibelsToGain(-28.0f + 10.0f * era);
+    era_shelf_q = 0.6f;
 
     auto era_shelf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeHighShelf(

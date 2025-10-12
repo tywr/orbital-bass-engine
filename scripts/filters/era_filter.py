@@ -124,14 +124,14 @@ def plot_bode(ax, b, a, fs):
 
 def create_era_filter(fs, era_position=0):
     # mid scoop
-    fc = 1200 - 500 * era_position
-    G = -4.0 - 4.0 * era_position
+    fc = 750 + (1 - era_position) * (2500 - 750)
+    G = -4.0 * era_position
     Q = 0.5 + 0.5 * era_position 
     b1, a1 = create_peak_filter(fc, G, Q, fs)
 
-    fc2 = 500
-    G2 = -18.0 + 10.0 * era_position
-    Q2 = 0.7
+    fc2 = 250 - era_position * 100
+    G2 = -32.0 + 10.0 * era_position
+    Q2 = 0.6
     b2, a2 = create_high_shelf(fc2, G2, Q2, fs)
 
     return b1, a1, b2, a2
