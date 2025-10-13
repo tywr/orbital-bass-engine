@@ -223,20 +223,18 @@ void AmpComponent::resized()
     );
 
     // Bottom part with buttons
-    auto bottom_bounds =
-        amp_bounds
-            .reduced(
-                0, AmpDimensions::AMP_INNER_BOTTOM_PADDING +
-                       AmpDimensions::AMP_FRAME_PADDING
-            )
-            .removeFromBottom(AmpDimensions::AMP_KNOBS_BOTTOM_BOX_HEIGHT);
-    knobs_component.setBounds(
-        bottom_bounds.reduced(AmpDimensions::AMP_SIDE_WIDTH, 0)
-    );
+    auto bottom_bounds = amp_bounds.reduced(0, AmpDimensions::AMP_FRAME_PADDING)
+                             .removeFromBottom(
+                                 AmpDimensions::AMP_KNOBS_BOTTOM_BOX_HEIGHT +
+                                 AmpDimensions::AMP_INNER_BOTTOM_PADDING
+                             );
     bypass_button.setBounds(
         bottom_bounds.removeFromLeft(AmpDimensions::AMP_SIDE_WIDTH)
             .withSizeKeepingCentre(
-                AmpDimensions::AMP_BYPASS_SIDE, AmpDimensions::AMP_BYPASS_SIDE
+                AmpDimensions::AMP_BYPASS_SIZE, AmpDimensions::AMP_BYPASS_SIZE
             )
     );
+    bottom_bounds.removeFromRight(AmpDimensions::AMP_SIDE_WIDTH);
+    bottom_bounds.removeFromBottom(AmpDimensions::AMP_INNER_BOTTOM_PADDING);
+    knobs_component.setBounds(bottom_bounds);
 }

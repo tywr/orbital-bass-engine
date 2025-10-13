@@ -68,7 +68,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "overdrive_x", "Overdrive Crossover",
-            juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f), 5.0f
+            juce::NormalisableRange<float>(250.0f, 1000.0f, 1.0f, 0.6309f),
+            500.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "overdrive_x_level", "Overdrive X Level",
