@@ -4,16 +4,42 @@
 class Overdrive
 {
   public:
-    virtual void prepare(const juce::dsp::ProcessSpec& spec) {};
-    virtual void applyOverdrive(float& sample, float sampleRate) {};
-    virtual float driveToGain(float drive)
+    virtual void prepare(const juce::dsp::ProcessSpec& spec)
     {
-        return drive;
-    };
-    virtual void process(juce::AudioBuffer<float>& buffer) {};
-    void virtual setCharacter(float newCharacter)
+        juce::ignoreUnused(spec);
+    }
+    virtual float driveToGain(float d)
     {
-        character = newCharacter;
+        float t = d / 10.0f;
+        return juce::Decibels::decibelsToGain(t * 24.0f);
+    }
+    virtual void process(juce::AudioBuffer<float>& buffer)
+    {
+        juce::ignoreUnused(buffer);
+    }
+    void virtual setAttack(float newAttack)
+    {
+        attack = newAttack;
+    }
+    void virtual setGrunt(float newGrunt)
+    {
+        grunt = newGrunt;
+    }
+    void virtual setCrossFrequency(float new_cross_frequency)
+    {
+        cross_frequency = new_cross_frequency;
+    }
+    void virtual setHighLevel(float new_high_level)
+    {
+        high_level = new_high_level;
+    }
+    void virtual setMod(float new_mod)
+    {
+        mod = new_mod;
+    }
+    void virtual setAggro(float new_aggro)
+    {
+        aggro = new_aggro;
     }
 
     void applyGain(
@@ -31,7 +57,7 @@ class Overdrive
             );
             previous_gain = gain;
         }
-    };
+    }
     void setBypass(bool shouldBypass)
     {
         bypass = shouldBypass;
@@ -57,8 +83,13 @@ class Overdrive
     bool bypass;
     float level;
     float drive;
-    float character;
     float mix;
+    float attack;
+    float grunt;
+    float cross_frequency;
+    float high_level;
+    float mod;
+    float aggro;
 
     // state parameters
     float previous_drive_gain = 1.0f;

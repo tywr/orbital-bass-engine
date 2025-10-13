@@ -86,7 +86,6 @@ inline void paintDesignHelios(
     juce::Graphics::ScopedSaveState state(g);
 
     auto center = bounds.getCentre();
-    float maxRadius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * 0.45f;
 
     // Background noise layers
     const int numBackgroundNoiseLayers = 25;
@@ -105,9 +104,6 @@ inline void paintDesignHelios(
         float proportion = (float)i / (numBackgroundNoiseLayers); // 0.0 to <1.0
         float currentRadius = maxBackgroundRadius *
                               (proportion * 0.8f); // Start larger, go to max
-
-        // Use a subtle grey colour with transparency
-        juce::Colour backgroundColour = juce::Colours::darkgrey;
 
         float zOffset =
             i * backgroundZOffsetStep +

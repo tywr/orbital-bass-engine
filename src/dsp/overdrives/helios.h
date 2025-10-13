@@ -12,11 +12,13 @@ class HeliosOverdrive : public Overdrive
     void prepare(const juce::dsp::ProcessSpec& spec) override;
     void process(juce::AudioBuffer<float>& buffer) override;
     float driveToGain(float) override;
-    void updateEraFilter(float sampleRate);
-    void applyOverdrive(float& sample, float sampleRate) override;
+    void updateAttackFilter(float sampleRate);
+    void applyOverdrive(float& sample, float sampleRate, float drive_gain);
 
   private:
-    float era;
+    float current_attack;
+    float current_grunt;
+    float current_drive;
 
     juce::dsp::IIR::Filter<float> pre_hpf;
     float pre_hpf_cutoff = 50.0f;
@@ -32,14 +34,13 @@ class HeliosOverdrive : public Overdrive
     float mid_hpf_cutoff = 219.0f;
 
     juce::dsp::IIR::Filter<float> era_mid_scoop;
-    float era_mid_scoop_frequency = 1200.0f;
-    float era_mid_scoop_q = 0.5f;
-    float era_mid_scoop_gain = juce::Decibels::decibelsToGain(-4.0f);
+    float era_mid_scoop_cutoff = 700.0f;
+    float era_mid_scoop_gain = juce::Decibels::decibelsToGain(-10.0f);
+    float era_mid_scoop_q = 0.6f;
 
-    juce::dsp::IIR::Filter<float> era_shelf;
-    float era_shelf_cutoff = 500.0f;
-    float era_shelf_q = 0.7f;
-    float era_shelf_gain = juce::Decibels::decibelsToGain(-18.0f);
+    juce::dsp::IIR::Filter<float> attack_shelf;
+    float attack_shelf_cutoff = 1540.0f;
+    float attack_shelf_q = 0.7f;
 
     juce::dsp::IIR::Filter<float> dc_hpf;
     float dc_hpf_cutoff = 20.0f;
@@ -54,8 +55,7 @@ class HeliosOverdrive : public Overdrive
     juce::dsp::IIR::Filter<float> post_lpf3;
     float post_lpf3_cutoff = 7200.0f;
 
-    // float padding = juce::Decibels::decibelsToGain(-16.0f);
-    float padding = juce::Decibels::decibelsToGain(12.0f);
+    float padding = juce::Decibels::decibelsToGain(0.0f);
 
     CMOS cmos = CMOS();
     SiliconDiode diode_plus = SiliconDiode(44100.0f, true);

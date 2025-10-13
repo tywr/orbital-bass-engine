@@ -5,7 +5,7 @@
 class BJT
 {
   public:
-    BJT() {};
+    BJT() {}
     float processSample(float);
     float omega(float);
 

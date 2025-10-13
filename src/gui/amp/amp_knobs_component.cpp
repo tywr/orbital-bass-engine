@@ -7,8 +7,79 @@ AmpKnobsComponent::AmpKnobsComponent(juce::AudioProcessorValueTreeState& params)
     : parameters(params)
 {
     setLookAndFeel(new AmpSmallLookAndFeel());
+}
 
-    for (auto knob : knobs)
+AmpKnobsComponent::~AmpKnobsComponent()
+{
+}
+
+void AmpKnobsComponent::paint(juce::Graphics& g)
+{
+}
+
+void AmpKnobsComponent::resized()
+{
+
+    auto bounds = getLocalBounds();
+    auto label_bounds = bounds.removeFromTop(AmpDimensions::AMP_LABEL_HEIGHT);
+    const int knob_box_size = bounds.getWidth() / current_knobs.size();
+
+    for (auto knob : current_knobs)
+    {
+        knob.label->setBounds(label_bounds.removeFromLeft(knob_box_size)
+                                  .withSizeKeepingCentre(
+                                      AmpDimensions::AMP_SMALL_KNOB_WIDTH,
+                                      AmpDimensions::AMP_SMALL_LABEL_HEIGHT
+                                  ));
+        knob.slider->setBounds(bounds.removeFromLeft(knob_box_size)
+                                   .withSizeKeepingCentre(
+                                       AmpDimensions::AMP_SMALL_KNOB_WIDTH,
+                                       AmpDimensions::AMP_SMALL_KNOB_HEIGHT
+                                   ));
+    }
+}
+
+void AmpKnobsComponent::switchColour(juce::Colour colour1, juce::Colour colour2)
+{
+    juce::ignoreUnused(colour2);
+    for (auto knob : current_knobs)
+    {
+        knob.slider->setColour(juce::Slider::rotarySliderFillColourId, colour1);
+    }
+    repaint();
+}
+
+void AmpKnobsComponent::switchType(AmpType new_type)
+{
+    if (new_type.id == "helios")
+    {
+        current_knobs[1] = {
+            &grunt_slider, &grunt_label, "overdrive_grunt", "GRUNT"
+        };
+        current_knobs[2] = {
+            &attack_slider, &attack_label, "overdrive_attack", "ATTACK"
+        };
+    }
+    if (new_type.id == "borealis")
+    {
+        current_knobs[1] = {
+            &cross_frequency_slider, &cross_frequency_label, "overdrive_x", "X"
+        };
+        current_knobs[2] = {
+            &high_level_slider, &high_level_label, "overdrive_x_level",
+            "X-LEVEL"
+        };
+    }
+    if (new_type.id == "nebula")
+    {
+        current_knobs[1] = {&mod_slider, &mod_label, "overdrive_mod", "MOD"};
+        current_knobs[2] = {
+            &aggro_slider, &aggro_label, "overdrive_aggro", "AGGRO"
+        };
+    }
+    resized();
+    removeAllChildren();
+    for (auto knob : current_knobs)
     {
         addAndMakeVisible(knob.slider);
         addAndMakeVisible(knob.label);
@@ -31,46 +102,4 @@ AmpKnobsComponent::AmpKnobsComponent(juce::AudioProcessorValueTreeState& params)
             )
         );
     }
-}
-
-AmpKnobsComponent::~AmpKnobsComponent()
-{
-}
-
-void AmpKnobsComponent::paint(juce::Graphics& g)
-{
-}
-
-void AmpKnobsComponent::resized()
-{
-
-    auto bounds = getLocalBounds();
-    auto label_bounds = bounds.removeFromTop(AmpDimensions::AMP_LABEL_HEIGHT);
-    const int knob_box_size = bounds.getWidth() / knobs.size();
-
-    for (auto knob : knobs)
-    {
-        knob.label->setBounds(label_bounds.removeFromLeft(knob_box_size)
-                                  .withSizeKeepingCentre(
-                                      AmpDimensions::AMP_SMALL_KNOB_WIDTH,
-                                      AmpDimensions::AMP_SMALL_LABEL_HEIGHT
-                                  ));
-        knob.slider->setBounds(bounds.removeFromLeft(knob_box_size)
-                                   .withSizeKeepingCentre(
-                                       AmpDimensions::AMP_SMALL_KNOB_WIDTH,
-                                       AmpDimensions::AMP_SMALL_KNOB_HEIGHT
-                                   ));
-    }
-    // Don't forget to set compressor colour based on updated label value
-    // switchColour();
-}
-
-void AmpKnobsComponent::switchColour(juce::Colour colour1, juce::Colour colour2)
-{
-    juce::ignoreUnused(colour2);
-    for (auto knob : knobs)
-    {
-        knob.slider->setColour(juce::Slider::rotarySliderFillColourId, colour1);
-    }
-    repaint();
 }

@@ -12,10 +12,10 @@ class GermaniumDiode
 
   private:
     // Fixed variables
-    float c = 1e-8;
-    float r = 2200;
-    float i_s = 200e-9;
-    float v_t = 0.02585;
+    float c = 1e-8f;
+    float r = 2200.0f;
+    float i_s = 200e-9f;
+    float v_t = 0.02585f;
 
     // State variables
     float prev_v;
@@ -89,9 +89,9 @@ inline float GermaniumDiode::processSample(float vin)
         return vin;
     }
     float q = k1 * vin - prev_p;
-    float r = (q > 0.0f) ? 1.0f : ((q < 0.0f) ? -1.0f : 0.0f); // sign function
-    float w = k2 * q + k3 * r;
-    float vout = w - v_t * r * omega(k4 * r * w + k5);
+    float rt = (q > 0.0f) ? 1.0f : ((q < 0.0f) ? -1.0f : 0.0f); // sign function
+    float w = k2 * q + k3 * rt;
+    float vout = w - v_t * rt * omega(k4 * rt * w + k5);
     float p = k6 * vout - a1 * prev_p;
     prev_p = p;
     prev_v = vout;

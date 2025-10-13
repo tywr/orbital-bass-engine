@@ -61,8 +61,6 @@ class CompressorKnobsComponent : public juce::Component
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>>
         slider_attachments;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CompressorKnobsComponent);
-
     // Define knobs for easy looping
     std::vector<CompressorKnob> knobs = {
         {&threshold_slider, &threshold_label, "compressor_threshold", "THR"  },
@@ -71,4 +69,6 @@ class CompressorKnobsComponent : public juce::Component
         {&ratio_slider,     &ratio_label,     "compressor_ratio",     "RATIO"},
         {&type_slider,      &type_label,      "compressor_type",      "TYPE" }
     };
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CompressorKnobsComponent)
 };

@@ -12,14 +12,14 @@ void BorealisOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
     oversampler2x.initProcessing(static_cast<size_t>(spec.maximumBlockSize));
 
     attack_shelf.prepare(oversampled_spec);
-    float attack_shelf_gain = charToGain(character);
-    smoothed_attack_shelf_gain = attack_shelf_gain;
-    auto attack_shelf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeHighShelf(
-            oversampled_spec.sampleRate, attack_shelf_freq, 0.5f,
-            attack_shelf_gain
+    updateAttackFilter();
+
+    ff1_hpf.prepare(oversampled_spec);
+    auto ff1_hpf_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeLowPass(
+            oversampled_spec.sampleRate, ff1_hpf_cutoff
         );
-    *attack_shelf.coefficients = *attack_shelf_coefficients;
+    *ff1_hpf.coefficients = *ff1_hpf_coefficients;
 
     ff1_lpf.prepare(oversampled_spec);
     auto ff1_lpf_coefficients =
@@ -27,20 +27,6 @@ void BorealisOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
             oversampled_spec.sampleRate, ff1_lpf_cutoff
         );
     *ff1_lpf.coefficients = *ff1_lpf_coefficients;
-
-    ff2_hpf.prepare(oversampled_spec);
-    auto ff2_hpf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            oversampled_spec.sampleRate, smoothed_ff2_frequency
-        );
-    *ff2_hpf.coefficients = *ff2_hpf_coefficients;
-
-    ff2_lpf.prepare(oversampled_spec);
-    auto ff2_lpf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            oversampled_spec.sampleRate, ff2_lpf_cutoff
-        );
-    *ff2_lpf.coefficients = *ff2_lpf_coefficients;
 
     pre_hpf.prepare(oversampled_spec);
     auto pre_hpf_coefficients =
@@ -59,64 +45,52 @@ void BorealisOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
     post_lpf.prepare(oversampled_spec);
     auto post_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            oversampled_spec.sampleRate, post_lpf_cutoff, post_lpf_q
+            oversampled_spec.sampleRate, post_lpf_cutoff
         );
     *post_lpf.coefficients = *post_lpf_coefficients;
 
-    triode = Triode(oversampled_spec.sampleRate);
     diode = GermaniumDiode(oversampled_spec.sampleRate);
 }
 
 float BorealisOverdrive::driveToFrequency(float d)
 {
     float t = d / 10.0f;
-    float min_frequency = 153.0f;
-    float max_frequency = 453.0f;
+    float min_frequency = 50.0f;
+    float max_frequency = 450.0f;
     return max_frequency - (max_frequency - min_frequency) * std::pow(t, 2.0f);
 }
 
-float BorealisOverdrive::charToGain(float c)
+void BorealisOverdrive::updateAttackFilter()
 {
-    float t = c / 10.0f;
-    float min_gain = juce::Decibels::decibelsToGain(-12.0f);
-    float max_gain = juce::Decibels::decibelsToGain(6.0f);
-    return min_gain + (max_gain - min_gain) * std::pow(t, 3.0f);
+    float min_gain_db = -12.0f;
+    float max_gain_db = 12.0f;
+    float shelf_gain = juce::Decibels::decibelsToGain(
+        min_gain_db + (max_gain_db - min_gain_db) * current_attack / 10.0f
+    );
+    auto attack_shelf_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeHighShelf(
+            processSpec.sampleRate, attack_shelf_freq, 0.7f, shelf_gain
+        );
+    *attack_shelf.coefficients = *attack_shelf_coefficients;
 }
 
 void BorealisOverdrive::setCoefficients()
 {
-    float attack_shelf_gain = charToGain(character);
-    if (std::abs(smoothed_attack_shelf_gain - attack_shelf_gain) >= 1e-2)
+    if (std::abs(current_attack - attack) >= 1e-2)
     {
-        smoothed_attack_shelf_gain +=
-            (attack_shelf_gain - smoothed_attack_shelf_gain) * smoothing_factor;
-        auto attack_shelf_coefficients =
-            juce::dsp::IIR::Coefficients<float>::makeHighShelf(
-                processSpec.sampleRate, attack_shelf_freq, 0.5,
-                smoothed_attack_shelf_gain
-            );
-        *attack_shelf.coefficients = *attack_shelf_coefficients;
-    }
-
-    float ff2_frequency = driveToFrequency(drive);
-    if (std::abs(smoothed_ff2_frequency - ff2_frequency) >= 1e-2)
-    {
-        smoothed_ff2_frequency +=
-            (ff2_frequency - smoothed_ff2_frequency) * smoothing_factor;
-        auto ff2_hpf_coefficients =
-            juce::dsp::IIR::Coefficients<float>::makeLowPass(
-                processSpec.sampleRate, smoothed_ff2_frequency
-            );
-        *ff2_hpf.coefficients = *ff2_hpf_coefficients;
+        current_attack += (attack - current_attack) * 0.1f;
+        updateAttackFilter();
     }
 }
 
 float BorealisOverdrive::driveToGain(float d)
 {
     float t = d / 10.0f;
-    float min_gain = juce::Decibels::decibelsToGain(-6.0f);
-    float max_gain = juce::Decibels::decibelsToGain(9.0f);
-    return min_gain + std::pow(t, 2) * (max_gain - min_gain);
+    float min_gain_db = 0.0f;
+    float max_gain_db = 36.0f;
+    return juce::Decibels::decibelsToGain(
+        min_gain_db + (max_gain_db - min_gain_db) * t
+    );
 }
 
 void BorealisOverdrive::process(juce::AudioBuffer<float>& buffer)
@@ -147,21 +121,21 @@ void BorealisOverdrive::process(juce::AudioBuffer<float>& buffer)
     buffer.applyGain(mix);
     dry_buffer.applyGain(1.0f - mix);
     buffer.addFrom(0, 0, dry_buffer, 0, 0, buffer.getNumSamples());
-};
+}
 
 void BorealisOverdrive::applyOverdrive(float& sample, float sampleRate)
 {
     juce::ignoreUnused(sampleRate);
+    float input_padding = juce::Decibels::decibelsToGain(12.0f);
 
     float drive_gain = driveToGain(drive);
-    float in = triode.processSample(sample);
-    float in_drive = in * drive_gain;
+    float in = input_padding * sample;
+    float in_drive = drive_gain * in;
 
     // feed forward 1
-    float ff1 = ff1_lpf.processSample(in);
+    float ff1 = ff1_hpf.processSample(ff1_lpf.processSample(in));
 
-    // feed forward 2
-    float ff2 = ff2_lpf.processSample(ff2_hpf.processSample(in_drive) + in);
+    float ff2 = 0.1f * drive * ff1;
 
     // distortion chain
     float hpfed = pre_hpf.processSample(in_drive);
@@ -170,5 +144,5 @@ void BorealisOverdrive::applyOverdrive(float& sample, float sampleRate)
     float distorded = diode.processSample(shaped);
     float out = post_lpf.processSample(distorded);
 
-    sample = padding * (out + 0.15f * ff1 + 0.10f * ff2);
+    sample = padding * (out + ff1 + ff2);
 }

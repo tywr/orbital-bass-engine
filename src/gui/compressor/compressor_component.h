@@ -18,7 +18,7 @@ class CompressorComponent : public juce::Component
     {
         meter_component.setVisible(isVisible());
         meter_component.visibilityChanged();
-    };
+    }
 
   private:
     juce::AudioProcessorValueTreeState& parameters;

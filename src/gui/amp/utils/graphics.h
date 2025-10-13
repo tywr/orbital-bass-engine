@@ -1,4 +1,5 @@
 #pragma once
+#include <juce_graphics/juce_graphics.h>
 
 inline double getAverageY(const juce::Path& path)
 {

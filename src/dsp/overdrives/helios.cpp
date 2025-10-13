@@ -1,5 +1,6 @@
 #include "Helios.h"
 #include "../circuits/silicon_diode.h"
+#include <cmath>
 
 #include <juce_dsp/juce_dsp.h>
 
@@ -12,10 +13,20 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
     oversampler2x.reset();
     oversampler2x.initProcessing(static_cast<size_t>(spec.maximumBlockSize));
 
-    // set era and update filters that depend on it
+    current_drive = drive;
+    current_attack = attack;
+    current_grunt = grunt;
+
     era_mid_scoop.prepare(oversampled_spec);
-    era_shelf.prepare(oversampled_spec);
-    updateEraFilter(oversampled_spec.sampleRate);
+    auto era_mid_scoop_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+            oversampled_spec.sampleRate, era_mid_scoop_cutoff,
+            era_mid_scoop_gain, era_mid_scoop_q
+        );
+    *era_mid_scoop.coefficients = *era_mid_scoop_coefficients;
+
+    attack_shelf.prepare(oversampled_spec);
+    updateAttackFilter(oversampled_spec.sampleRate);
 
     dc_hpf.prepare(oversampled_spec);
     auto dc_hpf_coefficients =
@@ -80,46 +91,25 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
 float HeliosOverdrive::driveToGain(float d)
 {
     float t = d / 10.0f;
-    // version 1
-    // float min_gain = juce::Decibels::decibelsToGain(3.0f);
-    // float max_gain = juce::Decibels::decibelsToGain(18.0f);
-    // version 2
-    float min_gain = juce::Decibels::decibelsToGain(0.0f);
-    float max_gain = juce::Decibels::decibelsToGain(42.0f);
-    return min_gain + std::pow(t, 3.0f) * (max_gain - min_gain);
+    float min_gain_db = 0.0f;
+    float max_gain_db = 42.0f;
+    return juce::Decibels::decibelsToGain(
+        min_gain_db + t * (max_gain_db - min_gain_db)
+    );
 }
 
-void HeliosOverdrive::updateEraFilter(float sampleRate)
+void HeliosOverdrive::updateAttackFilter(float sampleRate)
 {
-    // A bit of a complex filter happening there, the era control
-    // is a combination of a mid scoop and a high shelf filters.
-    // When the era knob is turned, it shifts the mid scoop frequency
-    // from ~1200Hz down to 700Hz and reduces the width of the scoop as well
-    // as the gain.
-    // The high shelf is fixed at ~500Hz, and adjust the amount of
-    // hi-mids and treble cut.
-    era = (character / 10.0f);
-    era_mid_scoop_frequency = 1200.0f - 500.0f * era;
-    // era_mid_scoop_gain = juce::Decibels::decibelsToGain(-4.0 - 4.0f * era);
-    era_mid_scoop_gain = 1.0f;
-    era_mid_scoop_q = 0.5f + 0.5f * era;
-
-    auto era_mid_scoop_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
-            sampleRate, era_mid_scoop_frequency, era_mid_scoop_q,
-            era_mid_scoop_gain
-        );
-    *era_mid_scoop.coefficients = *era_mid_scoop_coefficients;
-
-    era_shelf_cutoff = 250.0f - era * 100.0f;
-    era_shelf_gain = juce::Decibels::decibelsToGain(-28.0f + 10.0f * era);
-    era_shelf_q = 0.6f;
-
-    auto era_shelf_coefficients =
+    float min_gain_db = -12.0f;
+    float max_gain_db = 12.0f;
+    float shelf_gain = juce::Decibels::decibelsToGain(
+        min_gain_db + (max_gain_db - min_gain_db) * attack * 0.1f
+    );
+    auto attack_shelf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeHighShelf(
-            sampleRate, era_shelf_cutoff, era_shelf_q, era_shelf_gain
+            sampleRate, attack_shelf_cutoff, attack_shelf_q, shelf_gain
         );
-    *era_shelf.coefficients = *era_shelf_coefficients;
+    *attack_shelf.coefficients = *attack_shelf_coefficients;
 }
 
 void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
@@ -131,12 +121,16 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
     juce::AudioBuffer<float> dry_buffer;
     dry_buffer.makeCopyOf(buffer);
 
-    // applyGain(buffer, previous_drive_gain, drive_gain);
-    float sampleRate = static_cast<float>(processSpec.sampleRate);
-    if (!juce::approximatelyEqual(character / 10.0f, era))
+    if (!juce::approximatelyEqual(drive, current_drive))
     {
-        era = era + (character - era) * 0.1f;
-        updateEraFilter(sampleRate);
+        current_drive = current_drive + (drive - current_drive) * 0.1f;
+    }
+
+    float sampleRate = static_cast<float>(processSpec.sampleRate);
+    if (!juce::approximatelyEqual(attack, current_attack))
+    {
+        current_attack = current_attack + (attack - current_attack) * 0.1f;
+        updateAttackFilter(sampleRate);
     }
 
     juce::dsp::AudioBlock<float> block(buffer);
@@ -146,7 +140,7 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
     for (size_t i = 0; i < oversampledBlock.getNumSamples(); ++i)
     {
         float sample = channelData[i];
-        applyOverdrive(sample, sampleRate);
+        applyOverdrive(sample, sampleRate, driveToGain(current_drive));
         channelData[i] = sample;
     }
     oversampler2x.processSamplesDown(block);
@@ -155,19 +149,19 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
     buffer.applyGain(mix);
     dry_buffer.applyGain(1.0f - mix);
     buffer.addFrom(0, 0, dry_buffer, 0, 0, buffer.getNumSamples());
-};
+}
 
-void HeliosOverdrive::applyOverdrive(float& sample, float sampleRate)
+void HeliosOverdrive::applyOverdrive(
+    float& sample, float sampleRate, float gain
+)
 {
     juce::ignoreUnused(sampleRate);
-
-    float drive_gain = driveToGain(drive);
 
     float input_padding = juce::Decibels::decibelsToGain(12.0f);
     float filtered =
         pre_lpf.processSample(pre_hpf.processSample(input_padding * sample));
     // Only drive between low-mids and highs
-    float drived = mid_hpf.processSample(drive_gain * filtered);
+    float drived = mid_hpf.processSample(gain * filtered);
     // Filter low mids on "clean" signal
     float lowmids = lowmids_lpf.processSample(filtered);
     // Combine both driven and clean signal before overdrive
@@ -176,14 +170,13 @@ void HeliosOverdrive::applyOverdrive(float& sample, float sampleRate)
     // Pass signal through silicon diode circuit to limit signal above -0.7
     // Below diode cutting point of 0.7V, we only get CMOS inverter
     // saturation.
-    float soft_clipped = .5 * (diode_plus.processSample(input) + input);
+    float soft_clipped = 0.5f * (diode_plus.processSample(input) + input);
     float hard_clipped = diode_minus.processSample(soft_clipped);
     // Pass signal through CMOS inverter on linear region
     float distorted =
         dc_hpf.processSample(cmos.processSample(4.5f + hard_clipped));
-    // Apply tone control "era"
-    float era_scoop = era_mid_scoop.processSample(distorted);
-    float era = era_shelf.processSample(era_scoop);
+    float shelved = attack_shelf.processSample(distorted);
+    float era = era_mid_scoop.processSample(shelved);
     // Apply three consecutive LPF to smooth out top-end
     float lpfed1 = post_lpf.processSample(era);
     float lpfed2 = post_lpf2.processSample(lpfed1);

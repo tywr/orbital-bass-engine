@@ -72,7 +72,8 @@ inline void paintIconNebula(
 
             float max_alpha = 0.75f;
             float min_alpha = 0.2f;
-            float finalAlpha = (max_alpha - min_alpha) * noise + min_alpha;
+            float finalAlpha =
+                std::max(0.0f, (max_alpha - min_alpha) * noise + min_alpha);
             z += noise * 0.15f;
             // Get the color based on the y position
             juce::Colour dotColour = c1.interpolatedWith(c2, (y + 1.0f) / 2.0f)
@@ -101,7 +102,6 @@ inline void paintDesignNebula(
     juce::Graphics::ScopedSaveState state(g);
 
     auto center = bounds.getCentre();
-    float maxRadius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * 0.45f;
 
     // Background noise layers
     const int numBackgroundNoiseLayers = 20;
@@ -117,9 +117,6 @@ inline void paintDesignNebula(
         float proportion = (float)i / (numBackgroundNoiseLayers); // 0.0 to
         float currentRadius = maxBackgroundRadius *
                               (proportion * 0.8f); // Start larger, go to max
-
-        // Use a subtle grey colour with transparency
-        juce::Colour backgroundColour = juce::Colours::darkgrey;
 
         g.setColour(GuiColours::DEFAULT_INACTIVE_COLOUR);
         g.drawEllipse(

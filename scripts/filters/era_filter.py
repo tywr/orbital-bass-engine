@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.signal import bilinear
 
 
 def create_peak_filter(fc, G, Q, fs):
@@ -123,44 +124,38 @@ def plot_bode(ax, b, a, fs):
 
 
 def create_era_filter(fs, era_position=0):
-    # mid scoop
-    fc = 750 + (1 - era_position) * (2500 - 750)
-    G = -4.0 * era_position
-    Q = 0.5 + 0.5 * era_position 
-    b1, a1 = create_peak_filter(fc, G, Q, fs)
+    a2 = 4.7e-8 * era_position + 4.7e-9
+    a1 = 2.10e-4
+    a0 = 1.0
 
-    fc2 = 250 - era_position * 100
-    G2 = -32.0 + 10.0 * era_position
-    Q2 = 0.6
-    b2, a2 = create_high_shelf(fc2, G2, Q2, fs)
+    b2 = 5.17e-8
+    b1 = 6.8e-4
+    b0 = 1.0
 
-    return b1, a1, b2, a2
+    T = 1.0 / fs
+    K = 2.0 / T
+
+    A0 = b2 * K * K + b1 * K + b0
+    A1 = 2.0 * (b0 - b2 * K * K)
+    A2 = b2 * K * K - b1 * K + b0
+
+    B0 = a2 * K * K + a1 * K + a0
+    B1 = 2.0 * (a0 - a2 * K * K)
+    B2 = a2 * K * K - a1 * K + a0
+
+    norm = 1.0 / A0
+
+    a = [B0 * norm, B1 * norm, B2 * norm]
+    b = [1.0, A1 * norm, A2 * norm]
+
+    fc = 150
+    G = -30
+    a2, b2 = create_high_shelf(fc=fc, G=G, Q=0.6, fs=fs)
+    return a, b, a2, b2
 
 
 if __name__ == "__main__":
     fs = 48000  # Sampling frequency in Hz
-
-    # Parameters for era turned to minimum
-    # fc = 1200
-    # G = -4.0
-    # Q = 0.5
-    # b1, a1 = create_peak_filter(fc, G, Q, fs)
-    #
-    # fc2 =1200
-    # G2 = -18.0
-    # Q2 = 0.7
-    # b2, a2 = create_high_shelf(fc2, G2, Q2, fs)
-
-    # Parameters for era turned to maximum
-    # fc = 700
-    # G = -8.0
-    # Q = 0.5
-    # b1, a1 = create_peak_filter(fc, G, Q, fs)
-    #
-    # fc2 = 500
-    # G2 = -8.0
-    # Q2 = 0.7
-    # b2, a2 = create_high_shelf(fc2, G2, Q2, fs)
 
     fig, ax = plt.subplots(1, 1, figsize=(10, 8), sharex=True)
     fig.suptitle("Bode Diagram of the Peak Filter", fontsize=16)
@@ -169,12 +164,14 @@ if __name__ == "__main__":
     ax.set_title("Magnitude Response")
     ax.set_xlim(5, fs / 2)
 
-    for i in [0, 3, 6, 10]:
-        pos = i / 10
-        b1, a1, b2, a2 = create_era_filter(fs, era_position=pos)
-        f2, m2 = plot_bode(ax, b2, a2, fs)
-        f1, m1 = plot_bode(ax, b1, a1, fs)
-        ax.semilogx(f2, m2 + m1, label=f"Era Response ({pos})", linewidth=2)
+    for i in [1.0]:
+        pos = i
+        b, a, b2, a2 = create_era_filter(fs, era_position=pos)
+        b3, a3 = create_peak_filter(fc=700, G=-10, Q=0.6, fs=fs)
+        f, m = plot_bode(ax, b, a, fs)
+        f3, m3 = plot_bode(ax, b3, a3, fs)
+        ax.semilogx(f, m, label=f"Era Response ({pos})", linewidth=2)
+        ax.semilogx(f3, m3, label=f"Peak Filter ({pos})", linewidth=2)
 
     plt.legend()
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])

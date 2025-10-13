@@ -26,7 +26,7 @@ class AmpEQ
     {
         treble_gain = gain;
     }
-    void setBypass(float shouldBypass)
+    void setBypass(bool shouldBypass)
     {
         bypass = shouldBypass;
     }

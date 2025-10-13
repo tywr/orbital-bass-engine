@@ -32,6 +32,7 @@ AmpComponent::AmpComponent(juce::AudioProcessorValueTreeState& params)
         type.button->onClick = [this, type]() { switchType(type); };
     }
     initType();
+    knobs_component.switchType(selected_type);
 }
 
 AmpComponent::~AmpComponent()
@@ -59,6 +60,7 @@ void AmpComponent::initType()
 void AmpComponent::switchType(AmpType new_type)
 {
     selected_type = new_type;
+    knobs_component.switchType(new_type);
     double index = 0;
     for (auto type : types)
     {

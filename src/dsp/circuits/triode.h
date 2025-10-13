@@ -32,18 +32,18 @@ class Triode
   private:
     // padding to bring -12dB to ~0dB
     float padding = -2.0f / 27.0f;
-    float kp = 1.014e-5;
-    float kp2 = 5.498e-8;
-    float kpg = 1.076e-5;
-    float E = 250;
-    float Ri = 1e6;
-    float Rg = 20e3;
-    float Ck = 10e-6;
-    float Co = 10e-9;
-    float Rp = 100e3;
-    float Ro = 1e6;
-    float Rk = 1e3;
-    float Ci = 100e-9;
+    float kp = 1.014e-5f;
+    float kp2 = 5.498e-8f;
+    float kpg = 1.076e-5f;
+    float E = 250.0f;
+    float Ri = 1e6f;
+    float Rg = 20e3f;
+    float Ck = 10e-6f;
+    float Co = 10e-9f;
+    float Rp = 100e3f;
+    float Ro = 1e6f;
+    float Rk = 1e3f;
+    float Ci = 100e-9f;
 
     // --- State Variables ---
     float wCi_s;
@@ -64,10 +64,10 @@ class Triode
 
 inline Triode::Triode(float fs)
 {
-    float wVi_R = 1e-6;
-    float wCi_R = 1.0 / (2.0 * fs * Ci);
-    float wCk_R = 1.0 / (2.0 * fs * Ck);
-    float wCo_R = 1.0 / (2.0 * fs * Co);
+    float wVi_R = 1e-6f;
+    float wCi_R = 1.0f / (2.0f * fs * Ci);
+    float wCk_R = 1.0f / (2.0f * fs * Ck);
+    float wCo_R = 1.0f / (2.0f * fs * Co);
     float wsi_kl = wCi_R / (wCi_R + wVi_R);
     float wsi_R = wCi_R + wVi_R;
     wpg_kt = wsi_R / (wsi_R + Ri);
@@ -80,35 +80,35 @@ inline Triode::Triode(float fs)
     wpp_kt = wsp_R / (wsp_R + Rp);
     float wpp_R = (wsp_R * Rp) / (wsp_R + Rp);
 
-    kTxCi = 1.0 - wpg_kt;
-    kTCk = 1.0 - wpk_kt;
-    kTCo = 1.0 - wpp_kt;
+    kTxCi = 1.0f - wpg_kt;
+    kTCk = 1.0f - wpk_kt;
+    kTCo = 1.0f - wpp_kt;
     kT0 = wpp_kt * E;
-    kyT = 0.5 * (1.0 - wsp_kl);
-    kyCo = -0.5 * (1.0 - wsp_kl) * (1.0 + wpp_kt);
-    ky0 = 0.5 * (1.0 - wsp_kl) * wpp_kt * E;
-    kCiT = wsi_kl * (1.0 - wsg_kl);
-    kCixCi = wsi_kl * ((1.0 - wpg_kt) * (wsg_kl + 1.0) - 2.0);
-    kCoCo = 1.0 - wsp_kl * (1.0 + wpp_kt);
+    kyT = 0.5f * (1.0f - wsp_kl);
+    kyCo = -0.5f * (1.0f - wsp_kl) * (1.0f + wpp_kt);
+    ky0 = 0.5f * (1.0f - wsp_kl) * wpp_kt * E;
+    kCiT = wsi_kl * (1.0f - wsg_kl);
+    kCixCi = wsi_kl * ((1.0f - wpg_kt) * (wsg_kl + 1.0f) - 2.0f);
+    kCoCo = 1.0f - wsp_kl * (1.0f + wpp_kt);
     kCo0 = wsp_kl * wpp_kt * E;
 
     // Triode parameters
     bk_bp = wpk_R / wpp_R;
-    k_eta = 1.0 / (bk_bp * (0.5 * kpg + kp2) + kp2);
+    k_eta = 1.0f / (bk_bp * (0.5f * kpg + kp2) + kp2);
     k_delta = kp2 * k_eta * k_eta / (wpp_R + wpp_R);
     k_bp_s = k_eta * std::sqrt((kp2 + kp2) / wpp_R);
-    bp_ap_0 = (1.0 / (wpp_R + wpk_R)) * (wpk_R - wpp_R);
-    bp_ak_0 = (1.0 / (wpp_R + wpk_R)) * (wpp_R + wpp_R);
+    bp_ap_0 = (1.0f / (wpp_R + wpk_R)) * (wpk_R - wpp_R);
+    bp_ak_0 = (1.0f / (wpp_R + wpk_R)) * (wpp_R + wpp_R);
 
-    float k1 = kpg / (2.0 * kp2) + Rp / Rk + 1.0;
-    float k2 = k1 * (kp / kp2 + 2.0 * E) * kp2;
-    float k3 = Rk * k2 + 1.0;
-    float sign_k1 = (k1 >= 0) ? 1.0 : -1.0;
+    float k1 = kpg / (2.0f * kp2) + Rp / Rk + 1.0f;
+    float k2 = k1 * (kp / kp2 + 2.0f * E) * kp2;
+    float k3 = Rk * k2 + 1.0f;
+    float sign_k1 = (k1 >= 0.0f) ? 1.0f : -1.0f;
     float Vk0 =
-        (k3 - sign_k1 * std::sqrt(2.0 * k3 - 1.0)) / (2.0 * Rk * k1 * k1 * kp2);
+        (k3 - sign_k1 * std::sqrt(2.0f * k3 - 1.0f)) / (2.0f * Rk * k1 * k1 * kp2);
     float Vp0 = E - Rp / Rk * Vk0;
 
-    wCi_s = 0.0;
+    wCi_s = 0.0f;
     wCk_s = Vk0;
     wCo_s = Vp0;
 }
@@ -145,7 +145,7 @@ inline float Triode::processSample(float inputSample)
 inline TriodeWaves Triode::triode(float ag, float ak, float ap)
 {
     float bp, bk;
-    float v1 = 0.5 * ap;
+    float v1 = 0.5f * ap;
     float v2 = ak + v1 * bk_bp;
     float alpha = kpg * (ag - v2) + kp;
     float beta = kp2 * (v1 - v2);
@@ -154,14 +154,14 @@ inline TriodeWaves Triode::triode(float ag, float ak, float ap)
     float delta = ap + v3;
     float Vpk;
 
-    if (delta >= 0)
+    if (delta >= 0.0f)
     {
         bp = k_bp_s * std::sqrt(delta) - v3 - k_delta;
         float d = bk_bp * (ap - bp);
         bk = ak + d;
         float Vpk2 = ap + bp - ak - bk;
 
-        if (kpg * (ag - ak - 0.5 * d) + kp2 * Vpk2 + kp < 0)
+        if (kpg * (ag - ak - 0.5f * d) + kp2 * Vpk2 + kp < 0.0f)
         {
             bp = ap;
             bk = ak;
@@ -169,7 +169,7 @@ inline TriodeWaves Triode::triode(float ag, float ak, float ap)
         }
         else
         {
-            Vpk = 0.5 * Vpk2;
+            Vpk = 0.5f * Vpk2;
         }
     }
     else
@@ -179,7 +179,7 @@ inline TriodeWaves Triode::triode(float ag, float ak, float ap)
         Vpk = ap - ak;
     }
 
-    if (Vpk < 0)
+    if (Vpk < 0.0f)
     {
         bp = bp_ap_0 * ap + bp_ak_0 * ak;
     }

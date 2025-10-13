@@ -1,7 +1,9 @@
 #pragma once
+#include "../colours.h"
 #include "designs/borealis.h"
 #include "designs/helios.h"
 #include "designs/nebula.h"
+#include <juce_gui_basics/juce_gui_basics.h>
 
 struct AmpType
 {
@@ -18,8 +20,10 @@ class HeliosToggleButton : public juce::ToggleButton
     {
         colour1 = t.colour1;
         colour2 = t.colour2;
-    };
-    ~HeliosToggleButton() {};
+    }
+    ~HeliosToggleButton() override
+    {
+    }
 
     void paint(juce::Graphics& g) override
     {
@@ -37,7 +41,7 @@ class HeliosToggleButton : public juce::ToggleButton
             c2 = findColour(juce::ToggleButton::textColourId);
         }
         paintSunFigureHelios(g, bounds, c1, c2);
-    };
+    }
 
   private:
     juce::Colour colour1;
@@ -51,8 +55,10 @@ class BorealisToggleButton : public juce::ToggleButton
     {
         colour1 = t.colour1;
         colour2 = t.colour2;
-    };
-    ~BorealisToggleButton() {};
+    }
+    ~BorealisToggleButton() override
+    {
+    }
 
     void paint(juce::Graphics& g) override
     {
@@ -70,7 +76,7 @@ class BorealisToggleButton : public juce::ToggleButton
             c2 = findColour(juce::ToggleButton::textColourId);
         }
         paintIconBorealis(g, bounds, c1, c2);
-    };
+    }
 
   private:
     juce::Colour colour1;
@@ -84,8 +90,10 @@ class NebulaToggleButton : public juce::ToggleButton
     {
         colour1 = t.colour1;
         colour2 = t.colour2;
-    };
-    ~NebulaToggleButton() {};
+    }
+    ~NebulaToggleButton() override
+    {
+    }
 
     void paint(juce::Graphics& g) override
     {
@@ -103,7 +111,7 @@ class NebulaToggleButton : public juce::ToggleButton
             c2 = findColour(juce::ToggleButton::textColourId);
         }
         paintIconNebula(g, bounds, c1, c2);
-    };
+    }
 
   private:
     juce::Colour colour1;

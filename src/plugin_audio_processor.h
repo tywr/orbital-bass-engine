@@ -21,6 +21,7 @@ class PluginAudioProcessor final
     void parameterChanged(
         const juce::String& parameterID, float newValue
     ) override;
+    void setupParameterHandlers();
 
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
@@ -63,6 +64,9 @@ class PluginAudioProcessor final
 
   private:
     juce::AudioProcessorValueTreeState parameters;
+    using ParamHandler = std::function<void(float)>;
+    std::unordered_map<std::string, ParamHandler> parameterHandlers;
+
     Compressor compressor;
 
     Overdrive* current_overdrive = nullptr;
