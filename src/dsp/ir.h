@@ -36,6 +36,7 @@ class IRConvolver
     juce::dsp::ProcessSpec processSpec{-1, 0, 0};
 
     // GUI Parameters
+    bool is_ir_loaded = false;
     bool bypass = false;
     float mix = 1.0f;
     float gain = 1.0f;

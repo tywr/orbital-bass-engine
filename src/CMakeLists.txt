@@ -47,6 +47,7 @@ target_sources(${PROJECT_NAME}
         dsp/ir.cpp
         dsp/overdrives/helios.cpp
         dsp/overdrives/borealis.cpp
+        dsp/overdrives/nebula.cpp
         dsp/amp_eq.cpp
         )
 

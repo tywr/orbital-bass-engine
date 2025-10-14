@@ -27,6 +27,10 @@ void IRConvolver::process(juce::AudioBuffer<float>& buffer)
     {
         return;
     }
+    if (!is_ir_loaded)
+    {
+        return;
+    }
     juce::ScopedNoDenormals noDenormals;
     juce::AudioBuffer<float> wetBuffer(
         buffer.getNumChannels(), buffer.getNumSamples()
@@ -58,15 +62,31 @@ void IRConvolver::loadIR()
 
     if (!file.existsAsFile())
     {
+        is_ir_loaded = false;
         DBG("File does not exist: " + filepath);
         return;
     }
 
-    convolution.loadImpulseResponse(
-        file, juce::dsp::Convolution::Stereo::yes,
-        juce::dsp::Convolution::Trim::no, 0,
-        juce::dsp::Convolution::Normalise::no
-    );
-    convolution.prepare(processSpec);
-    DBG("Loaded IR from file: " + filepath);
+    try
+    {
+        convolution.loadImpulseResponse(
+            file, juce::dsp::Convolution::Stereo::yes,
+            juce::dsp::Convolution::Trim::no, 0,
+            juce::dsp::Convolution::Normalise::no
+        );
+
+        convolution.prepare(processSpec);
+        DBG("Loaded IR from file: " + file.getFullPathName());
+        is_ir_loaded = true;
+    }
+    catch (const std::exception& e)
+    {
+        DBG("Error loading IR: " + juce::String(e.what()));
+        is_ir_loaded = false;
+    }
+    catch (...)
+    {
+        DBG("Unknown error loading IR.");
+        is_ir_loaded = false;
+    }
 }

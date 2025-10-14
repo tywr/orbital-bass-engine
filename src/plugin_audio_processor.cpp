@@ -18,15 +18,18 @@ PluginAudioProcessor::PluginAudioProcessor()
 {
     parameters.state.setProperty("ir_filepath", juce::String(""), nullptr);
 
-    inputGainParameter = parameters.getRawParameterValue("input_gain_db");
-    outputGainParameter = parameters.getRawParameterValue("output_gain_db");
-    ampMasterGainParameter = parameters.getRawParameterValue("amp_master");
+    input_gain_parameter = parameters.getRawParameterValue("input_gain_db");
+    output_gain_parameter = parameters.getRawParameterValue("output_gain_db");
+    amp_master_gain_parameter = parameters.getRawParameterValue("amp_master");
     isAmpBypassed = false;
 
-    for (int i = 0; i < parameters.state.getNumProperties(); ++i)
+    for (auto* p : getParameters())
     {
-        juce::Identifier paramID = parameters.state.getPropertyName(i);
-        parameters.addParameterListener(paramID.toString(), this);
+        if (auto* param = dynamic_cast<juce::RangedAudioParameter*>(p))
+        {
+            juce::String paramID = param->getParameterID();
+            parameters.addParameterListener(paramID, this);
+        }
     }
 }
 
@@ -130,10 +133,10 @@ void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     juce::ignoreUnused(sampleRate, samplesPerBlock);
-    previousInputGainLinear =
-        juce::Decibels::decibelsToGain(inputGainParameter->load());
-    previousOutputGainLinear =
-        juce::Decibels::decibelsToGain(outputGainParameter->load());
+    current_input_gain =
+        juce::Decibels::decibelsToGain(input_gain_parameter->load());
+    current_output_gain =
+        juce::Decibels::decibelsToGain(output_gain_parameter->load());
 
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
@@ -168,6 +171,23 @@ bool PluginAudioProcessor::isBusesLayoutSupported(
 //==============================================================================
 // Main Proces Block Function !
 //==============================================================================
+void PluginAudioProcessor::applyGain(
+    std::atomic<float>* param, float& current_gain,
+    juce::AudioBuffer<float>& buffer
+)
+{
+    float gain = juce::Decibels::decibelsToGain(param->load());
+    if (!juce::approximatelyEqual(current_gain, gain))
+    {
+        float new_gain = current_gain + (gain - current_gain) * 0.1f;
+        buffer.applyGainRamp(0, buffer.getNumSamples(), current_gain, new_gain);
+        current_gain = new_gain;
+    }
+    else
+    {
+        buffer.applyGain(current_gain);
+    }
+}
 
 void PluginAudioProcessor::processBlock(
     juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages
@@ -181,28 +201,27 @@ void PluginAudioProcessor::processBlock(
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
-    applyInputGain(buffer);
-    updateInputLevel(buffer);
-
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer(channel);
         juce::ignoreUnused(channelData);
     }
+    applyGain(input_gain_parameter, current_input_gain, buffer);
+    updateInputLevel(buffer);
 
-    compressor.process(buffer);
-    compressorGainReductionDb.setValue(compressor.getGainReductionDb());
+    // compressor.process(buffer);
+    // compressorGainReductionDb.setValue(compressor.getGainReductionDb());
 
     current_overdrive->process(buffer);
 
-    amp_eq.process(buffer);
+    // amp_eq.process(buffer);
+    //
+    // if (!isAmpBypassed)
+    //     applyAmpMasterGain(buffer);
 
-    if (!isAmpBypassed)
-        applyAmpMasterGain(buffer);
+    // irConvolver.process(buffer);
 
-    irConvolver.process(buffer);
-
-    applyOutputGain(buffer);
+    applyGain(output_gain_parameter, current_output_gain, buffer);
     updateOutputLevel(buffer);
 
     // Convert mono to stereo if needed
@@ -224,93 +243,16 @@ void PluginAudioProcessor::processBlock(
 void PluginAudioProcessor::updateInputLevel(juce::AudioBuffer<float>& buffer)
 {
     // Set inputLevel value for metering
-    double peakInput = smoothLevel(
-        buffer.getMagnitude(0, 0, buffer.getNumSamples()), inputLevel.getValue()
-    );
+    double peakInput = buffer.getMagnitude(0, 0, buffer.getNumSamples());
     inputLevel.setValue(peakInput);
 }
 
 void PluginAudioProcessor::updateOutputLevel(juce::AudioBuffer<float>& buffer)
 {
     // Set outputLevel value for metering
-    double peakOutput = smoothLevel(
-        buffer.getMagnitude(0, 0, buffer.getNumSamples()),
-        outputLevel.getValue()
-    );
+    double peakOutput = buffer.getMagnitude(0, 0, buffer.getNumSamples());
     outputLevel.setValue(peakOutput);
 }
-
-void PluginAudioProcessor::applyInputGain(juce::AudioBuffer<float>& buffer)
-{
-    auto currentInputGainLinear =
-        juce::Decibels::decibelsToGain(inputGainParameter->load());
-    if (juce::approximatelyEqual(
-            currentInputGainLinear, previousInputGainLinear
-        ))
-    {
-        buffer.applyGain(currentInputGainLinear);
-    }
-    else
-    {
-        buffer.applyGainRamp(
-            0, buffer.getNumSamples(), previousInputGainLinear,
-            currentInputGainLinear
-        );
-        previousInputGainLinear = currentInputGainLinear;
-    }
-}
-
-void PluginAudioProcessor::applyOutputGain(juce::AudioBuffer<float>& buffer)
-{
-    // Apply output gain with smoothing
-    auto currentOutputGainLinear =
-        juce::Decibels::decibelsToGain(outputGainParameter->load());
-    if (juce::approximatelyEqual(
-            currentOutputGainLinear, previousOutputGainLinear
-        ))
-    {
-        buffer.applyGain(currentOutputGainLinear);
-    }
-    else
-    {
-        buffer.applyGainRamp(
-            0, buffer.getNumSamples(), previousOutputGainLinear,
-            currentOutputGainLinear
-        );
-        previousOutputGainLinear = currentOutputGainLinear;
-    }
-}
-
-void PluginAudioProcessor::applyAmpMasterGain(juce::AudioBuffer<float>& buffer)
-{
-    // Apply output gain with smoothing
-    auto currentAmpMasterGainLinear =
-        juce::Decibels::decibelsToGain(ampMasterGainParameter->load());
-    if (juce::approximatelyEqual(
-            currentAmpMasterGainLinear, previousAmpMasterGainLinear
-        ))
-    {
-        buffer.applyGain(currentAmpMasterGainLinear);
-    }
-    else
-    {
-        buffer.applyGainRamp(
-            0, buffer.getNumSamples(), previousAmpMasterGainLinear,
-            currentAmpMasterGainLinear
-        );
-        previousAmpMasterGainLinear = currentAmpMasterGainLinear;
-    }
-}
-
-double PluginAudioProcessor::smoothLevel(double newLevel, double currentLevel)
-{
-    if (newLevel > currentLevel)
-        return newLevel;
-    else
-        return decayFactor * currentLevel;
-}
-
-//==============================================================================
 
 bool PluginAudioProcessor::hasEditor() const
 {

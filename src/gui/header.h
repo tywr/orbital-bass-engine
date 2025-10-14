@@ -20,8 +20,6 @@ class Header : public juce::Component
     Meter outputMeter;
 
     juce::Colour headerColour = ColourCodes::white0;
-    juce::Label inputLabel;
-    juce::Label outputLabel;
 
     juce::Slider inputGainSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>

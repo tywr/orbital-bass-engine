@@ -18,13 +18,6 @@ Header::Header(
     inputMeter.setSliderColour(headerColour);
     outputMeter.setSliderColour(headerColour);
 
-    addAndMakeVisible(inputLabel);
-    inputLabel.setText("IN", juce::dontSendNotification);
-    inputLabel.setJustificationType(juce::Justification::left);
-
-    addAndMakeVisible(outputLabel);
-    outputLabel.setText("OUT", juce::dontSendNotification);
-    outputLabel.setJustificationType(juce::Justification::right);
 
     addAndMakeVisible(inputGainSlider);
     inputGainSlider.setSkewFactor(3.0);
@@ -76,10 +69,4 @@ void Header::resized()
     outputGainSlider.setBounds(
         bounds.removeFromRight(knob_size + knob_padding)
     );
-    auto label_bounds =
-        bounds.withTrimmedLeft(label_padding).withTrimmedRight(label_padding);
-    inputLabel.setBounds(
-        label_bounds.removeFromLeft(label_bounds.getWidth() / 2)
-    );
-    outputLabel.setBounds(label_bounds);
 }

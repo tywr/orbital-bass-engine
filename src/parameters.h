@@ -35,7 +35,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "compressor_mix", "Compressor Mix",
-            juce::NormalisableRange<float>(0, 100, 1, 1.0f), 50
+            juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f, 1.0f), 50
         ),
         std::make_unique<juce::AudioParameterChoice>(
             "amp_type",                                        // Parameter ID
@@ -108,11 +108,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "ir_mix", "Impulse Response Mix",
-            juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f
+            juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f), 50.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "ir_gain_db", "Impulse Response Gain dB",
-            juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f, 1.0f), 0.0f
+            "ir_gain_decibels", "Impulse Response Gain dB",
+            juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), 0.0f
         )
     };
 }

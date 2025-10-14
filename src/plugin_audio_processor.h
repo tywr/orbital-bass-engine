@@ -5,6 +5,7 @@
 #include "dsp/ir.h"
 #include "dsp/overdrives/borealis.h"
 #include "dsp/overdrives/helios.h"
+#include "dsp/overdrives/nebula.h"
 #include "dsp/overdrives/overdrive.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
@@ -34,16 +35,13 @@ class PluginAudioProcessor final
     using AudioProcessor::processBlock;
 
     // Decay factor for level smoothing
-    double decayFactor = 0.85f;
+    double decayFactor = 0.95f;
     juce::Value inputLevel;                // in dB
     juce::Value outputLevel;               // in dB
     juce::Value compressorGainReductionDb; // in dB
     void updateInputLevel(juce::AudioBuffer<float>& buffer);
     void updateOutputLevel(juce::AudioBuffer<float>& buffer);
-    void applyInputGain(juce::AudioBuffer<float>& buffer);
-    void applyOutputGain(juce::AudioBuffer<float>& buffer);
-    void applyAmpMasterGain(juce::AudioBuffer<float>& buffer);
-    double smoothLevel(double newLevel, double currentLevel);
+    void applyGain(std::atomic<float>*, float&, juce::AudioBuffer<float>&);
 
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
@@ -75,18 +73,18 @@ class PluginAudioProcessor final
     Overdrive* current_overdrive = nullptr;
     HeliosOverdrive helios_overdrive;
     BorealisOverdrive borealis_overdrive;
-    HeliosOverdrive nebula_overdrive;
+    NebulaOverdrive nebula_overdrive;
 
     AmpEQ amp_eq;
 
     IRConvolver irConvolver;
 
-    float previousInputGainLinear;
-    float previousOutputGainLinear;
-    float previousAmpMasterGainLinear;
-    std::atomic<float>* inputGainParameter = nullptr;
-    std::atomic<float>* outputGainParameter = nullptr;
-    std::atomic<float>* ampMasterGainParameter = nullptr;
+    float current_input_gain = 1.0f;
+    float current_output_gain = 1.0f;
+    float current_amp_master_gain = 1.0f;
+    std::atomic<float>* input_gain_parameter = nullptr;
+    std::atomic<float>* output_gain_parameter = nullptr;
+    std::atomic<float>* amp_master_gain_parameter = nullptr;
     bool isAmpBypassed = false;
 
     std::vector<Overdrive*> overdrives = {
