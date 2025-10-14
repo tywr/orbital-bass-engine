@@ -41,48 +41,89 @@ inline void paintIconNebula(
 
     // Compute the coordinates first on the unit circle, then scale up
     // to the desired radius
-    const float scale_factor = 0.8f * maxRadius;
+    const float scale_factor = 0.75f * maxRadius;
     const float dot_radius = 0.02f;
     const float grid_size = dot_radius * 2.0f;
-    const float noise_scale_x = 6.0f;
-    const float noise_scale_y = 8.0f;
     const float camera_z_offset = 2.5f;
     const float focal_length = 2.5f;
-    // float focal_length = 1.55f;
+    juce::Random random(123);
 
     PerlinNoise perlin = PerlinNoise();
+    PerlinNoise perlin2 = PerlinNoise();
+    perlin2.reseed(123);
+    PerlinNoise perlin3 = PerlinNoise();
+    perlin3.reseed(124);
+    PerlinNoise perlin4 = PerlinNoise();
+    perlin4.reseed(125);
 
-    for (float x = -1; x < 1; x += grid_size)
+    for (float x = -1.0f; x < 1.0f; x += grid_size)
     {
-        for (float y = -1; y < 1; y += grid_size)
+        for (float y = -1.0f; y < 1.0f; y += grid_size)
         {
             juce::Point<float> currentPoint(x, y);
             float r = std::sqrt(x * x + y * y);
-            float z = std::sqrt(1 - x * x - y * y);
-
-            if (r > 1)
-                continue;
-
-            float noise =
-                (float)perlin.noise(x * noise_scale_x, y * noise_scale_y, 0.0f);
-            if (r >= 0.85f)
+            if (r > 1.0f)
             {
-                noise = std::min(1.0f, noise + 0.4f);
+                continue;
             }
 
-            float max_alpha = 0.75f;
-            float min_alpha = 0.2f;
-            float finalAlpha =
-                std::max(0.0f, (max_alpha - min_alpha) * noise + min_alpha);
-            z += noise * 0.15f;
+            float z = std::sqrt(std::max(0.0f, 1.0f - x * x - y * y));
+            float phi = std::atan2(y, x);
+            float theta = std::acos(z);
+
+            float perlin_noise =
+                (float)perlin.noise(x * 4.0f, y * 4.0f, z * 4.0f);
+            float perlin_noise2 =
+                (float)perlin2.noise(x * 8.0f, y * 8.0f, z * 8.0f);
+            float perlin_noise3 =
+                (float)perlin3.noise(x * 16.0f, y * 16.0f, z * 16.0f);
+            float ridge_noise = 1.0f - std::abs(perlin_noise);
+            float base_noise = 0.5 * perlin_noise + 0.25 * perlin_noise2 +
+                               0.25 * perlin_noise3 +
+                               std::pow(ridge_noise, 2.0f);
+
+            float perlin_noise4 =
+                (float)perlin4.noise(x * 8.0f, y * 8.0f, z * 8.0f);
+            float flare_noise = std::pow(std::abs(perlin_noise4), 2.0f);
+            base_noise = base_noise + 2.0f * flare_noise;
+
+            float random_noise;
+            float alpha;
+            if (r >= 0.85f)
+            {
+                base_noise = std::min(1.0f, base_noise + 0.4f);
+                alpha = 0.8f;
+                random_noise = 1.0f * juce::jlimit(perlin_noise, 1.0f, 0.0f);
+            }
+            else
+            {
+                float max_alpha = 0.5f;
+                float min_alpha = 0.0f;
+                float max_noise = 1.5f;
+                float min_noise = -0.3f;
+                float noise_rescaled =
+                    (base_noise - min_noise) / (max_noise - min_noise);
+                alpha = juce::jlimit(
+                    (max_alpha - min_alpha) * std::pow(noise_rescaled, 2.0f) +
+                        min_alpha,
+                    max_alpha, min_alpha
+                );
+                random_noise = 0.0f;
+            }
+            float rs = 1.0f + base_noise * 0.06f + random_noise * 0.15f;
             // Get the color based on the y position
-            juce::Colour dotColour = c1.interpolatedWith(c2, (y + 1.0f) / 2.0f)
-                                         .withAlpha(finalAlpha);
+            juce::Colour dotColour =
+                c1.interpolatedWith(c2, (y + 1.0f) / 2.0f).withAlpha(alpha);
+
+            // Revert back to cartesian coordinates
+            float xc = rs * std::sin(theta) * std::cos(phi);
+            float yc = rs * std::sin(theta) * std::sin(phi);
+            float zc = std::sqrt(rs * rs - xc * xc - yc * yc);
 
             // Project the 3D points onto 2D using perspective projection
-            float dist_camera_z = camera_z_offset - z;
-            float x_p = (x * focal_length) / dist_camera_z;
-            float y_p = (y * focal_length) / dist_camera_z;
+            float dist_camera_z = camera_z_offset - zc;
+            float x_p = (xc * focal_length) / dist_camera_z;
+            float y_p = (yc * focal_length) / dist_camera_z;
 
             // Now scale up to the actual bounds size
             float x_r = center.x + x_p * scale_factor;
