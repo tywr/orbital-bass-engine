@@ -26,6 +26,7 @@ target_sources(${PROJECT_NAME}
     PRIVATE
         plugin_editor.cpp
         plugin_audio_processor.cpp
+        plugin_audio_process_parameters.cpp
         gui/looks/amp_small_look_and_feel.cpp
         gui/looks/base_look_and_feel.cpp
         gui/looks/compressor_look_and_feel.cpp
