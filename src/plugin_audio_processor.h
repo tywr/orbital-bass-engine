@@ -23,6 +23,7 @@ class PluginAudioProcessor final
     ) override;
     void setParameterValue(juce::String, float);
     void setupParameterHandlers();
+    void prepareParameters();
 
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;

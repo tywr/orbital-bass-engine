@@ -12,9 +12,10 @@ class HeliosOverdrive : public Overdrive
     void prepare(const juce::dsp::ProcessSpec& spec) override;
     void process(juce::AudioBuffer<float>& buffer) override;
     float driveToGain(float) override;
-    void updateAttackFilter(float sampleRate);
-    void updateGruntFilter(float sampleRate);
-    void applyOverdrive(float& sample, float sampleRate, float drive_gain);
+    void updateAttackFilter();
+    void updateGruntFilter();
+    void applyOverdrive(float& sample, float drive_gain);
+    void prepareFilters();
 
   private:
     float current_attack;

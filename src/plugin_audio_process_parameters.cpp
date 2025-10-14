@@ -28,7 +28,7 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     {
         compressor.setMix(static_cast<int>(v) / 100.0f);
     }
-    // Amp type
+
     if (parameterID == "amp_type")
     {
         int index = static_cast<int>(v);
@@ -77,6 +77,34 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
         for (auto& overdrive : overdrives)
         {
             overdrive->setGrunt(v);
+        }
+    }
+    else if (parameterID == "overdrive_x")
+    {
+        for (auto& overdrive : overdrives)
+        {
+            overdrive->setCrossFrequency(v);
+        }
+    }
+    else if (parameterID == "overdrive_x_level")
+    {
+        for (auto& overdrive : overdrives)
+        {
+            overdrive->setHighLevel(v);
+        }
+    }
+    else if (parameterID == "overdrive_mod")
+    {
+        for (auto& overdrive : overdrives)
+        {
+            overdrive->setMod(v);
+        }
+    }
+    else if (parameterID == "overdrive_aggro")
+    {
+        for (auto& overdrive : overdrives)
+        {
+            overdrive->setAggro(v);
         }
     }
     // Amp EQ

@@ -98,7 +98,30 @@ void PluginAudioProcessor::parameterChanged(
     const juce::String& parameterID, float newValue
 )
 {
+    // Big function to map each parameter to its handler
     setParameterValue(parameterID, newValue);
+}
+
+void PluginAudioProcessor::prepareParameters()
+{
+    juce::String filepath =
+        parameters.state.getProperty("ir_filepath").toString();
+    irConvolver.setFilepath(filepath);
+
+    int amp_index =
+        static_cast<int>(parameters.getRawParameterValue("amp_type")->load());
+    current_overdrive = overdrives[amp_index];
+
+    // iterate over all parameters to set their initial values
+    for (auto* p : getParameters())
+    {
+        if (auto* param = dynamic_cast<juce::RangedAudioParameter*>(p))
+        {
+            juce::String paramID = param->getParameterID();
+            float v = param->getValue();
+            setParameterValue(paramID, v);
+        }
+    }
 }
 
 //==============================================================================
@@ -124,133 +147,17 @@ void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     {
         overdrive->prepare(spec);
     }
-
-    juce::String filepath =
-        parameters.state.getProperty("ir_filepath").toString();
-    irConvolver.setFilepath(filepath);
-
-    int amp_index =
-        static_cast<int>(parameters.getRawParameterValue("amp_type")->load());
-    current_overdrive = overdrives[amp_index];
-
-    // iterate over all parameters to set their initial values
-    for (auto* p : getParameters())
-    {
-        if (auto* param = dynamic_cast<juce::RangedAudioParameter*>(p))
-        {
-            juce::String paramID = param->getParameterID();
-            float v = param->getValue();
-            setParameterValue(paramID, v);
-        }
-    }
-    // Set all initial values from compressor
-    // compressor.setBypass(
-    //     parameters.getRawParameterValue("compressor_bypass")->load() >= 0.5f
-    // );
-    // const float values[] = {2.0f, 4.0f, 8.0f, 12.0f, 20.0f};
-    // int index = static_cast<int>(
-    //     parameters.getRawParameterValue("compressor_ratio")->load()
-    // );
-    // compressor.setRatio(values[index]);
-    // compressor.setThreshold(
-    //     juce::Decibels::decibelsToGain(
-    //         parameters.getRawParameterValue("compressor_threshold")->load()
-    //     )
-    // );
-    // compressor.setLevel(
-    //     juce::Decibels::decibelsToGain(
-    //         parameters.getRawParameterValue("compressor_level_db")->load()
-    //     )
-    // );
-    // compressor.setTypeFromIndex(
-    //     static_cast<int>(
-    //         parameters.getRawParameterValue("compressor_type")->load()
-    //     )
-    // );
-    //
-    // int amp_index =
-    //     static_cast<int>(parameters.getRawParameterValue("amp_type")->load());
-    // current_overdrive = overdrives[amp_index];
-    //
-    // // Set all initial values from overdrive
-    // isAmpBypassed =
-    //     parameters.getRawParameterValue("amp_bypass")->load() >= 0.5f;
-    // for (auto& overdrive : overdrives)
-    // {
-    //     overdrive->setBypass(
-    //         parameters.getRawParameterValue("amp_bypass")->load() >= 0.5f
-    //     );
-    //     overdrive->setMix(
-    //         static_cast<int>(
-    //             parameters.getRawParameterValue("overdrive_mix")->load()
-    //         ) /
-    //         100.0f
-    //     );
-    //     overdrive->setLevel(
-    //         juce::Decibels::decibelsToGain(
-    //             parameters.getRawParameterValue("overdrive_level_db")->load()
-    //         )
-    //     );
-    //     overdrive->setDrive(
-    //         parameters.getRawParameterValue("overdrive_drive")->load()
-    //     );
-    //     overdrive->setAttack(
-    //         parameters.getRawParameterValue("overdrive_attack")->load()
-    //     );
-    //     overdrive->setGrunt(
-    //         parameters.getRawParameterValue("overdrive_grunt")->load()
-    //     );
-    // }
-    //
-    // amp_eq.setBypass(
-    //     parameters.getRawParameterValue("amp_bypass")->load() >= 0.5f
-    // );
-    // amp_eq.setBassGain(
-    //     juce::Decibels::decibelsToGain(
-    //         parameters.getRawParameterValue("amp_eq_bass")->load()
-    //     )
-    // );
-    // amp_eq.setLowMidGain(
-    //     juce::Decibels::decibelsToGain(
-    //         parameters.getRawParameterValue("amp_eq_low_mid")->load()
-    //     )
-    // );
-    // amp_eq.setHighMidGain(
-    //     juce::Decibels::decibelsToGain(
-    //         parameters.getRawParameterValue("amp_eq_hi_mid")->load()
-    //     )
-    // );
-    // amp_eq.setTrebleGain(
-    //     juce::Decibels::decibelsToGain(
-    //         parameters.getRawParameterValue("amp_eq_treble")->load()
-    //     )
-    // );
-    //
-    // // Set all initial values for IR convolution
-    // irConvolver.setBypass(
-    //     parameters.getRawParameterValue("ir_bypass")->load() >= 0.5f
-    // );
-    // irConvolver.setMix(parameters.getRawParameterValue("ir_mix")->load());
-    // irConvolver.setFilepath(
-    //     parameters.state.getProperty("ir_filepath").toString()
-    // );
-    // irConvolver.loadIR();
+    prepareParameters();
 }
 
 void PluginAudioProcessor::releaseResources()
 {
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
 }
 
 bool PluginAudioProcessor::isBusesLayoutSupported(
     const BusesLayout& layouts
 ) const
 {
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono() &&
         layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;

@@ -17,78 +17,84 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
     current_attack = attack;
     current_grunt = grunt;
 
-    era_mid_scoop.prepare(oversampled_spec);
+    diode_plus = SiliconDiode(processSpec.sampleRate, true);
+    diode_minus = SiliconDiode(processSpec.sampleRate, false);
+
+    prepareFilters();
+
+    attack_shelf.prepare(processSpec);
+    updateAttackFilter();
+
+    grunt_shelf.prepare(processSpec);
+    updateGruntFilter();
+}
+
+void HeliosOverdrive::prepareFilters()
+{
+
+    era_mid_scoop.prepare(processSpec);
     auto era_mid_scoop_coefficients =
         juce::dsp::IIR::Coefficients<float>::makePeakFilter(
-            oversampled_spec.sampleRate, era_mid_scoop_cutoff,
-            era_mid_scoop_gain, era_mid_scoop_q
+            processSpec.sampleRate, era_mid_scoop_cutoff, era_mid_scoop_gain,
+            era_mid_scoop_q
         );
     *era_mid_scoop.coefficients = *era_mid_scoop_coefficients;
 
-    attack_shelf.prepare(oversampled_spec);
-    updateAttackFilter(oversampled_spec.sampleRate);
-
-    grunt_shelf.prepare(oversampled_spec);
-    updateGruntFilter(oversampled_spec.sampleRate);
-
-    dc_hpf.prepare(oversampled_spec);
+    dc_hpf.prepare(processSpec);
     auto dc_hpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeHighPass(
-            oversampled_spec.sampleRate, dc_hpf_cutoff
+            processSpec.sampleRate, dc_hpf_cutoff
         );
     *dc_hpf.coefficients = *dc_hpf_coefficients;
 
-    pre_lpf.prepare(oversampled_spec);
+    pre_lpf.prepare(processSpec);
     auto pre_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            oversampled_spec.sampleRate, pre_lpf_cutoff, pre_lpf_q
+            processSpec.sampleRate, pre_lpf_cutoff, pre_lpf_q
         );
     *pre_lpf.coefficients = *pre_lpf_coefficients;
 
-    lowmids_lpf.prepare(oversampled_spec);
+    lowmids_lpf.prepare(processSpec);
     auto lowmids_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            oversampled_spec.sampleRate, lowmids_lpf_cutoff
+            processSpec.sampleRate, lowmids_lpf_cutoff
         );
     *lowmids_lpf.coefficients = *lowmids_lpf_coefficients;
 
-    mid_hpf.prepare(oversampled_spec);
+    mid_hpf.prepare(processSpec);
     auto mid_hpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeHighPass(
-            oversampled_spec.sampleRate, mid_hpf_cutoff
+            processSpec.sampleRate, mid_hpf_cutoff
         );
     *mid_hpf.coefficients = *mid_hpf_coefficients;
 
-    pre_hpf.prepare(oversampled_spec);
+    pre_hpf.prepare(processSpec);
     auto pre_hpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeHighPass(
-            oversampled_spec.sampleRate, pre_hpf_cutoff
+            processSpec.sampleRate, pre_hpf_cutoff
         );
     *pre_hpf.coefficients = *pre_hpf_coefficients;
 
-    post_lpf.prepare(oversampled_spec);
+    post_lpf.prepare(processSpec);
     auto post_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            oversampled_spec.sampleRate, post_lpf_cutoff
+            processSpec.sampleRate, post_lpf_cutoff
         );
     *post_lpf.coefficients = *post_lpf_coefficients;
 
-    post_lpf2.prepare(oversampled_spec);
+    post_lpf2.prepare(processSpec);
     auto post_lpf2_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            oversampled_spec.sampleRate, post_lpf2_cutoff
+            processSpec.sampleRate, post_lpf2_cutoff
         );
     *post_lpf2.coefficients = *post_lpf2_coefficients;
 
-    post_lpf3.prepare(oversampled_spec);
+    post_lpf3.prepare(processSpec);
     auto post_lpf3_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            oversampled_spec.sampleRate, post_lpf3_cutoff
+            processSpec.sampleRate, post_lpf3_cutoff
         );
     *post_lpf3.coefficients = *post_lpf3_coefficients;
-
-    diode_plus = SiliconDiode(oversampled_spec.sampleRate, true);
-    diode_minus = SiliconDiode(oversampled_spec.sampleRate, false);
 }
 
 float HeliosOverdrive::driveToGain(float d)
@@ -101,7 +107,7 @@ float HeliosOverdrive::driveToGain(float d)
     );
 }
 
-void HeliosOverdrive::updateAttackFilter(float sampleRate)
+void HeliosOverdrive::updateAttackFilter()
 {
     float min_gain_db = -12.0f;
     float max_gain_db = 12.0f;
@@ -110,12 +116,13 @@ void HeliosOverdrive::updateAttackFilter(float sampleRate)
     );
     auto attack_shelf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeHighShelf(
-            sampleRate, attack_shelf_cutoff, attack_shelf_q, shelf_gain
+            processSpec.sampleRate, attack_shelf_cutoff, attack_shelf_q,
+            shelf_gain
         );
     *attack_shelf.coefficients = *attack_shelf_coefficients;
 }
 
-void HeliosOverdrive::updateGruntFilter(float sampleRate)
+void HeliosOverdrive::updateGruntFilter()
 {
     float min_gain_db = -6.0f;
     float max_gain_db = 6.0f;
@@ -124,7 +131,8 @@ void HeliosOverdrive::updateGruntFilter(float sampleRate)
     );
     auto grunt_shelf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowShelf(
-            sampleRate, grunt_shelf_cutoff, grunt_shelf_q, shelf_gain
+            processSpec.sampleRate, grunt_shelf_cutoff, grunt_shelf_q,
+            shelf_gain
         );
     *grunt_shelf.coefficients = *grunt_shelf_coefficients;
 }
@@ -147,12 +155,12 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
     if (!juce::approximatelyEqual(attack, current_attack))
     {
         current_attack = current_attack + (attack - current_attack) * 0.1f;
-        updateAttackFilter(sampleRate);
+        updateAttackFilter();
     }
     if (!juce::approximatelyEqual(grunt, current_grunt))
     {
         current_grunt = current_grunt + (grunt - current_grunt) * 0.1f;
-        updateAttackFilter(sampleRate);
+        updateGruntFilter();
     }
 
     juce::dsp::AudioBlock<float> block(buffer);
@@ -162,7 +170,7 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
     for (size_t i = 0; i < oversampledBlock.getNumSamples(); ++i)
     {
         float sample = channelData[i];
-        applyOverdrive(sample, sampleRate, driveToGain(current_drive));
+        applyOverdrive(sample, driveToGain(current_drive));
         channelData[i] = sample;
     }
     oversampler2x.processSamplesDown(block);
@@ -173,12 +181,8 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
     buffer.addFrom(0, 0, dry_buffer, 0, 0, buffer.getNumSamples());
 }
 
-void HeliosOverdrive::applyOverdrive(
-    float& sample, float sampleRate, float gain
-)
+void HeliosOverdrive::applyOverdrive(float& sample, float gain)
 {
-    juce::ignoreUnused(sampleRate);
-
     float input_padding = juce::Decibels::decibelsToGain(12.0f);
     float filtered =
         pre_lpf.processSample(pre_hpf.processSample(input_padding * sample));
