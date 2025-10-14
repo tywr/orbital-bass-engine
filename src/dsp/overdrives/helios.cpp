@@ -28,6 +28,9 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
     attack_shelf.prepare(oversampled_spec);
     updateAttackFilter(oversampled_spec.sampleRate);
 
+    grunt_shelf.prepare(oversampled_spec);
+    updateGruntFilter(oversampled_spec.sampleRate);
+
     dc_hpf.prepare(oversampled_spec);
     auto dc_hpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeHighPass(
@@ -66,7 +69,7 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
     post_lpf.prepare(oversampled_spec);
     auto post_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            oversampled_spec.sampleRate, post_lpf_cutoff, post_lpf_q
+            oversampled_spec.sampleRate, post_lpf_cutoff
         );
     *post_lpf.coefficients = *post_lpf_coefficients;
 
@@ -112,6 +115,20 @@ void HeliosOverdrive::updateAttackFilter(float sampleRate)
     *attack_shelf.coefficients = *attack_shelf_coefficients;
 }
 
+void HeliosOverdrive::updateGruntFilter(float sampleRate)
+{
+    float min_gain_db = -6.0f;
+    float max_gain_db = 6.0f;
+    float shelf_gain = juce::Decibels::decibelsToGain(
+        min_gain_db + (max_gain_db - min_gain_db) * grunt * 0.1f
+    );
+    auto grunt_shelf_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeLowShelf(
+            sampleRate, grunt_shelf_cutoff, grunt_shelf_q, shelf_gain
+        );
+    *grunt_shelf.coefficients = *grunt_shelf_coefficients;
+}
+
 void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
 {
     if (bypass)
@@ -130,6 +147,11 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
     if (!juce::approximatelyEqual(attack, current_attack))
     {
         current_attack = current_attack + (attack - current_attack) * 0.1f;
+        updateAttackFilter(sampleRate);
+    }
+    if (!juce::approximatelyEqual(grunt, current_grunt))
+    {
+        current_grunt = current_grunt + (grunt - current_grunt) * 0.1f;
         updateAttackFilter(sampleRate);
     }
 
@@ -161,7 +183,9 @@ void HeliosOverdrive::applyOverdrive(
     float filtered =
         pre_lpf.processSample(pre_hpf.processSample(input_padding * sample));
     // Only drive between low-mids and highs
-    float drived = mid_hpf.processSample(gain * filtered);
+    float mids = mid_hpf.processSample(filtered);
+    float grunted = grunt_shelf.processSample(mids);
+    float drived = mid_hpf.processSample(gain * grunted);
     // Filter low mids on "clean" signal
     float lowmids = lowmids_lpf.processSample(filtered);
     // Combine both driven and clean signal before overdrive

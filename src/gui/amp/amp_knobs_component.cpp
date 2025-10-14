@@ -20,13 +20,15 @@ AmpKnobsComponent::~AmpKnobsComponent()
 
 void AmpKnobsComponent::paint(juce::Graphics& g)
 {
+    juce::ignoreUnused(g);
 }
 
 void AmpKnobsComponent::resized()
 {
     auto bounds = getLocalBounds();
     auto label_bounds = bounds.removeFromTop(AmpDimensions::AMP_LABEL_HEIGHT);
-    const int knob_box_size = bounds.getWidth() / current_knobs.size();
+    const int knob_box_size =
+        bounds.getWidth() / static_cast<int>(current_knobs.size());
 
     for (auto knob : current_knobs)
     {

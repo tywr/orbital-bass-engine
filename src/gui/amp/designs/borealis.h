@@ -72,7 +72,6 @@ inline void paintDesignBorealis(
 {
     juce::Graphics::ScopedSaveState state(g);
 
-    auto center = bounds.getCentre();
     float maxRadius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * 0.45f;
 
     juce::Path boxPath;

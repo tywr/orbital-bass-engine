@@ -13,6 +13,7 @@ class HeliosOverdrive : public Overdrive
     void process(juce::AudioBuffer<float>& buffer) override;
     float driveToGain(float) override;
     void updateAttackFilter(float sampleRate);
+    void updateGruntFilter(float sampleRate);
     void applyOverdrive(float& sample, float sampleRate, float drive_gain);
 
   private:
@@ -38,6 +39,10 @@ class HeliosOverdrive : public Overdrive
     float era_mid_scoop_gain = juce::Decibels::decibelsToGain(-10.0f);
     float era_mid_scoop_q = 0.6f;
 
+    juce::dsp::IIR::Filter<float> grunt_shelf;
+    float grunt_shelf_cutoff = 1000.0f;
+    float grunt_shelf_q = 0.7f;
+
     juce::dsp::IIR::Filter<float> attack_shelf;
     float attack_shelf_cutoff = 1540.0f;
     float attack_shelf_q = 0.7f;
@@ -47,7 +52,6 @@ class HeliosOverdrive : public Overdrive
 
     juce::dsp::IIR::Filter<float> post_lpf;
     float post_lpf_cutoff = 3300.0f;
-    float post_lpf_q = 0.5f;
 
     juce::dsp::IIR::Filter<float> post_lpf2;
     float post_lpf2_cutoff = 3300.0f;

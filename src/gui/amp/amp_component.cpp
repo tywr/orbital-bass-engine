@@ -41,7 +41,7 @@ AmpComponent::~AmpComponent()
 
 void AmpComponent::initType()
 {
-    int current_index = static_cast<int>(type_slider.getValue());
+    size_t current_index = static_cast<size_t>(type_slider.getValue());
     auto current_type = types[current_index];
     for (auto type : types)
     {
@@ -82,6 +82,7 @@ void AmpComponent::switchType(AmpType new_type)
 
 void AmpComponent::paintTypeButtons(juce::Graphics& g)
 {
+    juce::ignoreUnused(g);
 }
 
 void AmpComponent::paintDesign(juce::Graphics& g, juce::Rectangle<float> bounds)
@@ -206,7 +207,8 @@ void AmpComponent::resized()
     // Type buttons at the top
     auto type_bounds =
         bounds.removeFromTop(AmpDimensions::AMP_TYPE_BUTTONS_HEIGHT);
-    int const type_size = type_bounds.getWidth() / types.size();
+    int const type_size =
+        type_bounds.getWidth() / static_cast<int>(types.size());
     for (auto type : types)
     {
         type.button->setBounds(

@@ -104,7 +104,6 @@ class AmpKnobsComponent : public juce::Component
     std::vector<
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>>
         slider_attachments;
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AmpKnobsComponent);
 
     std::vector<AmpKnob> knobs = {
         {&drive_slider,           &drive_label,           "overdrive_drive",    "drive"  },
@@ -136,4 +135,6 @@ class AmpKnobsComponent : public juce::Component
         {&treble_slider,  &treble_label,  "amp_eq_treble",      "treble" },
         {&master_slider,  &master_label,  "amp_master",         "master" },
     };
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AmpKnobsComponent)
 };

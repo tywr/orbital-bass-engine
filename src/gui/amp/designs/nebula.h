@@ -41,7 +41,7 @@ inline void paintIconNebula(
 
     // Compute the coordinates first on the unit circle, then scale up
     // to the desired radius
-    const float scale_factor = 0.75f * maxRadius;
+    const float scale_factor = 0.73f * maxRadius;
     const float dot_radius = 0.02f;
     const float grid_size = dot_radius * 2.0f;
     const float camera_z_offset = 2.5f;
@@ -78,8 +78,8 @@ inline void paintIconNebula(
             float perlin_noise3 =
                 (float)perlin3.noise(x * 16.0f, y * 16.0f, z * 16.0f);
             float ridge_noise = 1.0f - std::abs(perlin_noise);
-            float base_noise = 0.5 * perlin_noise + 0.25 * perlin_noise2 +
-                               0.25 * perlin_noise3 +
+            float base_noise = 0.5f * perlin_noise + 0.25f * perlin_noise2 +
+                               0.25f * perlin_noise3 +
                                std::pow(ridge_noise, 2.0f);
 
             float perlin_noise4 =
@@ -87,13 +87,13 @@ inline void paintIconNebula(
             float flare_noise = std::pow(std::abs(perlin_noise4), 2.0f);
             base_noise = base_noise + 2.0f * flare_noise;
 
-            float random_noise;
-            float alpha;
-            if (r >= 0.85f)
+            float random_noise = 0.0f;
+            float alpha = 0.0f;
+            if (r >= 0.9f)
             {
                 base_noise = std::min(1.0f, base_noise + 0.4f);
                 alpha = 0.8f;
-                random_noise = 1.0f * juce::jlimit(perlin_noise, 1.0f, 0.0f);
+                random_noise = 1.0f * juce::jlimit(0.0f, 1.0f, perlin_noise);
             }
             else
             {
@@ -104,11 +104,16 @@ inline void paintIconNebula(
                 float noise_rescaled =
                     (base_noise - min_noise) / (max_noise - min_noise);
                 alpha = juce::jlimit(
+                    min_alpha, max_alpha,
                     (max_alpha - min_alpha) * std::pow(noise_rescaled, 2.0f) +
-                        min_alpha,
-                    max_alpha, min_alpha
+                        min_alpha
                 );
-                random_noise = 0.0f;
+                float random_value = random.nextFloat();
+                if (random_value < 0.05f)
+                {
+                    alpha = 0.8f;
+                    random_noise = 10.0f * random_value;
+                }
             }
             float rs = 1.0f + base_noise * 0.06f + random_noise * 0.15f;
             // Get the color based on the y position
