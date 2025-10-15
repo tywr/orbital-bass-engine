@@ -14,8 +14,8 @@ class SiliconDiode
     // Fixed variables
     float c = 1e-8f;
     float r = 2200.0f;
-    float i_s = 10e-9f;
-    float v_t = 1.7f * 0.02585f;
+    float i_s = 200e-9f;
+    float v_t = 0.02585f;
 
     // State variables
     float prev_v;

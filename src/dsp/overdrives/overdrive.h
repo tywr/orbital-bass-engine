@@ -8,38 +8,45 @@ class Overdrive
     {
         juce::ignoreUnused(spec);
     }
-    virtual float driveToGain(float d)
-    {
-        float t = d / 10.0f;
-        return juce::Decibels::decibelsToGain(t * 24.0f);
-    }
     virtual void process(juce::AudioBuffer<float>& buffer)
     {
         juce::ignoreUnused(buffer);
     }
     void virtual setAttack(float newAttack)
     {
-        attack = newAttack;
+        float v=juce::jlimit(0.0f, 10.0f, newAttack);
+        attack.setTargetValue(v);
+        raw_attack = v;
     }
     void virtual setGrunt(float newGrunt)
     {
-        grunt = newGrunt;
+        float v=juce::jlimit(0.0f, 10.0f, newGrunt);
+        grunt.setTargetValue(v);
+        raw_grunt = v;
     }
     void virtual setCrossFrequency(float new_cross_frequency)
     {
-        cross_frequency = new_cross_frequency;
+        float v=juce::jlimit(250.0f, 1000.0f, new_cross_frequency);
+        cross_frequency.setTargetValue(v);
+        raw_cross_frequency = v;
     }
     void virtual setHighLevel(float new_high_level)
     {
-        high_level = new_high_level;
+        float v=juce::jlimit(0.0f, 10.0f, new_high_level);
+        high_level.setTargetValue(v);
+        raw_high_level = v;
     }
     void virtual setMod(float new_mod)
     {
-        mod = new_mod;
+        float v=juce::jlimit(0.0f, 10.0f, new_mod);
+        mod.setTargetValue(v);
+        raw_mod = v;
     }
     void virtual setAggro(float new_aggro)
     {
-        aggro = new_aggro;
+        float v=juce::jlimit(0.0f, 10.0f, new_aggro);
+        aggro.setTargetValue(v);
+        raw_aggro = v;
     }
 
     void applyGain(
@@ -64,34 +71,32 @@ class Overdrive
     }
     void setLevel(float newLevel)
     {
-        level = newLevel;
+        float v=juce::jlimit(0.0f, 10.0f, newLevel);
+        level.setTargetValue(v);
+        raw_level = v;
     }
     void setMix(float newMix)
     {
-        mix = newMix;
+        float v=juce::jlimit(0.0f, 1.0f, newMix);
+        mix.setTargetValue(v);
+        raw_mix = v;
     }
     void setDrive(float newDrive)
     {
-        drive = newDrive;
+        float v=juce::jlimit(0.0f, 10.0f, newDrive);
+        drive.setTargetValue(v);
+        raw_drive = v;
     }
 
   protected:
     juce::dsp::ProcessSpec processSpec{-1, 0, 0};
+    float smoothing_time = 0.05f;
 
     // gui parameters
     int type;
     bool bypass;
-    float level;
-    float drive;
-    float mix;
-    float attack;
-    float grunt;
-    float cross_frequency;
-    float high_level;
-    float mod;
-    float aggro;
-
-    // state parameters
-    float previous_drive_gain = 1.0f;
-    float previous_level = 1.0f;
+    float raw_level, raw_drive, raw_mix, raw_attack, raw_grunt,
+        raw_cross_frequency, raw_high_level, raw_mod, raw_aggro;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> level, drive,
+        mix, attack, grunt, cross_frequency, high_level, mod, aggro;
 };

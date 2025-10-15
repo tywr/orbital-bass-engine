@@ -11,16 +11,14 @@ class BorealisOverdrive : public Overdrive
   public:
     void prepare(const juce::dsp::ProcessSpec& spec) override;
     void process(juce::AudioBuffer<float>& buffer) override;
-    void setCoefficients();
-    void updateAttackFilter();
     float charToGain(float);
-    float driveToGain(float) override;
+    float driveToGain(float);
     float driveToFrequency(float);
-    void applyOverdrive(float& sample, float sampleRate);
+    void applyOverdrive(float& sample);
+    void resetSmoothedValues();
+    void prepareFilters();
 
   private:
-    float current_attack;
-
     juce::dsp::IIR::Filter<float> ff1_hpf;
     float ff1_hpf_cutoff = 50.0f;
 

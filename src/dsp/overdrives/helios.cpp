@@ -4,6 +4,20 @@
 
 #include <juce_dsp/juce_dsp.h>
 
+void HeliosOverdrive::resetSmoothedValues()
+{
+    level.reset(processSpec.sampleRate, smoothing_time);
+    level.setCurrentAndTargetValue(raw_level);
+    drive.reset(processSpec.sampleRate, smoothing_time);
+    drive.setCurrentAndTargetValue(raw_drive);
+    mix.reset(processSpec.sampleRate, smoothing_time);
+    mix.setCurrentAndTargetValue(raw_mix);
+    attack.reset(processSpec.sampleRate, smoothing_time);
+    attack.setCurrentAndTargetValue(raw_attack);
+    grunt.reset(processSpec.sampleRate, smoothing_time);
+    grunt.setCurrentAndTargetValue(raw_grunt);
+}
+
 void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
 {
     juce::dsp::ProcessSpec oversampled_spec = spec;
@@ -13,9 +27,7 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
     oversampler2x.reset();
     oversampler2x.initProcessing(static_cast<size_t>(spec.maximumBlockSize));
 
-    current_drive = drive;
-    current_attack = attack;
-    current_grunt = grunt;
+    resetSmoothedValues();
 
     diode_plus = SiliconDiode(processSpec.sampleRate, true);
     diode_minus = SiliconDiode(processSpec.sampleRate, false);
@@ -25,7 +37,7 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
     attack_shelf.prepare(processSpec);
     updateAttackFilter();
 
-    grunt_shelf.prepare(processSpec);
+    grunt_filter.prepare(processSpec);
     updateGruntFilter();
 }
 
@@ -102,17 +114,19 @@ float HeliosOverdrive::driveToGain(float d)
     float t = d / 10.0f;
     float min_gain_db = 0.0f;
     float max_gain_db = 42.0f;
-    return juce::Decibels::decibelsToGain(
+    float gain = juce::Decibels::decibelsToGain(
         min_gain_db + t * (max_gain_db - min_gain_db)
     );
+    return gain;
 }
 
 void HeliosOverdrive::updateAttackFilter()
 {
+    float current_attack = attack.getNextValue();
     float min_gain_db = -12.0f;
     float max_gain_db = 12.0f;
     float shelf_gain = juce::Decibels::decibelsToGain(
-        min_gain_db + (max_gain_db - min_gain_db) * attack * 0.1f
+        min_gain_db + (max_gain_db - min_gain_db) * current_attack * 0.1f
     );
     auto attack_shelf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeHighShelf(
@@ -124,17 +138,17 @@ void HeliosOverdrive::updateAttackFilter()
 
 void HeliosOverdrive::updateGruntFilter()
 {
+    float current_grunt = grunt.getNextValue();
     float min_gain_db = -6.0f;
     float max_gain_db = 6.0f;
-    float shelf_gain = juce::Decibels::decibelsToGain(
-        min_gain_db + (max_gain_db - min_gain_db) * grunt * 0.1f
+    float gain = juce::Decibels::decibelsToGain(
+        min_gain_db + (max_gain_db - min_gain_db) * current_grunt * 0.1f
     );
-    auto grunt_shelf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeLowShelf(
-            processSpec.sampleRate, grunt_shelf_cutoff, grunt_shelf_q,
-            shelf_gain
+    auto grunt_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+            processSpec.sampleRate, grunt_frequency, grunt_filter_q, gain
         );
-    *grunt_shelf.coefficients = *grunt_shelf_coefficients;
+    *grunt_filter.coefficients = *grunt_coefficients;
 }
 
 void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
@@ -146,39 +160,28 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
     juce::AudioBuffer<float> dry_buffer;
     dry_buffer.makeCopyOf(buffer);
 
-    if (!juce::approximatelyEqual(drive, current_drive))
-    {
-        current_drive = current_drive + (drive - current_drive) * 0.1f;
-    }
-
-    float sampleRate = static_cast<float>(processSpec.sampleRate);
-    if (!juce::approximatelyEqual(attack, current_attack))
-    {
-        current_attack = current_attack + (attack - current_attack) * 0.1f;
-        updateAttackFilter();
-    }
-    if (!juce::approximatelyEqual(grunt, current_grunt))
-    {
-        current_grunt = current_grunt + (grunt - current_grunt) * 0.1f;
-        updateGruntFilter();
-    }
-
     juce::dsp::AudioBlock<float> block(buffer);
     auto oversampledBlock = oversampler2x.processSamplesUp(block);
 
     auto* channelData = oversampledBlock.getChannelPointer(0);
     for (size_t i = 0; i < oversampledBlock.getNumSamples(); ++i)
     {
-        float sample = channelData[i];
-        applyOverdrive(sample, driveToGain(current_drive));
-        channelData[i] = sample;
+        float current_drive = drive.getNextValue();
+        if (attack.isSmoothing())
+            updateAttackFilter();
+        if (grunt.isSmoothing())
+            updateGruntFilter();
+        float dry = channelData[i];
+        float wet = channelData[i];
+        applyOverdrive(wet, driveToGain(current_drive));
+
+        float current_level = level.getNextValue();
+        float current_mix = mix.getNextValue();
+
+        wet *= current_level;
+        channelData[i] = current_mix * wet + (1.0f - current_mix) * dry;
     }
     oversampler2x.processSamplesDown(block);
-
-    applyGain(buffer, previous_level, level);
-    buffer.applyGain(mix);
-    dry_buffer.applyGain(1.0f - mix);
-    buffer.addFrom(0, 0, dry_buffer, 0, 0, buffer.getNumSamples());
 }
 
 void HeliosOverdrive::applyOverdrive(float& sample, float gain)
@@ -187,9 +190,9 @@ void HeliosOverdrive::applyOverdrive(float& sample, float gain)
     float filtered =
         pre_lpf.processSample(pre_hpf.processSample(input_padding * sample));
     // Only drive between low-mids and highs
-    float mids = mid_hpf.processSample(filtered);
-    float grunted = grunt_shelf.processSample(mids);
-    float drived = mid_hpf.processSample(gain * grunted);
+    float grunted = grunt_filter.processSample(filtered);
+    float mids = mid_hpf.processSample(grunted);
+    float drived = gain * mids;
     // Filter low mids on "clean" signal
     float lowmids = lowmids_lpf.processSample(filtered);
     // Combine both driven and clean signal before overdrive
@@ -203,6 +206,7 @@ void HeliosOverdrive::applyOverdrive(float& sample, float gain)
     // Pass signal through CMOS inverter on linear region
     float distorted =
         dc_hpf.processSample(cmos.processSample(4.5f + hard_clipped));
+    // DBG("After Distortion" << distorted);
     float shelved = attack_shelf.processSample(distorted);
     float era = era_mid_scoop.processSample(shelved);
     // Apply three consecutive LPF to smooth out top-end

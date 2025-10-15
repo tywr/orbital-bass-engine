@@ -57,6 +57,9 @@ void AmpKnobsComponent::switchColour(juce::Colour colour1, juce::Colour colour2)
 
 void AmpKnobsComponent::switchType(AmpType new_type)
 {
+    // clear tooltip before switching
+    slider_being_dragged = false;
+    drag_tooltip.setVisible(false);
     if (new_type.id == "helios")
     {
         current_knobs[1] = {

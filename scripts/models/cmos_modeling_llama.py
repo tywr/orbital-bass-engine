@@ -8,6 +8,7 @@ import onnxruntime as rt
 import skl2onnx
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import FloatTensorType
+from scipy.optimize import curve_fit
 
 
 class ModelLlama:
@@ -116,23 +117,41 @@ class ModelLlama:
         return vout
 
 
-# --- Demonstration of the function ---
+def poly_exp(x, *coefficients):
+    P = 0
+    for i, a in enumerate(coefficients):
+        P += a * x**i
+    return np.exp(P)
+
+
 if __name__ == "__main__":
     model = ModelLlama(V_dd=9.0, delta=0.06)
-    input = np.linspace(3.6, 10, 5000)
-    output = np.array([model.solve(v) for v in input])
+    x = np.linspace(3.8, 9, 5000)
+    y = np.array([model.solve(v) for v in x])
 
-    for degree in range(1, 4):
-        coeffs = np.polyfit(input, output, degree)
-        polynomial = np.poly1d(coeffs)
-        x_fit = np.linspace(input.min(), input.max(), 500)
-        y_fit = polynomial(x_fit)
-        y_pred = polynomial(input)
-        error = np.mean((y_pred - output) ** 2)
-        print(f"Degree: {degree}, MSE: {error}")
+
+    # amp_in = np.linspace(0, 5, 5000)
+    # amp_out = np.array(
+    #     [model.solve(max(3.8, 4.5 - a)) - model.solve(4.5 + a) for a in amp_in]
+    # )
+
+    p0 = [0, 0, 0, 0, 0, 0, 0]
+    params, _ = curve_fit(poly_exp, x, y, p0=p0, maxfev=10000)
+    print(params)
+    x_fit = np.linspace(3, 20, 10000)
+    y_fit = poly_exp(x_fit, *params)
+
+    for x, y in zip(x_fit, y_fit):
+        if y < 1e-7:
+            print(f"x: {x}, y: {y}")
+            break
 
     plt.figure(figsize=(10, 6))
-    plt.plot(input, y_pred - output, color="green", label="Error")
-    # plt.plot(input, output, color="blue", alpha=0.5)
+    # plt.plot(x, y-y_fit, color="green", alpha=0.7)
+    # plt.plot(x, (y-y_fit) / y, color="orange", alpha=0.7)
+    plt.plot(x, y, color="blue", alpha=0.5)
+    plt.plot(x_fit, y_fit, color="red", alpha=0.5)
     # plt.plot(x_fit, y_fit, color="red", alpha=0.5)
     plt.show()
+
+

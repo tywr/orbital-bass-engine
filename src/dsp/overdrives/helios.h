@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../circuits/cmos.h"
+#include "../circuits/cmos_poly.h"
 #include "../circuits/silicon_diode.h"
 #include "overdrive.h"
 #include <juce_audio_basics/juce_audio_basics.h>
@@ -11,17 +12,14 @@ class HeliosOverdrive : public Overdrive
   public:
     void prepare(const juce::dsp::ProcessSpec& spec) override;
     void process(juce::AudioBuffer<float>& buffer) override;
-    float driveToGain(float) override;
+    float driveToGain(float);
     void updateAttackFilter();
     void updateGruntFilter();
     void applyOverdrive(float& sample, float drive_gain);
+    void resetSmoothedValues();
     void prepareFilters();
 
   private:
-    float current_attack;
-    float current_grunt;
-    float current_drive;
-
     juce::dsp::IIR::Filter<float> pre_hpf;
     float pre_hpf_cutoff = 50.0f;
 
@@ -40,9 +38,9 @@ class HeliosOverdrive : public Overdrive
     float era_mid_scoop_gain = juce::Decibels::decibelsToGain(-10.0f);
     float era_mid_scoop_q = 0.6f;
 
-    juce::dsp::IIR::Filter<float> grunt_shelf;
-    float grunt_shelf_cutoff = 1000.0f;
-    float grunt_shelf_q = 0.7f;
+    juce::dsp::IIR::Filter<float> grunt_filter;
+    float grunt_frequency = 700.0f;
+    float grunt_filter_q = 0.7f;
 
     juce::dsp::IIR::Filter<float> attack_shelf;
     float attack_shelf_cutoff = 1540.0f;
@@ -63,6 +61,7 @@ class HeliosOverdrive : public Overdrive
     float padding = juce::Decibels::decibelsToGain(0.0f);
 
     CMOS cmos = CMOS();
+    CMOSPoly cmos_poly = CMOSPoly();
     SiliconDiode diode_plus = SiliconDiode(44100.0f, true);
     SiliconDiode diode_minus = SiliconDiode(44100.0f, false);
 

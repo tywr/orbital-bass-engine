@@ -5,12 +5,16 @@
 class CMOS
 {
   public:
-    CMOS() {}
+    CMOS()
+    {
+    }
     float processSample(float);
     std::tuple<float, float> pmos(float, float);
     std::tuple<float, float> nmos(float, float);
 
   private:
+    float v0 = 0.34486360573756947f;
+
     float n_vtc1 = 1.208306917691355f;
     float n_vtc2 = 0.3139084341943607f;
     float n_alpha1 = 0.020662094888127674f;
@@ -77,6 +81,11 @@ inline std::tuple<float, float> CMOS::pmos(float vgs, float vds)
 
 inline float CMOS::processSample(float vin)
 {
+    if (vin >= 8.5f)
+    {
+        prev_v = 0.0f;
+        return 0.0f;
+    }
     float vout = prev_v;
 
     // Iterate a fixed number of times for stability and real - time safety

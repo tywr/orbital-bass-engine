@@ -38,10 +38,10 @@ class DiodeClipper:
 
     # Diode parameters
     c = 1e-8
-    r = 2_200
+    re = 2_200
     # i_s = 200e-9
-    i_s = 10e-9
-    v_t = 1.7 * 0.02585
+    i_s = 200e-9
+    v_t = 0.02585
     # v_t = 0.02585
 
     # Discretization coefficients
@@ -54,12 +54,12 @@ class DiodeClipper:
         self.b1 = -2 / sample_rate
         self.a1 = -1
 
-        crb_1 = self.c * self.r + self.b0 + 1
-        self.k1 = 1 / (self.c * self.r)
-        self.k2 = (self.c * self.r) / crb_1
-        self.k3 = (self.i_s * self.r) / crb_1
+        crb_1 = self.c * self.re + self.b0 + 1
+        self.k1 = 1 / (self.c * self.re)
+        self.k2 = (self.c * self.re) / crb_1
+        self.k3 = (self.i_s * self.re) / crb_1
         self.k4 = 1 / self.v_t
-        self.k5 = np.log((self.i_s * self.r) / crb_1 * self.v_t)
+        self.k5 = np.log((self.i_s * self.re) / crb_1 * self.v_t)
         self.k6 = self.b1 - self.a1 * self.b0
 
         self.prev_v = 1
@@ -106,17 +106,14 @@ if __name__ == "__main__":
     t = np.linspace(0, duration, n_samples, endpoint=False)
     y = 1 * np.sin(2 * np.pi * frequency * t)
 
-    diod_clipper = DiodeClipper(sample_rate)
-    y_clipped = diod_clipper.process(y)
+    up = DiodeClipper(sample_rate, side="up")
+    down = DiodeClipper(sample_rate, side="down")
+    soft_clipped = 0.5 * (up.process(y) + y)
+    hard_clipped = 0.5 * (down.process(y) + y)
 
     plt.plot(
         t,
-        y,
-        label="input",
-    )
-    plt.plot(
-        t,
-        y_clipped,
+        hard_clipped,
         label="output",
     )
     plt.legend()

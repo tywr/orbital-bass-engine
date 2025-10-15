@@ -2,7 +2,6 @@
 
 void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
 {
-    DBG("Parameter Changed: " + parameterID + " to " + juce::String(v));
     if (parameterID == "compressor_bypass")
     {
         compressor.setBypass(v >= 0.5f);
@@ -27,11 +26,10 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     }
     else if (parameterID == "compressor_mix")
     {
-        float bv = juce::jlimit(0.0f, 100.0f, v);
-        compressor.setMix(static_cast<int>(v) / 100.0f);
+        float bv = juce::jlimit(0.0f, 1.0f, v);
+        compressor.setMix(static_cast<int>(v));
     }
-
-    if (parameterID == "amp_type")
+    else if (parameterID == "amp_type")
     {
         int index = static_cast<int>(v);
         current_overdrive = overdrives[index];
@@ -48,10 +46,10 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     }
     else if (parameterID == "overdrive_mix")
     {
-        float bv = juce::jlimit(0.0f, 100.0f, v);
+        float bv = juce::jlimit(0.0f, 1.0f, v);
         for (auto& overdrive : overdrives)
         {
-            overdrive->setMix(static_cast<int>(v) / 100.0f);
+            overdrive->setMix(bv);
         }
     }
     else if (parameterID == "overdrive_level_db")
@@ -135,8 +133,8 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     }
     else if (parameterID == "ir_mix")
     {
-        float bv = juce::jlimit(0.0f, 100.0f, v);
-        irConvolver.setMix(v / 100.0f);
+        float bv = juce::jlimit(0.0f, 1.0f, v);
+        irConvolver.setMix(v);
     }
     else if (parameterID == "ir_gain_db")
     {
