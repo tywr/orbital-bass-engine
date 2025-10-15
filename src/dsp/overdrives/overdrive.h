@@ -14,37 +14,37 @@ class Overdrive
     }
     void virtual setAttack(float newAttack)
     {
-        float v=juce::jlimit(0.0f, 10.0f, newAttack);
+        float v = juce::jlimit(0.0f, 10.0f, newAttack);
         attack.setTargetValue(v);
         raw_attack = v;
     }
     void virtual setGrunt(float newGrunt)
     {
-        float v=juce::jlimit(0.0f, 10.0f, newGrunt);
+        float v = juce::jlimit(0.0f, 10.0f, newGrunt);
         grunt.setTargetValue(v);
         raw_grunt = v;
     }
     void virtual setCrossFrequency(float new_cross_frequency)
     {
-        float v=juce::jlimit(250.0f, 1000.0f, new_cross_frequency);
+        float v = juce::jlimit(250.0f, 1000.0f, new_cross_frequency);
         cross_frequency.setTargetValue(v);
         raw_cross_frequency = v;
     }
     void virtual setHighLevel(float new_high_level)
     {
-        float v=juce::jlimit(0.0f, 10.0f, new_high_level);
+        float v = juce::jlimit(0.0f, 8.0f, new_high_level);
         high_level.setTargetValue(v);
         raw_high_level = v;
     }
     void virtual setMod(float new_mod)
     {
-        float v=juce::jlimit(0.0f, 10.0f, new_mod);
+        float v = juce::jlimit(0.0f, 10.0f, new_mod);
         mod.setTargetValue(v);
         raw_mod = v;
     }
     void virtual setAggro(float new_aggro)
     {
-        float v=juce::jlimit(0.0f, 10.0f, new_aggro);
+        float v = juce::jlimit(0.0f, 10.0f, new_aggro);
         aggro.setTargetValue(v);
         raw_aggro = v;
     }
@@ -71,19 +71,19 @@ class Overdrive
     }
     void setLevel(float newLevel)
     {
-        float v=juce::jlimit(0.0f, 10.0f, newLevel);
+        float v = juce::jlimit(0.0f, 10.0f, newLevel);
         level.setTargetValue(v);
         raw_level = v;
     }
     void setMix(float newMix)
     {
-        float v=juce::jlimit(0.0f, 1.0f, newMix);
+        float v = juce::jlimit(0.0f, 1.0f, newMix);
         mix.setTargetValue(v);
         raw_mix = v;
     }
     void setDrive(float newDrive)
     {
-        float v=juce::jlimit(0.0f, 10.0f, newDrive);
+        float v = juce::jlimit(0.0f, 10.0f, newDrive);
         drive.setTargetValue(v);
         raw_drive = v;
     }

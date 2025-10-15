@@ -139,8 +139,8 @@ void HeliosOverdrive::updateAttackFilter()
 void HeliosOverdrive::updateGruntFilter()
 {
     float current_grunt = grunt.getNextValue();
-    float min_gain_db = -6.0f;
-    float max_gain_db = 6.0f;
+    float min_gain_db = -12.0f;
+    float max_gain_db = 12.0f;
     float gain = juce::Decibels::decibelsToGain(
         min_gain_db + (max_gain_db - min_gain_db) * current_grunt * 0.1f
     );
@@ -157,8 +157,6 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
     {
         return;
     }
-    juce::AudioBuffer<float> dry_buffer;
-    dry_buffer.makeCopyOf(buffer);
 
     juce::dsp::AudioBlock<float> block(buffer);
     auto oversampledBlock = oversampler2x.processSamplesUp(block);
@@ -186,32 +184,33 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
 
 void HeliosOverdrive::applyOverdrive(float& sample, float gain)
 {
-    float input_padding = juce::Decibels::decibelsToGain(12.0f);
     float filtered =
         pre_lpf.processSample(pre_hpf.processSample(input_padding * sample));
+
     // Only drive between low-mids and highs
     float grunted = grunt_filter.processSample(filtered);
     float mids = mid_hpf.processSample(grunted);
     float drived = gain * mids;
+
     // Filter low mids on "clean" signal
     float lowmids = lowmids_lpf.processSample(filtered);
+
     // Combine both driven and clean signal before overdrive
     // Add a bit more clean signal to keep lowend
     float input = drived + lowmids;
-    // Pass signal through silicon diode circuit to limit signal above -0.7
-    // Below diode cutting point of 0.7V, we only get CMOS inverter
-    // saturation.
+
+    // The signal is restricted to values above -0.7V to stay
+    // in the linear region of the CMOS inverter.
     float soft_clipped = 0.5f * (diode_plus.processSample(input) + input);
     float hard_clipped = diode_minus.processSample(soft_clipped);
-    // Pass signal through CMOS inverter on linear region
     float distorted =
         dc_hpf.processSample(cmos.processSample(4.5f + hard_clipped));
-    // DBG("After Distortion" << distorted);
     float shelved = attack_shelf.processSample(distorted);
     float era = era_mid_scoop.processSample(shelved);
+
     // Apply three consecutive LPF to smooth out top-end
     float lpfed1 = post_lpf.processSample(era);
     float lpfed2 = post_lpf2.processSample(lpfed1);
     float out = post_lpf3.processSample(lpfed2);
-    sample = padding * out;
+    sample = output_padding * out;
 }

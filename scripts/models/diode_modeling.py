@@ -37,12 +37,18 @@ class DiodeClipper:
     buffer_size = 16
 
     # Diode parameters
-    c = 1e-8
-    re = 2_200
+
+    # Silicon diode
+    # c = 1e-8
+    # re = 2_200
     # i_s = 200e-9
-    i_s = 200e-9
-    v_t = 0.02585
     # v_t = 0.02585
+
+    # Germanium diode
+    c = 5e-8
+    re = 500
+    i_s = 5e-6
+    v_t = 0.02585
 
     # Discretization coefficients
 
@@ -106,10 +112,8 @@ if __name__ == "__main__":
     t = np.linspace(0, duration, n_samples, endpoint=False)
     y = 1 * np.sin(2 * np.pi * frequency * t)
 
-    up = DiodeClipper(sample_rate, side="up")
-    down = DiodeClipper(sample_rate, side="down")
-    soft_clipped = 0.5 * (up.process(y) + y)
-    hard_clipped = 0.5 * (down.process(y) + y)
+    diode_pair = DiodeClipper(sample_rate)
+    hard_clipped = diode_pair.process(y)
 
     plt.plot(
         t,

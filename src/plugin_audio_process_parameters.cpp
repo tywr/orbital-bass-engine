@@ -90,9 +90,11 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     }
     else if (parameterID == "overdrive_x_level")
     {
+        float bv = juce::jlimit(-120.0f, 6.0f, v);
+        float dbv = juce::Decibels::decibelsToGain(bv);
         for (auto& overdrive : overdrives)
         {
-            overdrive->setHighLevel(v);
+            overdrive->setHighLevel(dbv);
         }
     }
     else if (parameterID == "overdrive_mod")

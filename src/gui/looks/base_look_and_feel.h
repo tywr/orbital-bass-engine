@@ -8,8 +8,7 @@ class BaseLookAndFeel : public juce::LookAndFeel_V4
   private:
     float strokeWidth = 6.0f;
     juce::Font mainFont =
-        juce::Font(juce::FontOptions("Oxanium", 15.0f, juce::Font::plain))
-            .withExtraKerningFactor(0.2f);
+        juce::Font(juce::FontOptions("Oxanium", 15.0f, juce::Font::plain));
 
   public:
     BaseLookAndFeel();

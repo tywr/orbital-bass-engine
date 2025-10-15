@@ -124,6 +124,12 @@ void PluginAudioProcessor::prepareParameters()
             float v = param->get();
             setParameterValue(paramID, v);
         }
+        else if (auto* param = dynamic_cast<juce::AudioParameterChoice*>(p))
+        {
+            juce::String paramID = param->getParameterID();
+            float v = param->getIndex();
+            setParameterValue(paramID, v);
+        }
         else if (auto* param = dynamic_cast<juce::RangedAudioParameter*>(p))
         {
             juce::String paramID = param->getParameterID();

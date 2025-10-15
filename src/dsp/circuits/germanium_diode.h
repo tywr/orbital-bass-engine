@@ -4,6 +4,14 @@
 #include <cmath>
 
 class GermaniumDiode
+// Simulates a germanium diode clipper pair using the Shockley diode equation
+// for more referernce about this modelization, you can read about it in
+// the paper:
+//
+// Stefano d'Angelo, Leonardo Gabrielli & Luca Turchet
+// (2019.)
+// "FAST APPROXIMATION OF THE LAMBERT W FUNCTION FOR VIRTUAL ANALOG MODELLING"
+// https://dafx.de/paper-archive/2019/DAFx2019_paper_5.pdf
 {
   public:
     GermaniumDiode(float fs);
@@ -12,9 +20,9 @@ class GermaniumDiode
 
   private:
     // Fixed variables
-    float c = 1e-8f;
-    float r = 2200.0f;
-    float i_s = 200e-9f;
+    float c = 5e-8f;
+    float r = 500.0f;
+    float i_s = 5e-6f;
     float v_t = 0.02585f;
 
     // State variables
@@ -55,7 +63,6 @@ inline float GermaniumDiode::omega(float x)
 
         return c0 + c1 * x + c2 * std::pow(x, 2.0f) + c3 * std::pow(x, 3.0f) +
                c4 * std::pow(x, 4.0f) + c5 * std::pow(x, 5.0f);
-        // return static_cast<float>(wrightomega_double(x));
     }
 }
 

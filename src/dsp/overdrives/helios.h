@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../circuits/cmos.h"
-#include "../circuits/cmos_poly.h"
 #include "../circuits/silicon_diode.h"
 #include "overdrive.h"
 #include <juce_audio_basics/juce_audio_basics.h>
@@ -58,10 +57,10 @@ class HeliosOverdrive : public Overdrive
     juce::dsp::IIR::Filter<float> post_lpf3;
     float post_lpf3_cutoff = 7200.0f;
 
-    float padding = juce::Decibels::decibelsToGain(0.0f);
+    float input_padding = juce::Decibels::decibelsToGain(12.0f);
+    float output_padding = juce::Decibels::decibelsToGain(0.0f);
 
     CMOS cmos = CMOS();
-    CMOSPoly cmos_poly = CMOSPoly();
     SiliconDiode diode_plus = SiliconDiode(44100.0f, true);
     SiliconDiode diode_minus = SiliconDiode(44100.0f, false);
 

@@ -11,33 +11,34 @@ class BorealisOverdrive : public Overdrive
   public:
     void prepare(const juce::dsp::ProcessSpec& spec) override;
     void process(juce::AudioBuffer<float>& buffer) override;
-    float charToGain(float);
     float driveToGain(float);
-    float driveToFrequency(float);
     void applyOverdrive(float& sample);
     void resetSmoothedValues();
     void prepareFilters();
+    void updateXFilter();
 
   private:
-    juce::dsp::IIR::Filter<float> ff1_hpf;
-    float ff1_hpf_cutoff = 50.0f;
-
-    juce::dsp::IIR::Filter<float> ff1_lpf;
-    float ff1_lpf_cutoff = 330.0f;
-
-    juce::dsp::IIR::Filter<float> attack_shelf;
-    float attack_shelf_freq = 500.0f;
+    float x_output_padding = juce::Decibels::decibelsToGain(-20.0f);
 
     juce::dsp::IIR::Filter<float> pre_hpf;
-    float pre_hpf_cutoff = 500.0f;
+    float pre_hpf_cutoff = 50.0f;
 
     juce::dsp::IIR::Filter<float> pre_lpf;
     float pre_lpf_cutoff = 3300.0f;
 
-    juce::dsp::IIR::Filter<float> post_lpf;
-    float post_lpf_cutoff = 3400.0f;
+    juce::dsp::IIR::Filter<float> lowmids_lpf;
+    float lowmids_lpf_cutoff = 330.0f;
 
-    float padding = juce::Decibels::decibelsToGain(-6.0f);
+    juce::dsp::IIR::Filter<float> x_hpf;
+
+    juce::dsp::IIR::Filter<float> post_lpf;
+    float post_lpf_cutoff = 3300.0f;
+
+    juce::dsp::IIR::Filter<float> post_lpf2;
+    float post_lpf2_cutoff = 3300.0f;
+
+    juce::dsp::IIR::Filter<float> post_lpf3;
+    float post_lpf3_cutoff = 7200.0f;
 
     GermaniumDiode diode = GermaniumDiode(44100.0f);
 

@@ -29,25 +29,14 @@ void BorealisOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
 
     prepareFilters();
 
+    x_hpf.prepare(processSpec);
+    updateXFilter();
+
     diode = GermaniumDiode(oversampled_spec.sampleRate);
 }
 
 void BorealisOverdrive::prepareFilters()
 {
-    ff1_hpf.prepare(processSpec);
-    auto ff1_hpf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, ff1_hpf_cutoff
-        );
-    *ff1_hpf.coefficients = *ff1_hpf_coefficients;
-
-    ff1_lpf.prepare(processSpec);
-    auto ff1_lpf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, ff1_lpf_cutoff
-        );
-    *ff1_lpf.coefficients = *ff1_lpf_coefficients;
-
     pre_hpf.prepare(processSpec);
     auto pre_hpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeHighPass(
@@ -62,27 +51,49 @@ void BorealisOverdrive::prepareFilters()
         );
     *pre_lpf.coefficients = *pre_lpf_coefficients;
 
+    lowmids_lpf.prepare(processSpec);
+    auto lowmids_lpf_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeLowPass(
+            processSpec.sampleRate, lowmids_lpf_cutoff
+        );
+    *lowmids_lpf.coefficients = *lowmids_lpf_coefficients;
+
     post_lpf.prepare(processSpec);
     auto post_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
             processSpec.sampleRate, post_lpf_cutoff
         );
     *post_lpf.coefficients = *post_lpf_coefficients;
+
+    post_lpf2.prepare(processSpec);
+    auto post_lpf2_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeLowPass(
+            processSpec.sampleRate, post_lpf2_cutoff
+        );
+    *post_lpf2.coefficients = *post_lpf2_coefficients;
+
+    post_lpf3.prepare(processSpec);
+    auto post_lpf3_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeLowPass(
+            processSpec.sampleRate, post_lpf3_cutoff
+        );
+    *post_lpf3.coefficients = *post_lpf3_coefficients;
 }
 
-float BorealisOverdrive::driveToFrequency(float d)
+void BorealisOverdrive::updateXFilter()
 {
-    float t = d / 10.0f;
-    float min_frequency = 50.0f;
-    float max_frequency = 450.0f;
-    return max_frequency - (max_frequency - min_frequency) * std::pow(t, 2.0f);
+    float current_x_frequency = cross_frequency.getNextValue();
+    auto x_coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(
+        processSpec.sampleRate, current_x_frequency
+    );
+    *x_hpf.coefficients = *x_coefficients;
 }
 
 float BorealisOverdrive::driveToGain(float d)
 {
     float t = d / 10.0f;
-    float min_gain_db = 0.0f;
-    float max_gain_db = 36.0f;
+    float min_gain_db = 20.0f;
+    float max_gain_db = 64.0f;
     float gain = juce::Decibels::decibelsToGain(
         min_gain_db + t * (max_gain_db - min_gain_db)
     );
@@ -95,17 +106,17 @@ void BorealisOverdrive::process(juce::AudioBuffer<float>& buffer)
     {
         return;
     }
-    juce::AudioBuffer<float> dry_buffer;
-    dry_buffer.makeCopyOf(buffer);
-
     juce::dsp::AudioBlock<float> block(buffer);
     auto oversampledBlock = oversampler2x.processSamplesUp(block);
 
     auto* channelData = oversampledBlock.getChannelPointer(0);
     for (size_t i = 0; i < oversampledBlock.getNumSamples(); ++i)
     {
-        float wet = channelData[i];
+        if (cross_frequency.isSmoothing())
+            updateXFilter();
+
         float dry = channelData[i];
+        float wet = channelData[i];
         applyOverdrive(wet);
 
         float current_level = level.getNextValue();
@@ -118,22 +129,25 @@ void BorealisOverdrive::process(juce::AudioBuffer<float>& buffer)
 
 void BorealisOverdrive::applyOverdrive(float& sample)
 {
-    float input_padding = juce::Decibels::decibelsToGain(12.0f);
     float current_drive = drive.getNextValue();
-    float drive_gain = driveToGain(current_drive);
-    float in = input_padding * sample;
-    float in_drive = drive_gain * in;
+    float current_high_level = high_level.getNextValue();
+    float current_drive_gain = driveToGain(current_drive);
 
-    float ff1 = ff1_hpf.processSample(ff1_lpf.processSample(in));
+    // Clean the input signal with LPF and HPF
+    float in = pre_lpf.processSample(pre_hpf.processSample(sample));
 
-    float ff2 = 0.1f * current_drive * ff1;
+    // Get the fixed lowmids signal
+    float lowmids = lowmids_lpf.processSample(in);
 
-    // distortion chain
-    float hpfed = pre_hpf.processSample(in_drive);
-    float lpfed = pre_lpf.processSample(hpfed);
-    float shaped = attack_shelf.processSample(lpfed);
-    float distorded = diode.processSample(shaped);
-    float out = post_lpf.processSample(distorded);
+    // Get the X-over Signal
+    float x_signal = current_drive_gain * x_hpf.processSample(in);
+    float distorted = x_output_padding * diode.processSample(x_signal);
 
-    sample = padding * (out + ff1 + ff2);
+    float lpf1 = post_lpf.processSample(distorted);
+    float lpf2 = post_lpf2.processSample(lpf1);
+    float x_out = post_lpf3.processSample(lpf2);
+
+    // Mix the lowmids and the distorted X-over signal
+    DBG(current_high_level);
+    sample = lowmids + current_high_level * x_out;
 }
