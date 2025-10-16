@@ -109,7 +109,7 @@ class AmpKnobsComponent : public juce::Component
         {&drive_slider,           &drive_label,           "overdrive_drive",    "drive"  },
         {&grunt_slider,           &grunt_label,           "overdrive_grunt",    "grunt"  },
         {&attack_slider,          &attack_label,          "overdrive_attack",   "attack" },
-        {&cross_frequency_slider, &cross_frequency_label, "overdrive_x",
+        {&cross_frequency_slider, &cross_frequency_label, "overdrive_x_frequency",
          "hi pass"                                                                       },
         {&high_level_slider,      &high_level_label,      "overdrive_x_level",
          "hi level"                                                                      },

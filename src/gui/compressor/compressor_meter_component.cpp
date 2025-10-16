@@ -1,5 +1,5 @@
 #include "compressor_meter_component.h"
-#include "../dimensions.h"
+#include "compressor_dimensions.h"
 #include "../looks/compressor_meter_look_and_feel.h"
 
 CompressorMeterComponent::CompressorMeterComponent(
@@ -67,8 +67,8 @@ void CompressorMeterComponent::resized()
 {
     auto bounds = getLocalBounds();
     gain_reduction_slider.setBounds(bounds.withSizeKeepingCentre(
-        GuiDimensions::COMPRESSOR_GAIN_REDUCTION_WIDTH,
-        GuiDimensions::COMPRESSOR_GAIN_REDUCTION_HEIGHT
+        CompressorDimensions::GAIN_REDUCTION_WIDTH,
+        CompressorDimensions::GAIN_REDUCTION_HEIGHT
     ));
 }
 

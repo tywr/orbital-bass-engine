@@ -63,11 +63,11 @@ class CompressorKnobsComponent : public juce::Component
 
     // Define knobs for easy looping
     std::vector<CompressorKnob> knobs = {
-        {&threshold_slider, &threshold_label, "compressor_threshold", "THR"  },
-        {&mix_slider,       &mix_label,       "compressor_mix",       "MIX"  },
-        {&level_slider,     &level_label,     "compressor_level_db",  "LEVEL"},
-        {&ratio_slider,     &ratio_label,     "compressor_ratio",     "RATIO"},
-        {&type_slider,      &type_label,      "compressor_type",      "TYPE" }
+        {&threshold_slider, &threshold_label, "compressor_threshold", "threshold"  },
+        {&mix_slider,       &mix_label,       "compressor_mix",       "mix"  },
+        {&level_slider,     &level_label,     "compressor_level_db",  "level"},
+        {&ratio_slider,     &ratio_label,     "compressor_ratio",     "ratio"},
+        {&type_slider,      &type_label,      "compressor_type",      "type" }
     };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CompressorKnobsComponent)

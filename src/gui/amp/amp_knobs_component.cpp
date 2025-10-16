@@ -57,9 +57,6 @@ void AmpKnobsComponent::switchColour(juce::Colour colour1, juce::Colour colour2)
 
 void AmpKnobsComponent::switchType(AmpType new_type)
 {
-    // clear tooltip before switching
-    slider_being_dragged = false;
-    drag_tooltip.setVisible(false);
     if (new_type.id == "helios")
     {
         current_knobs[1] = {
@@ -72,7 +69,7 @@ void AmpKnobsComponent::switchType(AmpType new_type)
     if (new_type.id == "borealis")
     {
         current_knobs[1] = {
-            &cross_frequency_slider, &cross_frequency_label, "overdrive_x",
+            &cross_frequency_slider, &cross_frequency_label, "overdrive_x_frequency",
             "hi pass"
         };
         current_knobs[2] = {
@@ -90,6 +87,8 @@ void AmpKnobsComponent::switchType(AmpType new_type)
     resized();
     removeAllChildren();
     addAndMakeVisible(drag_tooltip);
+    slider_being_dragged = false;
+    drag_tooltip.setVisible(false);
     for (auto knob : current_knobs)
     {
         addAndMakeVisible(knob.slider);

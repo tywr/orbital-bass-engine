@@ -6,10 +6,9 @@
 class CompressorLookAndFeel : public BaseLookAndFeel
 {
   private:
-    float strokeWidth = 6.0f;
+    float strokeWidth = 2.0f;
     juce::Font main_font =
-        juce::Font(juce::FontOptions("Oxanium", 15.0f, juce::Font::plain))
-            .withExtraKerningFactor(0.2f);
+        juce::Font(juce::FontOptions("Oxanium", 12.0f, juce::Font::plain));
 
   public:
     void drawLabel(juce::Graphics&, juce::Label&) override;

@@ -39,18 +39,13 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
 
     grunt_filter.prepare(processSpec);
     updateGruntFilter();
+
+    mid_scoop.prepare(processSpec);
+    updateMidScoop();
 }
 
 void HeliosOverdrive::prepareFilters()
 {
-
-    era_mid_scoop.prepare(processSpec);
-    auto era_mid_scoop_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
-            processSpec.sampleRate, era_mid_scoop_cutoff, era_mid_scoop_gain,
-            era_mid_scoop_q
-        );
-    *era_mid_scoop.coefficients = *era_mid_scoop_coefficients;
 
     dc_hpf.prepare(processSpec);
     auto dc_hpf_coefficients =
@@ -112,7 +107,7 @@ void HeliosOverdrive::prepareFilters()
 float HeliosOverdrive::driveToGain(float d)
 {
     float t = d / 10.0f;
-    float min_gain_db = 0.0f;
+    float min_gain_db = 12.0f;
     float max_gain_db = 42.0f;
     float gain = juce::Decibels::decibelsToGain(
         min_gain_db + t * (max_gain_db - min_gain_db)
@@ -122,23 +117,31 @@ float HeliosOverdrive::driveToGain(float d)
 
 void HeliosOverdrive::updateAttackFilter()
 {
-    float current_attack = attack.getNextValue();
-    float min_gain_db = -12.0f;
-    float max_gain_db = 12.0f;
+    float current_attack = attack.getCurrentValue();
+
+    float attack_frequency = 250.0f;
+    // float min_frequency = 500.0f;
+    // float max_frequency = 1500.0f;
+    // float frequency =
+    //     min_frequency + (max_frequency - min_frequency) * current_attack *
+    //     0.1f;
+
+    float min_gain_db = -20.0f;
+    float max_gain_db = -8.0f;
     float shelf_gain = juce::Decibels::decibelsToGain(
         min_gain_db + (max_gain_db - min_gain_db) * current_attack * 0.1f
     );
+
     auto attack_shelf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeHighShelf(
-            processSpec.sampleRate, attack_shelf_cutoff, attack_shelf_q,
-            shelf_gain
+            processSpec.sampleRate, attack_frequency, attack_shelf_q, shelf_gain
         );
     *attack_shelf.coefficients = *attack_shelf_coefficients;
 }
 
 void HeliosOverdrive::updateGruntFilter()
 {
-    float current_grunt = grunt.getNextValue();
+    float current_grunt = grunt.getCurrentValue();
     float min_gain_db = -12.0f;
     float max_gain_db = 12.0f;
     float gain = juce::Decibels::decibelsToGain(
@@ -149,6 +152,29 @@ void HeliosOverdrive::updateGruntFilter()
             processSpec.sampleRate, grunt_frequency, grunt_filter_q, gain
         );
     *grunt_filter.coefficients = *grunt_coefficients;
+}
+
+void HeliosOverdrive::updateMidScoop()
+{
+    float current_drive = drive.getCurrentValue();
+    // 0 if drive is 5, and 1 if drive is 0 or 10
+    // float scoop_parameter = std::abs(current_drive - 5.0f) / 5.0f;
+    float scoop_parameter = current_drive * 0.1f;
+
+    float mid_scoop_frequency = 700.0f;
+    float mid_scoop_q = 0.6f;
+
+    float min_gain_db = -3.0f;
+    float max_gain_db = -8.0f;
+    float scoop_gain = juce::Decibels::decibelsToGain(
+        min_gain_db + (max_gain_db - min_gain_db) * scoop_parameter
+    );
+
+    auto mid_scoop_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+            processSpec.sampleRate, mid_scoop_frequency, mid_scoop_q, scoop_gain
+        );
+    *mid_scoop.coefficients = *mid_scoop_coefficients;
 }
 
 void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
@@ -164,13 +190,24 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
     auto* channelData = oversampledBlock.getChannelPointer(0);
     for (size_t i = 0; i < oversampledBlock.getNumSamples(); ++i)
     {
-        float current_drive = drive.getNextValue();
         if (attack.isSmoothing())
+        {
+            attack.getNextValue();
             updateAttackFilter();
+        }
         if (grunt.isSmoothing())
+        {
+            grunt.getNextValue();
             updateGruntFilter();
+        }
+        if (drive.isSmoothing())
+        {
+            updateMidScoop();
+        }
+
         float dry = channelData[i];
         float wet = channelData[i];
+        float current_drive = drive.getNextValue();
         applyOverdrive(wet, driveToGain(current_drive));
 
         float current_level = level.getNextValue();
@@ -184,8 +221,9 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
 
 void HeliosOverdrive::applyOverdrive(float& sample, float gain)
 {
-    float filtered =
-        pre_lpf.processSample(pre_hpf.processSample(input_padding * sample));
+    float input_padding = juce::Decibels::decibelsToGain(0.0f);
+    float raw_input = sample * input_padding;
+    float filtered = pre_lpf.processSample(pre_hpf.processSample(raw_input));
 
     // Only drive between low-mids and highs
     float grunted = grunt_filter.processSample(filtered);
@@ -206,11 +244,13 @@ void HeliosOverdrive::applyOverdrive(float& sample, float gain)
     float distorted =
         dc_hpf.processSample(cmos.processSample(4.5f + hard_clipped));
     float shelved = attack_shelf.processSample(distorted);
-    float era = era_mid_scoop.processSample(shelved);
+    float era = mid_scoop.processSample(shelved);
 
     // Apply three consecutive LPF to smooth out top-end
     float lpfed1 = post_lpf.processSample(era);
     float lpfed2 = post_lpf2.processSample(lpfed1);
     float out = post_lpf3.processSample(lpfed2);
+
+    float output_padding = juce::Decibels::decibelsToGain(0.0f);
     sample = output_padding * out;
 }

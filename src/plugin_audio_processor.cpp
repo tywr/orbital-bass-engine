@@ -120,6 +120,8 @@ void PluginAudioProcessor::prepareParameters()
     {
         if (auto* param = dynamic_cast<juce::AudioParameterFloat*>(p))
         {
+            DBG("Float Param: " + param->getParameterID() +
+                " Value: " + juce::String(param->get()));
             juce::String paramID = param->getParameterID();
             float v = param->get();
             setParameterValue(paramID, v);

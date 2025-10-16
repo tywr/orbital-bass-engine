@@ -81,11 +81,13 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
             overdrive->setGrunt(v);
         }
     }
-    else if (parameterID == "overdrive_x")
+    else if (parameterID == "overdrive_x_frequency")
     {
+        float bv = juce::jlimit(20.0f, 20000.0f, v);
+        DBG("Overdrive X changed to: " << bv);
         for (auto& overdrive : overdrives)
         {
-            overdrive->setCrossFrequency(v);
+            overdrive->setCrossFrequency(bv);
         }
     }
     else if (parameterID == "overdrive_x_level")

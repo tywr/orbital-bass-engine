@@ -1,8 +1,8 @@
 #include "compressor_knobs_component.h"
-#include "../dimensions.h"
 #include "../colours.h"
 #include "../looks/compressor_look_and_feel.h"
 #include "../looks/compressor_selector_look_and_feel.h"
+#include "compressor_dimensions.h"
 
 CompressorKnobsComponent::CompressorKnobsComponent(
     juce::AudioProcessorValueTreeState& params
@@ -21,7 +21,7 @@ CompressorKnobsComponent::CompressorKnobsComponent(
         knob.label->setJustificationType(juce::Justification::centred);
         // knob.label->attachToComponent(knob.slider, false);
         knob.slider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-        knob.slider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, 20);
+        knob.slider->setTextBoxStyle(juce::Slider::NoTextBox, false, 1, 1);
         knob.label->setColour(
             juce::Slider::textBoxOutlineColourId,
             juce::Colours::transparentBlack
@@ -36,6 +36,8 @@ CompressorKnobsComponent::CompressorKnobsComponent(
             )
         );
     }
+    type_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, 20);
+    ratio_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, 20);
 }
 
 CompressorKnobsComponent::~CompressorKnobsComponent()
@@ -52,9 +54,9 @@ void CompressorKnobsComponent::resized()
     int const limit = 3;
     auto bounds = getLocalBounds();
     auto top_bounds =
-        bounds.removeFromTop(GuiDimensions::COMPRESSOR_KNOBS_TOP_BOX_HEIGHT);
+        bounds.removeFromTop(CompressorDimensions::KNOBS_TOP_BOX_HEIGHT);
     auto label_bounds =
-        top_bounds.removeFromTop(GuiDimensions::DEFAULT_LABEL_HEIGHT);
+        top_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT);
     const int knob_box_size = bounds.getWidth() / limit;
 
     for (size_t i = 0; i < limit; ++i)
@@ -62,22 +64,21 @@ void CompressorKnobsComponent::resized()
         CompressorKnob knob = knobs[i];
         knob.label->setBounds(label_bounds.removeFromLeft(knob_box_size)
                                   .withSizeKeepingCentre(
-                                      GuiDimensions::DEFAULT_KNOB_WIDTH,
-                                      GuiDimensions::DEFAULT_LABEL_HEIGHT
+                                      CompressorDimensions::KNOB_SIZE,
+                                      CompressorDimensions::KNOB_SIZE
                                   ));
         knob.slider->setBounds(top_bounds.removeFromLeft(knob_box_size)
                                    .withSizeKeepingCentre(
-                                       GuiDimensions::DEFAULT_KNOB_WIDTH,
-                                       GuiDimensions::DEFAULT_KNOB_HEIGHT
+                                       CompressorDimensions::KNOB_SIZE,
+                                       CompressorDimensions::KNOB_SIZE
                                    ));
     }
 
     const int bottom_knob_box_size = bounds.getWidth() / (knobs.size() - limit);
-    auto bottom_bounds = bounds.removeFromBottom(
-        GuiDimensions::COMPRESSOR_KNOBS_BOTTOM_BOX_HEIGHT
-    );
+    auto bottom_bounds =
+        bounds.removeFromBottom(CompressorDimensions::KNOBS_BOTTOM_BOX_HEIGHT);
     auto label_bottom_bounds =
-        bottom_bounds.removeFromTop(GuiDimensions::DEFAULT_SMALL_LABEL_HEIGHT);
+        bottom_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT);
 
     for (size_t i = limit; i < knobs.size(); ++i)
     {
@@ -85,14 +86,14 @@ void CompressorKnobsComponent::resized()
         knob.label->setBounds(label_bottom_bounds
                                   .removeFromLeft(bottom_knob_box_size)
                                   .withSizeKeepingCentre(
-                                      GuiDimensions::DEFAULT_KNOB_WIDTH,
-                                      GuiDimensions::DEFAULT_LABEL_HEIGHT
+                                      CompressorDimensions::KNOB_SIZE,
+                                      CompressorDimensions::KNOB_SIZE
                                   ));
         knob.slider->setBounds(bottom_bounds
                                    .removeFromLeft(bottom_knob_box_size)
                                    .withSizeKeepingCentre(
-                                       GuiDimensions::DEFAULT_SMALL_KNOB_WIDTH,
-                                       GuiDimensions::DEFAULT_SMALL_KNOB_HEIGHT
+                                       CompressorDimensions::SMALL_KNOB_SIZE,
+                                       CompressorDimensions::SMALL_KNOB_SIZE
                                    ));
     }
 }

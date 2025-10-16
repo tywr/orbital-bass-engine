@@ -1,8 +1,9 @@
 #include "compressor_component.h"
 #include "../colours.h"
-#include "../dimensions.h"
+#include "compressor_dimensions.h"
 #include "compressor_knobs_component.h"
 #include "compressor_meter_component.h"
+#include "designs/gravity.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -50,15 +51,15 @@ void CompressorComponent::paint(juce::Graphics& g)
         colour1 = GuiColours::DEFAULT_INACTIVE_COLOUR;
         colour2 = GuiColours::DEFAULT_INACTIVE_COLOUR;
     }
-    float border_thickness = GuiDimensions::COMPRESSOR_BORDER_THICKNESS;
-    float border_radius = GuiDimensions::COMPRESSOR_BORDER_RADIUS;
+    float border_thickness = CompressorDimensions::BORDER_THICKNESS;
+    float border_radius = CompressorDimensions::BORDER_RADIUS;
 
-    auto outer_bounds = getLocalBounds()
-                            .withSizeKeepingCentre(
-                                GuiDimensions::COMPRESSOR_WIDTH,
-                                GuiDimensions::COMPRESSOR_HEIGHT
-                            )
-                            .toFloat();
+    auto outer_bounds =
+        getLocalBounds()
+            .withSizeKeepingCentre(
+                CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
+            )
+            .toFloat();
     auto inner_bounds = outer_bounds.reduced(border_thickness).toFloat();
 
     g.setColour(GuiColours::COMPRESSOR_BG_COLOUR);
@@ -81,100 +82,31 @@ void CompressorComponent::paint(juce::Graphics& g)
     knobs_component.switchColour(colour1, colour2);
     meter_component.switchColour(colour1, colour2);
 
-    paintStyling(g, outer_bounds);
-}
-
-void CompressorComponent::paintStyling(
-    juce::Graphics& g, juce::Rectangle<float> bounds
-)
-{
-    auto centre = bounds.getCentre();
-
-    // juce::Colour colour = juce::Colours::white;
-    juce::Colour colour = GuiColours::COMPRESSOR_STYLING_COLOUR;
-    g.setColour(colour);
-
-    const int spacing = 10;           // grid spacing
-    const float eventHorizon = 30.0f; // radius of black hole
-    const float distortion = 5000.0f;
-    const float dotSize = 2.0f;
-
-    // compute number of dots
-    int numX = static_cast<int>(std::floor(bounds.getWidth() / spacing));
-    int numY = static_cast<int>(std::floor(bounds.getHeight() / spacing));
-
-    // total grid size
-    float totalWidth = numX * spacing;
-    float totalHeight = numY * spacing;
-
-    // start coordinates to center the grid exactly
-    float startX = centre.x - totalWidth / 2.0f + spacing / 2.0f;
-    float startY = centre.y - totalHeight / 2.0f + spacing / 2.0f;
-
-    for (int iy = 0; iy < numY; ++iy)
-    {
-        for (int ix = 0; ix < numX; ++ix)
-        {
-            float x = startX + ix * spacing;
-            float y = startY + iy * spacing;
-
-            float dx = x - centre.x;
-            float dy = y - centre.y;
-            float dist = std::sqrt(dx * dx + dy * dy);
-
-            juce::Point<float> pos(x, y);
-
-            if (dist > eventHorizon)
-            {
-                // symmetric radial warp
-                float warpedDist = dist / (1.0f + distortion / (dist * dist));
-                float scale = warpedDist / dist;
-
-                pos.x = centre.x + dx * scale;
-                pos.y = centre.y + dy * scale;
-            }
-            else
-            {
-                pos = centre;
-            }
-
-            float alpha =
-                juce::jlimit(0.2f, 1.0f, dist / (bounds.getWidth() * 0.5f));
-            g.setColour(colour.withAlpha(alpha));
-
-            g.fillEllipse(
-                pos.x - dotSize * 0.5f, pos.y - dotSize * 0.5f, dotSize, dotSize
-            );
-        }
-    }
-
-    // Draw the event horizon
-    g.setColour(GuiColours::COMPRESSOR_BG_COLOUR);
-    g.fillEllipse(
-        centre.x - eventHorizon, centre.y - eventHorizon, eventHorizon * 2.0f,
-        eventHorizon * 2.0f
-    );
+    paintGravity(g, inner_bounds);
 }
 
 void CompressorComponent::resized()
 {
     auto bounds = getLocalBounds().withSizeKeepingCentre(
-        GuiDimensions::COMPRESSOR_WIDTH, GuiDimensions::COMPRESSOR_HEIGHT
+        CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
     );
     bypass_button.setBounds(
-        bounds.removeFromBottom(GuiDimensions::COMPRESSOR_FOOTER_HEIGHT)
+        bounds.removeFromBottom(CompressorDimensions::FOOTER_HEIGHT)
             .withSizeKeepingCentre(
-                GuiDimensions::COMPRESSOR_BYPASS_BUTTON_WIDTH,
-                GuiDimensions::COMPRESSOR_BYPASS_BUTTON_HEIGHT
+                CompressorDimensions::BYPASS_BUTTON_WIDTH,
+                CompressorDimensions::BYPASS_BUTTON_HEIGHT
             )
     );
     meter_component.setBounds(
-        bounds.removeFromBottom(GuiDimensions::COMPRESSOR_GAIN_REDUCTION_HEIGHT)
+        bounds.removeFromBottom(CompressorDimensions::GAIN_REDUCTION_HEIGHT)
     );
-    bounds.removeFromTop(GuiDimensions::COMPRESSOR_INNER_Y_TOP_PADDING);
+    title_label.setBounds(
+        bounds.removeFromBottom(CompressorDimensions::TITLE_LABEL_HEIGHT)
+    );
+    bounds.removeFromTop(CompressorDimensions::INNER_Y_TOP_PADDING);
     knobs_component.setBounds(bounds.removeFromTop(
-        GuiDimensions::COMPRESSOR_KNOBS_TOP_BOX_HEIGHT +
-        GuiDimensions::COMPRESSOR_KNOBS_BOTTOM_BOX_HEIGHT +
-        GuiDimensions::COMPRESSOR_KNOBS_ROW_PADDING
+        CompressorDimensions::KNOBS_TOP_BOX_HEIGHT +
+        CompressorDimensions::KNOBS_BOTTOM_BOX_HEIGHT +
+        CompressorDimensions::KNOBS_ROW_PADDING
     ));
 }

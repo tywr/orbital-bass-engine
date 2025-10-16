@@ -14,11 +14,13 @@ class HeliosOverdrive : public Overdrive
     float driveToGain(float);
     void updateAttackFilter();
     void updateGruntFilter();
+    void updateMidScoop();
     void applyOverdrive(float& sample, float drive_gain);
     void resetSmoothedValues();
     void prepareFilters();
 
   private:
+
     juce::dsp::IIR::Filter<float> pre_hpf;
     float pre_hpf_cutoff = 50.0f;
 
@@ -32,17 +34,13 @@ class HeliosOverdrive : public Overdrive
     juce::dsp::IIR::Filter<float> mid_hpf;
     float mid_hpf_cutoff = 219.0f;
 
-    juce::dsp::IIR::Filter<float> era_mid_scoop;
-    float era_mid_scoop_cutoff = 700.0f;
-    float era_mid_scoop_gain = juce::Decibels::decibelsToGain(-10.0f);
-    float era_mid_scoop_q = 0.6f;
+    juce::dsp::IIR::Filter<float> mid_scoop;
 
     juce::dsp::IIR::Filter<float> grunt_filter;
     float grunt_frequency = 700.0f;
     float grunt_filter_q = 0.7f;
 
     juce::dsp::IIR::Filter<float> attack_shelf;
-    float attack_shelf_cutoff = 1540.0f;
     float attack_shelf_q = 0.7f;
 
     juce::dsp::IIR::Filter<float> dc_hpf;
@@ -56,9 +54,6 @@ class HeliosOverdrive : public Overdrive
 
     juce::dsp::IIR::Filter<float> post_lpf3;
     float post_lpf3_cutoff = 7200.0f;
-
-    float input_padding = juce::Decibels::decibelsToGain(12.0f);
-    float output_padding = juce::Decibels::decibelsToGain(0.0f);
 
     CMOS cmos = CMOS();
     SiliconDiode diode_plus = SiliconDiode(44100.0f, true);

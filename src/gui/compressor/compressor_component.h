@@ -28,6 +28,7 @@ class CompressorComponent : public juce::Component
     void paintStyling(juce::Graphics&, juce::Rectangle<float>);
 
     // Sub-components
+    juce::Label title_label;
     CompressorKnobsComponent knobs_component;
     CompressorMeterComponent meter_component;
 

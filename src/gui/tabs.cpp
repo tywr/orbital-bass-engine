@@ -24,7 +24,7 @@ Tabs::Tabs(
         juce::TabbedComponent::outlineColourId, juce::Colours::transparentBlack
     );
 
-    // addTab("comp", ColourCodes::bg, &compressor_component, false);
+    addTab("comp", ColourCodes::bg, &compressor_component, true);
     addTab("amp", ColourCodes::bg, &amp_component, true);
     // addTab("chorus", AuroraColors::bg, new juce::Component(), true);
     // addTab("cabinet", ColourCodes::bg, new IRLoader(params), true);

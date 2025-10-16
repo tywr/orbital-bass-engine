@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../colours.h"
+#include "compressor_dimensions.h"
 #include "compressor_meter_component.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_processors/juce_audio_processors.h>

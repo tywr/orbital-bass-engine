@@ -11,9 +11,7 @@ class NebulaOverdrive : public Overdrive
   public:
     void prepare(const juce::dsp::ProcessSpec& spec) override;
     void process(juce::AudioBuffer<float>& buffer) override;
-    float charToGain(float);
     float driveToGain(float);
-    float driveToFrequency(float);
     void applyOverdrive(float& sample);
     void resetSmoothedValues();
     void prepareFilters();

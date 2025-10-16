@@ -6,10 +6,9 @@
 class CompressorSelectorLookAndFeel : public BaseLookAndFeel
 {
   private:
-    float stroke_width = 3.0f;
+    float stroke_width = 2.0f;
     juce::Font main_font =
-        juce::Font(juce::FontOptions("Oxanium", 12.0f, juce::Font::plain))
-            .withExtraKerningFactor(0.2f);
+        juce::Font(juce::FontOptions("Oxanium", 12.0f, juce::Font::plain));
 
   public:
     // CompressorSelectorLookAndFeel();

@@ -34,48 +34,6 @@ void NebulaOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
 
 void NebulaOverdrive::prepareFilters()
 {
-    ff1_hpf.prepare(processSpec);
-    auto ff1_hpf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, ff1_hpf_cutoff
-        );
-    *ff1_hpf.coefficients = *ff1_hpf_coefficients;
-
-    ff1_lpf.prepare(processSpec);
-    auto ff1_lpf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, ff1_lpf_cutoff
-        );
-    *ff1_lpf.coefficients = *ff1_lpf_coefficients;
-
-    pre_hpf.prepare(processSpec);
-    auto pre_hpf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeHighPass(
-            processSpec.sampleRate, pre_hpf_cutoff
-        );
-    *pre_hpf.coefficients = *pre_hpf_coefficients;
-
-    pre_lpf.prepare(processSpec);
-    auto pre_lpf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, pre_lpf_cutoff
-        );
-    *pre_lpf.coefficients = *pre_lpf_coefficients;
-
-    post_lpf.prepare(processSpec);
-    auto post_lpf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, post_lpf_cutoff
-        );
-    *post_lpf.coefficients = *post_lpf_coefficients;
-}
-
-float NebulaOverdrive::driveToFrequency(float d)
-{
-    float t = d / 10.0f;
-    float min_frequency = 50.0f;
-    float max_frequency = 450.0f;
-    return max_frequency - (max_frequency - min_frequency) * std::pow(t, 2.0f);
 }
 
 float NebulaOverdrive::driveToGain(float d)
@@ -117,22 +75,8 @@ void NebulaOverdrive::process(juce::AudioBuffer<float>& buffer)
 
 void NebulaOverdrive::applyOverdrive(float& sample)
 {
-    float input_padding = juce::Decibels::decibelsToGain(12.0f);
     float current_drive = drive.getNextValue();
     float drive_gain = driveToGain(current_drive);
-    float in = input_padding * sample;
-    float in_drive = drive_gain * in;
 
-    float ff1 = ff1_hpf.processSample(ff1_lpf.processSample(in));
-
-    float ff2 = 0.1f * current_drive * ff1;
-
-    // distortion chain
-    float hpfed = pre_hpf.processSample(in_drive);
-    float lpfed = pre_lpf.processSample(hpfed);
-    float shaped = attack_shelf.processSample(lpfed);
-    float distorded = diode.processSample(shaped);
-    float out = post_lpf.processSample(distorded);
-
-    sample = padding * (out + ff1 + ff2);
+    sample = sample * drive_gain;
 }

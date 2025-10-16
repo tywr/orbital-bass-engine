@@ -116,5 +116,5 @@ inline float CMOS::processSample(float vin)
         vout = std::min(vout, v_dd);
     }
     prev_v = vout;
-    return vout;
+    return vout / v0;
 }

@@ -1,4 +1,5 @@
 #include "borealis.h"
+#include <algorithm>
 
 #include <juce_dsp/juce_dsp.h>
 
@@ -82,7 +83,8 @@ void BorealisOverdrive::prepareFilters()
 
 void BorealisOverdrive::updateXFilter()
 {
-    float current_x_frequency = cross_frequency.getNextValue();
+    float current_x_frequency =
+        std::max(cross_frequency.getNextValue(), 1.0f);
     auto x_coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(
         processSpec.sampleRate, current_x_frequency
     );
@@ -148,6 +150,5 @@ void BorealisOverdrive::applyOverdrive(float& sample)
     float x_out = post_lpf3.processSample(lpf2);
 
     // Mix the lowmids and the distorted X-over signal
-    DBG(current_high_level);
     sample = lowmids + current_high_level * x_out;
 }

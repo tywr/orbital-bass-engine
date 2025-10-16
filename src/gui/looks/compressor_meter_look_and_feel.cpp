@@ -32,14 +32,16 @@ void CompressorMeterLookAndFeel::drawLinearSlider(
     const int numberOfDots = 20;
     const float dotRadius = 4.0f; // Adjust for desired dot size
     const float dotDiameter = dotRadius * 2.0f;
-    const float dotSpacing = 1.0f * width / numberOfDots;
+    const float dotSpacingX =
+        (width - numberOfDots * dotDiameter) / (numberOfDots - 1);
+    const float dotSpacingY = height - 2 * dotDiameter;
 
     const float totalDotDisplayWidth =
         (numberOfDots * dotDiameter) +
-        ((numberOfDots - 1) * (dotSpacing - dotDiameter));
+        ((numberOfDots - 1) * (dotSpacingX - dotDiameter));
     const float totalDotDisplayHeight =
         (numberOfDots * dotDiameter) +
-        ((numberOfDots - 1) * (dotSpacing - dotDiameter)); // For vertical
+        ((numberOfDots - 1) * (dotSpacingY - dotDiameter)); // For vertical
 
     int dotsToLight = static_cast<int>((sliderPos - x) / numberOfDots);
 
@@ -54,11 +56,11 @@ void CompressorMeterLookAndFeel::drawLinearSlider(
 
         for (int i = 0; i < numberOfDots; ++i)
         {
-            float currentDotX = startX + i * dotSpacing;
+            float currentDotX = startX + i * dotSpacingX;
 
             float dotx = currentDotX - dotRadius;
-            float doty_up = dotY + dotSpacing / 3.0f;
-            float doty_down = dotY - dotSpacing / 3.0f;
+            float doty_up = dotY + dotSpacingY / 3.0f;
+            float doty_down = dotY - dotSpacingY / 3.0f;
 
             if (i < dotsToLight)
             {
