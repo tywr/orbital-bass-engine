@@ -144,13 +144,15 @@ void PluginAudioProcessor::prepareParameters()
 //==============================================================================
 void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
-    juce::ignoreUnused(sampleRate, samplesPerBlock);
-    current_input_gain =
-        juce::Decibels::decibelsToGain(input_gain_parameter->load());
-    current_output_gain =
-        juce::Decibels::decibelsToGain(output_gain_parameter->load());
+    current_input_gain.reset(sampleRate, smoothing_time);
+    current_input_gain.setCurrentAndTargetValue(
+        juce::Decibels::decibelsToGain(input_gain_parameter->load())
+    );
+
+    current_output_gain.setCurrentAndTargetValue(
+        juce::Decibels::decibelsToGain(output_gain_parameter->load())
+    );
+    current_output_gain.reset(sampleRate, smoothing_time);
 
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
@@ -220,7 +222,11 @@ void PluginAudioProcessor::processBlock(
         auto* channelData = buffer.getWritePointer(channel);
         juce::ignoreUnused(channelData);
     }
-    applyGain(input_gain_parameter, current_input_gain, buffer);
+
+    current_input_gain.setTargetValue(
+        juce::Decibels::decibelsToGain(input_gain_parameter->load())
+    );
+    current_input_gain.applyGain(buffer, buffer.getNumSamples());
     updateInputLevel(buffer);
 
     // compressor.process(buffer);
@@ -235,7 +241,10 @@ void PluginAudioProcessor::processBlock(
 
     // irConvolver.process(buffer);
 
-    applyGain(output_gain_parameter, current_output_gain, buffer);
+    current_output_gain.setTargetValue(
+        juce::Decibels::decibelsToGain(output_gain_parameter->load())
+    );
+    current_output_gain.applyGain(buffer, buffer.getNumSamples());
     updateOutputLevel(buffer);
 
     // Convert mono to stereo if needed

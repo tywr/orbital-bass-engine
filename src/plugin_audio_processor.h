@@ -79,9 +79,9 @@ class PluginAudioProcessor final
 
     IRConvolver irConvolver;
 
-    float current_input_gain = 1.0f;
-    float current_output_gain = 1.0f;
-    float current_amp_master_gain = 1.0f;
+    float smoothing_time = 0.05f;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>
+        current_input_gain, current_output_gain, current_amp_master_gain;
     std::atomic<float>* input_gain_parameter = nullptr;
     std::atomic<float>* output_gain_parameter = nullptr;
     std::atomic<float>* amp_master_gain_parameter = nullptr;
