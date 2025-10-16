@@ -10,8 +10,8 @@ void HeliosOverdrive::reset()
     cmos.reset();
     diode_plus.reset();
     diode_minus.reset();
-    resetFilters();
     resetSmoothedValues();
+    resetFilters();
     prepareFilters();
 }
 
@@ -169,12 +169,12 @@ void HeliosOverdrive::updateGruntFilter()
     float current_grunt = grunt.getCurrentValue();
     float min_gain_db = -12.0f;
     float max_gain_db = 12.0f;
-    float gain = juce::Decibels::decibelsToGain(
+    float grunt_gain = juce::Decibels::decibelsToGain(
         min_gain_db + (max_gain_db - min_gain_db) * current_grunt * 0.1f
     );
     auto grunt_coefficients =
         juce::dsp::IIR::Coefficients<float>::makePeakFilter(
-            processSpec.sampleRate, grunt_frequency, grunt_filter_q, gain
+            processSpec.sampleRate, grunt_frequency, grunt_filter_q, grunt_gain
         );
     *grunt_filter.coefficients = *grunt_coefficients;
 }

@@ -13,11 +13,15 @@ class IRConvolver
     void applyGain(juce::AudioBuffer<float>& buffer);
     void setMix(float newMix)
     {
-        mix = newMix;
+        float v = juce::jlimit(0.0f, 1.0f, newMix);
+        mix.setTargetValue(v);
+        raw_mix = newMix;
     }
-    void setGain(float newGain)
+    void setLevel(float lvl)
     {
-        gain = newGain;
+        float v = juce::jlimit(0.0f, 2.0f, lvl);
+        level.setTargetValue(v);
+        raw_level = v;
     }
     void setBypass(bool newBypass)
     {
@@ -38,11 +42,12 @@ class IRConvolver
     // GUI Parameters
     bool is_ir_loaded = false;
     bool bypass = false;
-    float mix = 1.0f;
-    float gain = 1.0f;
     juce::String filepath;
 
-    // Internal State
-    float previousGain = 1.0f;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> level, mix;
+
+    float raw_mix = 1.0f;
+    float raw_level = 1.0f;
+
     juce::dsp::Convolution convolution;
 };

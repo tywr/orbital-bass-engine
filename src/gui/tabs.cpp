@@ -14,7 +14,7 @@ Tabs::Tabs(
     : juce::TabbedComponent(juce::TabbedButtonBar::TabsAtTop),
       parameters(params),
       compressor_component(params, compressorGainReductionDb),
-      amp_component(params)
+      amp_component(params), ir_component(params)
 {
     setColour(
         juce::TabbedComponent::backgroundColourId,
@@ -27,7 +27,7 @@ Tabs::Tabs(
     addTab("comp", ColourCodes::bg, &compressor_component, true);
     addTab("amp", ColourCodes::bg, &amp_component, true);
     // addTab("chorus", AuroraColors::bg, new juce::Component(), true);
-    // addTab("cabinet", ColourCodes::bg, new IRLoader(params), true);
+    addTab("cabinet", ColourCodes::bg, &ir_component, true);
     setTabBarDepth(60);
 }
 

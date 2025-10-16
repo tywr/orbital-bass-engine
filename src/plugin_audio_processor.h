@@ -13,7 +13,8 @@
 //==============================================================================
 class PluginAudioProcessor final
     : public juce::AudioProcessor,
-      public juce::AudioProcessorValueTreeState::Listener
+      public juce::AudioProcessorValueTreeState::Listener,
+      public juce::ValueTree::Listener
 {
   public:
     PluginAudioProcessor();
@@ -21,6 +22,9 @@ class PluginAudioProcessor final
 
     void parameterChanged(
         const juce::String& parameterID, float newValue
+    ) override;
+    void valueTreePropertyChanged(
+        juce::ValueTree&, const juce::Identifier&
     ) override;
     void setParameterValue(juce::String, float);
     void setupParameterHandlers();

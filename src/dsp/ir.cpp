@@ -8,29 +8,16 @@ void IRConvolver::prepare(const juce::dsp::ProcessSpec& spec)
     processSpec = spec;
 }
 
-void IRConvolver::applyGain(juce::AudioBuffer<float>& buffer)
-{
-    if (juce::approximatelyEqual(gain, previousGain))
-    {
-        buffer.applyGain(gain);
-    }
-    else
-    {
-        buffer.applyGainRamp(0, buffer.getNumSamples(), previousGain, gain);
-        previousGain = gain;
-    }
-}
-
 void IRConvolver::process(juce::AudioBuffer<float>& buffer)
 {
     if (bypass)
     {
         return;
     }
-    if (!is_ir_loaded)
-    {
-        return;
-    }
+    // if (!is_ir_loaded)
+    // {
+    //     return;
+    // }
     juce::ScopedNoDenormals noDenormals;
     juce::AudioBuffer<float> wetBuffer(
         buffer.getNumChannels(), buffer.getNumSamples()
@@ -42,7 +29,7 @@ void IRConvolver::process(juce::AudioBuffer<float>& buffer)
     convolution.process(context);
 
     // Only apply gain to the IR signal
-    applyGain(wetBuffer);
+    level.applyGain(wetBuffer, wetBuffer.getNumSamples());
 
     for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
     {
@@ -50,14 +37,16 @@ void IRConvolver::process(juce::AudioBuffer<float>& buffer)
         auto* wetChannelData = wetBuffer.getReadPointer(channel);
         for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
         {
-            channelData[sample] = (channelData[sample] * (1.0f - mix)) +
-                                  (wetChannelData[sample] * mix);
+            float current_mix = mix.getNextValue();
+            channelData[sample] = (channelData[sample] * (1.0f - current_mix)) +
+                                  (wetChannelData[sample] * current_mix);
         }
     }
 }
 
 void IRConvolver::loadIR()
 {
+    DBG("Loading IR from file: " + filepath);
     juce::File file = juce::File(filepath);
 
     if (!file.existsAsFile())
@@ -66,7 +55,6 @@ void IRConvolver::loadIR()
         DBG("File does not exist: " + filepath);
         return;
     }
-
     try
     {
         convolution.loadImpulseResponse(

@@ -70,7 +70,7 @@ IRLoader::IRLoader(juce::AudioProcessorValueTreeState& params)
     );
     gainSliderAttachment =
         std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-            parameters, "ir_gain_db", gainSlider
+            parameters, "ir_level", gainSlider
         );
 
     // Refresh the status of the IR loader
@@ -157,7 +157,9 @@ void IRLoader::refreshStatus()
         );
         irMixSlider.setColour(juce::Slider::rotarySliderFillColourId, iRColour);
         gainSlider.setColour(juce::Slider::rotarySliderFillColourId, iRColour);
-        bypassButton.setColour(juce::ToggleButton::tickDisabledColourId, iRColour);
+        bypassButton.setColour(
+            juce::ToggleButton::tickDisabledColourId, iRColour
+        );
     }
     repaint();
 }

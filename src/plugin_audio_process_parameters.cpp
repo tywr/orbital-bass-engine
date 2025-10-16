@@ -146,9 +146,9 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
         float bv = juce::jlimit(0.0f, 1.0f, v);
         irConvolver.setMix(v);
     }
-    else if (parameterID == "ir_gain_db")
+    else if (parameterID == "ir_level")
     {
-        irConvolver.setGain(juce::Decibels::decibelsToGain(v));
+        irConvolver.setLevel(juce::Decibels::decibelsToGain(v));
     }
     else if (parameterID == "ir_filepath")
     {
