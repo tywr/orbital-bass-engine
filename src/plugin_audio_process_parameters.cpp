@@ -31,8 +31,14 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     }
     else if (parameterID == "amp_type")
     {
-        int index = static_cast<int>(v);
-        current_overdrive = overdrives[index];
+        int index = juce::jlimit(0, (int)overdrives.size() - 1, (int)v);
+        Overdrive* next = overdrives[index];
+
+        if (next != current_overdrive.load())
+        {
+            next->reset(); // reset buffers/envelopes
+            current_overdrive.store(next);
+        }
     }
     // Overdrive
     if (parameterID == "amp_bypass")

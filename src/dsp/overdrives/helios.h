@@ -11,16 +11,17 @@ class HeliosOverdrive : public Overdrive
   public:
     void prepare(const juce::dsp::ProcessSpec& spec) override;
     void process(juce::AudioBuffer<float>& buffer) override;
+    void reset() override;
+    void resetSmoothedValues();
+    void resetFilters();
     float driveToGain(float);
     void updateAttackFilter();
     void updateGruntFilter();
     void updateMidScoop();
     void applyOverdrive(float& sample, float drive_gain);
-    void resetSmoothedValues();
     void prepareFilters();
 
   private:
-
     juce::dsp::IIR::Filter<float> pre_hpf;
     float pre_hpf_cutoff = 50.0f;
 

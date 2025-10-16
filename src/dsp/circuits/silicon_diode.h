@@ -9,6 +9,11 @@ class SiliconDiode
     SiliconDiode(float fs, bool positive);
     float processSample(float);
     float omega(float);
+    void reset()
+    {
+        prev_v = 0.0f;
+        prev_p = k6 * prev_v;
+    }
 
   private:
     // Fixed variables
@@ -77,7 +82,7 @@ inline SiliconDiode::SiliconDiode(float t_fs, bool t_positive)
     k5 = std::log((i_s * r) / crb_1 * v_t);
     k6 = b1 - a1 * b0;
 
-    prev_v = 1.0f;
+    prev_v = 0.0f;
     prev_p = k6 * prev_v;
 }
 

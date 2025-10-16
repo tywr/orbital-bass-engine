@@ -2,6 +2,10 @@
 
 #include <juce_dsp/juce_dsp.h>
 
+void NebulaOverdrive::reset()
+{
+}
+
 void NebulaOverdrive::resetSmoothedValues()
 {
     level.reset(processSpec.sampleRate, smoothing_time);

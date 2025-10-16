@@ -70,10 +70,13 @@ class PluginAudioProcessor final
 
     Compressor compressor;
 
-    Overdrive* current_overdrive = nullptr;
+    std::atomic<Overdrive*> current_overdrive = nullptr;
     HeliosOverdrive helios_overdrive;
     BorealisOverdrive borealis_overdrive;
     NebulaOverdrive nebula_overdrive;
+    std::vector<Overdrive*> overdrives = {
+        &helios_overdrive, &borealis_overdrive, &nebula_overdrive
+    };
 
     AmpEQ amp_eq;
 
@@ -87,8 +90,5 @@ class PluginAudioProcessor final
     std::atomic<float>* amp_master_gain_parameter = nullptr;
     bool isAmpBypassed = false;
 
-    std::vector<Overdrive*> overdrives = {
-        &helios_overdrive, &borealis_overdrive, &nebula_overdrive
-    };
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginAudioProcessor)
 };

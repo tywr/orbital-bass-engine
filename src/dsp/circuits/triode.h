@@ -22,6 +22,10 @@ class Triode
     // Constructor
     Triode(float fs);
     void initializeState();
+    void reset()
+    {
+        initializeState();
+    }
 
     // Processes a block of samples (a vector)
     // std::vector<float> process(const std::vector<float>& input);
@@ -104,8 +108,8 @@ inline Triode::Triode(float fs)
     float k2 = k1 * (kp / kp2 + 2.0f * E) * kp2;
     float k3 = Rk * k2 + 1.0f;
     float sign_k1 = (k1 >= 0.0f) ? 1.0f : -1.0f;
-    float Vk0 =
-        (k3 - sign_k1 * std::sqrt(2.0f * k3 - 1.0f)) / (2.0f * Rk * k1 * k1 * kp2);
+    float Vk0 = (k3 - sign_k1 * std::sqrt(2.0f * k3 - 1.0f)) /
+                (2.0f * Rk * k1 * k1 * kp2);
     float Vp0 = E - Rp / Rk * Vk0;
 
     wCi_s = 0.0f;

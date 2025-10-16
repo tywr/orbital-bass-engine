@@ -8,6 +8,10 @@ class CMOS
     CMOS()
     {
     }
+    void reset()
+    {
+        prev_v = 0.0f;
+    }
     float processSample(float);
     std::tuple<float, float> pmos(float, float);
     std::tuple<float, float> nmos(float, float);

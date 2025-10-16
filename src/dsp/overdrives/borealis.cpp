@@ -3,6 +3,26 @@
 
 #include <juce_dsp/juce_dsp.h>
 
+void BorealisOverdrive::reset()
+{
+    diode.reset();
+    oversampler2x.reset();
+    resetFilters();
+    resetSmoothedValues();
+    prepareFilters();
+}
+
+void BorealisOverdrive::resetFilters()
+{
+    pre_hpf.reset();
+    pre_lpf.reset();
+    lowmids_lpf.reset();
+    post_lpf.reset();
+    post_lpf2.reset();
+    post_lpf3.reset();
+    x_hpf.reset();
+}
+
 void BorealisOverdrive::resetSmoothedValues()
 {
     level.reset(processSpec.sampleRate, smoothing_time);
@@ -83,8 +103,8 @@ void BorealisOverdrive::prepareFilters()
 
 void BorealisOverdrive::updateXFilter()
 {
-    float current_x_frequency =
-        std::max(cross_frequency.getNextValue(), 1.0f);
+    DBG("Updating X Filter" << cross_frequency.getTargetValue());
+    float current_x_frequency = std::max(cross_frequency.getNextValue(), 1.0f);
     auto x_coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(
         processSpec.sampleRate, current_x_frequency
     );
@@ -121,9 +141,7 @@ void BorealisOverdrive::process(juce::AudioBuffer<float>& buffer)
         float wet = channelData[i];
         applyOverdrive(wet);
 
-        float current_level = level.getNextValue();
         float current_mix = mix.getNextValue();
-        wet *= current_level;
         channelData[i] = wet * current_mix + dry * (1.0f - current_mix);
     }
     oversampler2x.processSamplesDown(block);
@@ -132,7 +150,7 @@ void BorealisOverdrive::process(juce::AudioBuffer<float>& buffer)
 void BorealisOverdrive::applyOverdrive(float& sample)
 {
     float current_drive = drive.getNextValue();
-    float current_high_level = high_level.getNextValue();
+    float current_level = level.getNextValue();
     float current_drive_gain = driveToGain(current_drive);
 
     // Clean the input signal with LPF and HPF
@@ -150,5 +168,5 @@ void BorealisOverdrive::applyOverdrive(float& sample)
     float x_out = post_lpf3.processSample(lpf2);
 
     // Mix the lowmids and the distorted X-over signal
-    sample = lowmids + current_high_level * x_out;
+    sample = lowmids + current_level * x_out;
 }

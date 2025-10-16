@@ -113,7 +113,7 @@ void PluginAudioProcessor::prepareParameters()
 
     int amp_index =
         static_cast<int>(parameters.getRawParameterValue("amp_type")->load());
-    current_overdrive = overdrives[amp_index];
+    current_overdrive.store(overdrives[amp_index]);
 
     // iterate over all parameters to set their initial values
     for (auto* p : getParameters())
@@ -229,10 +229,11 @@ void PluginAudioProcessor::processBlock(
     current_input_gain.applyGain(buffer, buffer.getNumSamples());
     updateInputLevel(buffer);
 
-    // compressor.process(buffer);
-    // compressorGainReductionDb.setValue(compressor.getGainReductionDb());
+    compressor.process(buffer);
+    compressorGainReductionDb.setValue(compressor.getGainReductionDb());
 
-    current_overdrive->process(buffer);
+    if (auto* od = current_overdrive.load())
+        od->process(buffer);
 
     // amp_eq.process(buffer);
     //

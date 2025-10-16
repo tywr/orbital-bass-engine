@@ -12,6 +12,9 @@ class Overdrive
     {
         juce::ignoreUnused(buffer);
     }
+    virtual void reset()
+    {
+    }
     void virtual setAttack(float newAttack)
     {
         float v = juce::jlimit(0.0f, 10.0f, newAttack);

@@ -4,6 +4,31 @@
 
 #include <juce_dsp/juce_dsp.h>
 
+void HeliosOverdrive::reset()
+{
+    oversampler2x.reset();
+    cmos.reset();
+    diode_plus.reset();
+    diode_minus.reset();
+    resetFilters();
+    resetSmoothedValues();
+    prepareFilters();
+}
+
+void HeliosOverdrive::resetFilters()
+{
+    dc_hpf.reset();
+    pre_lpf.reset();
+    lowmids_lpf.reset();
+    mid_hpf.reset();
+    pre_hpf.reset();
+    post_lpf.reset();
+    post_lpf2.reset();
+    post_lpf3.reset();
+    attack_shelf.reset();
+    grunt_filter.reset();
+    mid_scoop.reset();
+}
 void HeliosOverdrive::resetSmoothedValues()
 {
     level.reset(processSpec.sampleRate, smoothing_time);

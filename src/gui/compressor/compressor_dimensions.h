@@ -17,7 +17,7 @@ constexpr int KNOBS_BOTTOM_BOX_HEIGHT = 100;
 constexpr int FOOTER_HEIGHT = 60;
 
 constexpr int GAIN_REDUCTION_HEIGHT = 40;
-constexpr int GAIN_REDUCTION_WIDTH = 440;
+constexpr int GAIN_REDUCTION_WIDTH = 280;
 constexpr int BYPASS_BUTTON_WIDTH = 20;
 constexpr int BYPASS_BUTTON_HEIGHT = 20;
 
