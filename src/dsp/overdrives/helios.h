@@ -26,7 +26,7 @@ class HeliosOverdrive : public Overdrive
     float pre_hpf_cutoff = 50.0f;
 
     juce::dsp::IIR::Filter<float> pre_lpf;
-    float pre_lpf_cutoff = 3300.0f;
+    float pre_lpf_cutoff = 1540.0f;
     float pre_lpf_q = 0.5f;
 
     juce::dsp::IIR::Filter<float> lowmids_lpf;
@@ -38,23 +38,20 @@ class HeliosOverdrive : public Overdrive
     juce::dsp::IIR::Filter<float> mid_scoop;
 
     juce::dsp::IIR::Filter<float> grunt_filter;
-    float grunt_frequency = 700.0f;
-    float grunt_filter_q = 0.7f;
 
     juce::dsp::IIR::Filter<float> attack_shelf;
-    float attack_shelf_q = 0.7f;
 
     juce::dsp::IIR::Filter<float> dc_hpf;
     float dc_hpf_cutoff = 20.0f;
 
     juce::dsp::IIR::Filter<float> post_lpf;
-    float post_lpf_cutoff = 3300.0f;
+    float post_lpf_cutoff = 7234.0f;
 
     juce::dsp::IIR::Filter<float> post_lpf2;
-    float post_lpf2_cutoff = 3300.0f;
+    float post_lpf2_cutoff = 1540.0f;
 
     juce::dsp::IIR::Filter<float> post_lpf3;
-    float post_lpf3_cutoff = 7200.0f;
+    float post_lpf3_cutoff = 3300.0f;
 
     CMOS cmos = CMOS();
     SiliconDiode diode_plus = SiliconDiode(44100.0f, true);

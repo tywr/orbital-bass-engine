@@ -44,9 +44,6 @@ for label, setting in pot_settings.items():
     # The input signal goes to the non-inverting input (pin 5)
     circuit.V("input", "in", circuit.gnd, "DC 0V AC 1V")
 
-    # <<< FIX 1: Correct Op-Amp Subcircuit Call >>>
-    # The standard pin order is: IN+, IN-, V+, V-, OUT
-    # We need to define a node for the inverting input (pin 6) -> 'inv_in'
     circuit.X(
         "IC1B",
         "TL074",

@@ -17,24 +17,23 @@ circuit.include(os.path.join(script_path, "TL074.lib"))
 circuit.V("cc", "vcc", circuit.gnd, 0 @ u_V)
 circuit.V("ee", "vee", circuit.gnd, 0)
 
-circuit.V("input", "in_node", circuit.gnd, "DC 0V AC 5V")
+circuit.V("input", "in_node", circuit.gnd, "DC 0V AC 1V")
+# circuit.V("input", "in_amp", circuit.gnd, "DC 0V AC 1V")
 
-circuit.X(
-    "U1",
-    "TL074",
-    "in_node",  # 1: Non-inverting input (IN+)
-    "opamp_out",  # 2: Inverting input (IN-), connected to output for buffer config
-    "vcc",  # 3: Positive power supply (V+)
-    circuit.gnd,  # 4: Negative power supply (V-)
-    "opamp_out",  # 5: Output
-)
+# circuit.X(
+#     "U1",
+#     "TL074",
+#     "in_amp",  # 1: Non-inverting input (IN+)
+#     "in_node",  # 2: Inverting input (IN-), connected to output for buffer config
+#     "vcc",  # 3: Positive power supply (V+)
+#     circuit.gnd,  # 4: Negative power supply (V-)
+#     "in_node",  # 5: Output
+# )
 
-circuit.R(22, "opamp_out", "feedback_node", 100 @ u_kOhm)
-circuit.C(11, "opamp_out", "final_out", 1 @ u_nF)
-circuit.C(17, "feedback_node", circuit.gnd, 4.7 @ u_nF)
-circuit.R(23, "feedback_node", "pot_top", 10 @ u_kOhm)
-
-circuit.R("load", "final_out", circuit.gnd, 1 @ u_MΩ)
+circuit.R(20, "in_node", "middle_node", 100 @ u_kOhm)
+circuit.C(17, "middle_node", circuit.gnd, 22 @ u_nF)
+circuit.R(21, "middle_node", "era_node", 33 @ u_kOhm)
+circuit.C(16, "in_node", "out_node", 680 @ u_pF)
 
 pot_settings = {
     "Minimum (0%)": 0.1 @ u_Ohm,
@@ -53,7 +52,7 @@ if __name__ == "__main__":
 GAIN_DB = []
 for label, resistance in pot_settings.items():
     run_circuit = circuit.clone()
-    run_circuit.R("pot", "pot_top", "final_out", resistance)
+    run_circuit.R("pot", "era_node", "out_node", resistance)
 
     simulator = run_circuit.simulator(temperature=25, nominal_temperature=25)
     analysis = simulator.ac(
@@ -64,7 +63,7 @@ for label, resistance in pot_settings.items():
     )
     # --- Plotting the results
     freq = analysis.frequency
-    gain_db = 20 * np.log10(np.abs(analysis.final_out))
+    gain_db = 20 * np.log10(np.abs(analysis.out_node)) - 87.87 - 21
     if __name__ == "__main__":
         ax.semilogx(freq, 110 + gain_db - 1.05, label=label)
     FREQUENCY = freq

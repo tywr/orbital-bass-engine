@@ -1,42 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import bilinear
-
-
-def create_peak_filter(fc, G, Q, fs):
-    """
-    Creates the coefficients for a digital peak (peaking EQ) filter.
-
-    Args:
-        fc (float): The center frequency of the filter in Hz.
-        G (float): The gain of the filter in dB.
-        Q (float): The Q-factor of the filter, which determines the bandwidth.
-        fs (int): The sampling frequency in Hz.
-
-    Returns:
-        tuple: A tuple containing two numpy arrays (b, a) representing the
-               numerator and denominator coefficients of the transfer function.
-    """
-    # Intermediate variables
-    A = 10 ** (G / 40.0)
-    w0 = 2 * np.pi * fc / fs
-    alpha = np.sin(w0) / (2 * Q)
-
-    # Coefficients for the transfer function H(z) = (b0 + b1*z^-1 + b2*z^-2) / (a0 + a1*z^-1 + a2*z^-2)
-    # These formulas are from the "Audio EQ Cookbook" by Robert Bristow-Johnson
-    b0 = 1 + alpha * A
-    b1 = -2 * np.cos(w0)
-    b2 = 1 - alpha * A
-
-    a0 = 1 + alpha / A
-    a1 = -2 * np.cos(w0)
-    a2 = 1 - alpha / A
-
-    # Normalize the coefficients so that a0 is 1
-    b = np.array([b0, b1, b2]) / a0
-    a = np.array([a0, a1, a2]) / a0
-
-    return b, a
+from scripts.circuits.vmt.era_knob import GAIN_DB, FREQUENCY
 
 
 def create_high_shelf(fc, G, Q, fs):
@@ -124,12 +89,23 @@ def plot_bode(ax, b, a, fs):
 
 
 def create_era_filter(fs, era_position=0):
-    a2 = 4.7e-8 * era_position + 4.7e-9
-    a1 = 2.10e-4
+    # Q1 = 0.15 + era_position * 0.05
+    Q1 = 0.7 + era_position * 0.1
+    Q2 = 0.6 + era_position * 0.5
+    wc = 3000
+    # Simple version
+    # a2 = 4.7e-7 * (era_position + 0.1)
+    # a1 = 2.10e-4
+    a2 = (wc**-2) * (era_position + 0.1)
+    a1 = (a2**0.5) / Q2
     a0 = 1.0
 
-    b2 = 5.17e-8
-    b1 = 6.8e-4
+    # b2 = 5.17e-8
+    # b2 = 19 * (5.5 ** (1 - era_position)) * a2
+    # b1 = 6.8e-4
+    # b0 = 1.0
+    b2 = 19 * (5.5 ** (1 - era_position)) * a2
+    b1 = b2**0.5 / Q1
     b0 = 1.0
 
     T = 1.0 / fs
@@ -144,18 +120,26 @@ def create_era_filter(fs, era_position=0):
     B2 = a2 * K * K - a1 * K + a0
 
     norm = 1.0 / A0
+    bb0 = B0 * norm
+    bb1 = B1 * norm
+    bb2 = B2 * norm
+    aa0 = 1.0
+    aa1 = A1 * norm
+    aa2 = A2 * norm
 
-    a = [B0 * norm, B1 * norm, B2 * norm]
-    b = [1.0, A1 * norm, A2 * norm]
+    mix = 1.0
 
-    fc = 150
-    G = -30
-    a2, b2 = create_high_shelf(fc=fc, G=G, Q=0.6, fs=fs)
-    return a, b, a2, b2
+    b0m = (1.0 - mix) * aa0 + mix * bb0
+    b1m = (1.0 - mix) * aa1 + mix * bb1
+    b2m = (1.0 - mix) * aa2 + mix * bb2
+
+    a = [aa0, aa1, aa2]
+    b = [b0m, b1m, b2m]
+    return b, a
 
 
 if __name__ == "__main__":
-    fs = 48000  # Sampling frequency in Hz
+    fs = 96000  # Sampling frequency in Hz
 
     fig, ax = plt.subplots(1, 1, figsize=(10, 8), sharex=True)
     fig.suptitle("Bode Diagram of the Peak Filter", fontsize=16)
@@ -164,14 +148,22 @@ if __name__ == "__main__":
     ax.set_title("Magnitude Response")
     ax.set_xlim(5, fs / 2)
 
-    for i in [1.0]:
-        pos = i
-        b, a, b2, a2 = create_era_filter(fs, era_position=pos)
-        b3, a3 = create_peak_filter(fc=700, G=-10, Q=0.6, fs=fs)
+    # ax.semilogx(f2, m2, label="High Shelf Filter")
+    for i in [0, 4]:
+        pos = i / 4.0
+        b, a = create_era_filter(fs, era_position=pos)
         f, m = plot_bode(ax, b, a, fs)
-        f3, m3 = plot_bode(ax, b3, a3, fs)
-        ax.semilogx(f, m, label=f"Era Response ({pos})", linewidth=2)
-        ax.semilogx(f3, m3, label=f"Peak Filter ({pos})", linewidth=2)
+
+        b2, a2 = create_high_shelf(
+            fc=500 - (i / 4) * 180, G=-40 + 12 * (i / 4), Q=0.7, fs=fs
+        )
+        f2, m2 = plot_bode(ax, b2, a2, fs)
+
+        ax.semilogx(f2, m2, label=f"Classic shelf ({i})", linewidth=2)
+        ax.semilogx(f, m, label=f"Era Response ({i})", linewidth=2)
+
+        # gain = np.array(GAIN_DB[i]) - 1.05 + 110
+        # ax.semilogx(FREQUENCY, gain, label="Target Gain dB", linestyle="--")
 
     plt.legend()
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
