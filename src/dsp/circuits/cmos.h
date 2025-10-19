@@ -17,8 +17,6 @@ class CMOS
     std::tuple<float, float> nmos(float, float);
 
   private:
-    float v0 = 0.34486360573756947f;
-
     float n_vtc1 = 1.208306917691355f;
     float n_vtc2 = 0.3139084341943607f;
     float n_alpha1 = 0.020662094888127674f;
@@ -31,6 +29,7 @@ class CMOS
     float p_alpha3 = -0.00016848836814836602f;
     float p_alpha4 = -1.0800821774906936e-5f;
 
+    float bias = 3.45f;
     float v_dd = 9.0f;
     float delta = 0.06f;
 
@@ -83,13 +82,9 @@ inline std::tuple<float, float> CMOS::pmos(float vgs, float vds)
     return {ids, gds};
 }
 
-inline float CMOS::processSample(float vin)
+inline float CMOS::processSample(float x)
 {
-    if (vin >= 8.5f)
-    {
-        prev_v = 0.0f;
-        return 0.0f;
-    }
+    float vin = x + bias;
     float vout = prev_v;
 
     // Iterate a fixed number of times for stability and real - time safety
@@ -120,5 +115,5 @@ inline float CMOS::processSample(float vin)
         vout = std::min(vout, v_dd);
     }
     prev_v = vout;
-    return vout / v0;
+    return 1 - 2 * vout / v_dd;
 }

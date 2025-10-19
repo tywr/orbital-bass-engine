@@ -83,7 +83,7 @@ if __name__ == "__main__":
     ax.set_title("Magnitude Response")
     ax.set_xlim(5, fs / 2)
 
-    b, a = create_peak_filter(fc=700, G=-5, Q=0.7, fs=fs)
+    b, a = create_peak_filter(fc=400, G=-5, Q=0.7, fs=fs)
     f, m = plot_bode(ax, b, a, fs)
     plt.semilogx(f, m, label="Peak Filter", linewidth=2)
     plt.legend()

@@ -30,10 +30,11 @@ circuit.V("input", "in_node", circuit.gnd, "DC 0V AC 1V")
 #     "in_node",  # 5: Output
 # )
 
+circuit.C(16, "in_node", "out_node", 1@ u_nF)
 circuit.R(20, "in_node", "middle_node", 100 @ u_kOhm)
-circuit.C(17, "middle_node", circuit.gnd, 22 @ u_nF)
-circuit.R(21, "middle_node", "era_node", 33 @ u_kOhm)
-circuit.C(16, "in_node", "out_node", 680 @ u_pF)
+# circuit.C(17, "middle_node", circuit.gnd, 22 @ u_nF)
+circuit.C(17, "middle_node", circuit.gnd, 4.7 @ u_nF)
+circuit.R(21, "middle_node", "era_node", 10 @ u_kOhm)
 
 pot_settings = {
     "Minimum (0%)": 0.1 @ u_Ohm,

@@ -12,19 +12,27 @@ class AmpEQ
 
     void setBassGain(float gain)
     {
-        bass_gain = gain;
+        float v = juce::jlimit(0.0f, 10.0f, gain);
+        bass_gain.setTargetValue(v);
+        raw_bass_gain = v;
     }
     void setLowMidGain(float gain)
     {
-        low_mid_gain = gain;
+        float v = juce::jlimit(0.0f, 10.0f, gain);
+        low_mid_gain.setTargetValue(v);
+        raw_low_mid_gain = v;
     }
     void setHighMidGain(float gain)
     {
-        high_mid_gain = gain;
+        float v = juce::jlimit(0.0f, 10.0f, gain);
+        high_mid_gain.setTargetValue(v);
+        raw_high_mid_gain = v;
     }
     void setTrebleGain(float gain)
     {
-        treble_gain = gain;
+        float v = juce::jlimit(0.0f, 10.0f, gain);
+        treble_gain.setTargetValue(v);
+        raw_treble_gain = v;
     }
     void setBypass(bool shouldBypass)
     {
@@ -48,24 +56,15 @@ class AmpEQ
     float high_mid_peak_frequency = 1500.0f;
     float high_mid_peak_q = 0.707f;
 
-    juce::dsp::IIR::Filter<float> treble_peak;
-    float treble_peak_frequency = 5000.0f;
-    float treble_peak_q = 0.707f;
+    juce::dsp::IIR::Filter<float> treble_shelf;
+    float treble_shelf_frequency = 5000.0f;
+    float treble_shelf_q = 0.707f;
 
     // GUI Parameters
     bool bypass = false;
 
-    float bass_gain = 1.0f;
-    float low_mid_gain = 1.0f;
-    float high_mid_gain = 1.0f;
-    float treble_gain = 1.0f;
-
-    // Smoothed internal parameters
-    float smoothed_bass_gain = 1.0f;
-    float smoothed_low_mid_gain = 1.0f;
-    float smoothed_high_mid_gain = 1.0f;
-    float smoothed_treble_gain = 1.0f;
-
-    // Interal parameters
-    float smoothing_factor = 0.1f;
+    float smoothing_time = 0.05f;
+    float raw_bass_gain, raw_low_mid_gain, raw_high_mid_gain, raw_treble_gain;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> bass_gain,
+        low_mid_gain, high_mid_gain, treble_gain;
 };

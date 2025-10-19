@@ -8,8 +8,6 @@ void HeliosOverdrive::reset()
 {
     oversampler2x.reset();
     cmos.reset();
-    diode_plus.reset();
-    diode_minus.reset();
     resetSmoothedValues();
     resetFilters();
     prepareFilters();
@@ -17,18 +15,15 @@ void HeliosOverdrive::reset()
 
 void HeliosOverdrive::resetFilters()
 {
-    dc_hpf.reset();
     pre_lpf.reset();
-    lowmids_lpf.reset();
-    mid_hpf.reset();
     pre_hpf.reset();
     post_lpf.reset();
     post_lpf2.reset();
     post_lpf3.reset();
     attack_shelf.reset();
-    grunt_filter.reset();
-    mid_scoop.reset();
+    drive_filter.reset();
 }
+
 void HeliosOverdrive::resetSmoothedValues()
 {
     level.reset(processSpec.sampleRate, smoothing_time);
@@ -53,52 +48,23 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
     oversampler2x.initProcessing(static_cast<size_t>(spec.maximumBlockSize));
 
     resetSmoothedValues();
-
-    diode_plus = SiliconDiode(processSpec.sampleRate, true);
-    diode_minus = SiliconDiode(processSpec.sampleRate, false);
-
     prepareFilters();
-
-    attack_shelf.prepare(processSpec);
-    updateAttackFilter();
-
-    grunt_filter.prepare(processSpec);
-    updateGruntFilter();
-
-    mid_scoop.prepare(processSpec);
-    updateMidScoop();
 }
 
 void HeliosOverdrive::prepareFilters()
 {
+    attack_shelf.prepare(processSpec);
+    updateAttackFilter();
 
-    dc_hpf.prepare(processSpec);
-    auto dc_hpf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeHighPass(
-            processSpec.sampleRate, dc_hpf_cutoff
-        );
-    *dc_hpf.coefficients = *dc_hpf_coefficients;
+    drive_filter.prepare(processSpec);
+    updateDriveFilter();
 
     pre_lpf.prepare(processSpec);
     auto pre_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, pre_lpf_cutoff, pre_lpf_q
+            processSpec.sampleRate, pre_lpf_cutoff
         );
     *pre_lpf.coefficients = *pre_lpf_coefficients;
-
-    lowmids_lpf.prepare(processSpec);
-    auto lowmids_lpf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, lowmids_lpf_cutoff
-        );
-    *lowmids_lpf.coefficients = *lowmids_lpf_coefficients;
-
-    mid_hpf.prepare(processSpec);
-    auto mid_hpf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeHighPass(
-            processSpec.sampleRate, mid_hpf_cutoff
-        );
-    *mid_hpf.coefficients = *mid_hpf_coefficients;
 
     pre_hpf.prepare(processSpec);
     auto pre_hpf_coefficients =
@@ -129,72 +95,52 @@ void HeliosOverdrive::prepareFilters()
     *post_lpf3.coefficients = *post_lpf3_coefficients;
 }
 
-float HeliosOverdrive::driveToGain(float d)
-{
-    float t = d / 10.0f;
-    float min_gain_db = 12.0f;
-    float max_gain_db = 42.0f;
-    float gain = juce::Decibels::decibelsToGain(
-        min_gain_db + t * (max_gain_db - min_gain_db)
-    );
-    return gain;
-}
-
 void HeliosOverdrive::updateAttackFilter()
 {
     float current_attack = attack.getCurrentValue();
     float attack_shelf_q = 0.7f;
-    float frequency = 700.0f;
-    float min_gain_db = -12.0f;
-    float max_gain_db = -3.0f;
+    float min_frequency = 1540.0f;
+    float max_frequency = 1540.0f;
+    float min_gain_db = -48.0f;
+    float max_gain_db = 0.0f;
+    float shelf_frequency =
+        min_frequency + (max_frequency - min_frequency) * current_attack * 0.1f;
     float shelf_gain = juce::Decibels::decibelsToGain(
         min_gain_db + (max_gain_db - min_gain_db) * current_attack * 0.1f
     );
 
     auto attack_shelf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeHighShelf(
-            processSpec.sampleRate, frequency, attack_shelf_q, shelf_gain
+            processSpec.sampleRate, shelf_frequency, attack_shelf_q, shelf_gain
         );
     *attack_shelf.coefficients = *attack_shelf_coefficients;
 }
 
-void HeliosOverdrive::updateMidScoop()
-{
-    float current_attack = drive.getCurrentValue();
-    float min_frequency = 350.0f;
-    float max_frequency = 750.0f;
-    float min_gain = -24.0f;
-    float max_gain = -30.0f;
-    float mid_scoop_frequency =
-        min_frequency +
-        (max_frequency - min_frequency) * (1.0f - current_attack * 0.1f);
-    float scoop_gain = juce::Decibels::decibelsToGain(
-        min_gain + (max_gain - min_gain) * current_attack * 0.1f
-    );
-    float mid_scoop_q = 0.7f;
-
-    auto mid_scoop_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
-            processSpec.sampleRate, mid_scoop_frequency, mid_scoop_q, scoop_gain
-        );
-    *mid_scoop.coefficients = *mid_scoop_coefficients;
-}
-
-void HeliosOverdrive::updateGruntFilter()
+void HeliosOverdrive::updateDriveFilter()
 {
     float current_grunt = grunt.getCurrentValue();
-    float grunt_frequency = 700.0f;
-    float grunt_filter_q = 0.7f;
-    float min_gain_db = -12.0f;
-    float max_gain_db = 12.0f;
-    float grunt_gain = juce::Decibels::decibelsToGain(
-        min_gain_db + (max_gain_db - min_gain_db) * current_grunt * 0.1f
+    float current_drive = drive.getCurrentValue();
+    float drive_filter_q = 0.7f;
+
+    // Set the frequency based on the grunt parameter
+    float min_frequency = 120.0f;
+    float max_frequency = 320.0f;
+    float drive_frequency =
+        min_frequency + (max_frequency - min_frequency) * current_grunt * 0.1f;
+
+    // Set the gain based on the drive parameter
+    float min_gain_db = 3.0f;
+    float max_gain_db = 40.0f;
+    float drive_filter_gain = juce::Decibels::decibelsToGain(
+        min_gain_db + (max_gain_db - min_gain_db) * current_drive * 0.1f
     );
-    auto grunt_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
-            processSpec.sampleRate, grunt_frequency, grunt_filter_q, grunt_gain
+
+    auto drive_filter_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeHighShelf(
+            processSpec.sampleRate, drive_frequency, drive_filter_q,
+            drive_filter_gain
         );
-    *grunt_filter.coefficients = *grunt_coefficients;
+    *drive_filter.coefficients = *drive_filter_coefficients;
 }
 
 void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
@@ -214,57 +160,43 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
         {
             attack.getNextValue();
             updateAttackFilter();
-            updateMidScoop();
         }
         if (grunt.isSmoothing())
         {
             grunt.getNextValue();
-            updateGruntFilter();
+            updateDriveFilter();
+        }
+        if (drive.isSmoothing())
+        {
+            drive.getNextValue();
+            updateDriveFilter();
         }
 
         float dry = channelData[i];
         float wet = channelData[i];
-        float current_drive = drive.getNextValue();
-        applyOverdrive(wet, driveToGain(current_drive));
+        applyOverdrive(wet);
 
         float current_level = level.getNextValue();
         float current_mix = mix.getNextValue();
-
         wet *= current_level;
         channelData[i] = current_mix * wet + (1.0f - current_mix) * dry;
     }
     oversampler2x.processSamplesDown(block);
 }
 
-void HeliosOverdrive::applyOverdrive(float& sample, float gain)
+void HeliosOverdrive::applyOverdrive(float& sample)
 {
     float input_padding = juce::Decibels::decibelsToGain(0.0f);
     float raw_input = sample * input_padding;
     float filtered = pre_lpf.processSample(pre_hpf.processSample(raw_input));
 
-    // Only drive between low-mids and highs
-    float grunted = grunt_filter.processSample(filtered);
-    float mids = mid_hpf.processSample(grunted);
-    float drived = gain * mids;
+    float attacked = attack_shelf.processSample(filtered);
+    float drived = drive_filter.processSample(attacked);
 
-    // Filter low mids on "clean" signal
-    float lowmids = lowmids_lpf.processSample(filtered);
-
-    // Combine both driven and clean signal before overdrive
-    // Add a bit more clean signal to keep lowend
-    float input = drived + lowmids;
-
-    // The signal is restricted to values above -0.7V to stay
-    // in the linear region of the CMOS inverter.
-    float soft_clipped = 0.5f * (diode_plus.processSample(input) + input);
-    float hard_clipped = diode_minus.processSample(soft_clipped);
-    float distorted =
-        dc_hpf.processSample(cmos.processSample(4.5f + hard_clipped));
-    float shelved = attack_shelf.processSample(distorted);
-    float era = mid_scoop.processSample(shelved);
+    float distorted = cmos.processSample(drived);
 
     // Apply three consecutive LPF to smooth out top-end
-    float lpfed1 = post_lpf.processSample(era);
+    float lpfed1 = post_lpf.processSample(distorted);
     float lpfed2 = post_lpf2.processSample(lpfed1);
     float out = post_lpf3.processSample(lpfed2);
 

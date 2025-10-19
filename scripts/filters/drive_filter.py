@@ -4,43 +4,6 @@ from scipy.signal import bilinear
 # from scripts.circuits.vmt.era_knob import GAIN_DB, FREQUENCY
 
 
-def create_peak_filter(fc, G, Q, fs):
-    """
-    Creates the coefficients for a digital peak (or peaking EQ) filter.
-
-    This filter boosts or cuts a specific frequency band around the center
-    frequency.
-
-    Args:
-        fc (float): The center frequency of the filter in Hz.
-        G (float): The gain at the peak in dB (can be positive or negative).
-        Q (float): The Q-factor of the filter, which determines the bandwidth.
-        fs (int): The sampling frequency in Hz.
-
-    Returns:
-        tuple: A tuple containing two numpy arrays (b, a) representing the
-               numerator and denominator coefficients of the transfer function.
-    """
-    # Intermediate variables
-    A = 10 ** (G / 40.0)
-    w0 = 2 * np.pi * fc / fs
-    alpha = np.sin(w0) / (2 * Q)
-
-    # Coefficients for the transfer function, from the "Audio EQ Cookbook"
-    b0 = 1 + alpha * A
-    b1 = -2 * np.cos(w0)
-    b2 = 1 - alpha * A
-    a0 = 1 + alpha / A
-    a1 = -2 * np.cos(w0)
-    a2 = 1 - alpha / A
-
-    # Normalize the coefficients so that a0 is 1
-    b = np.array([b0, b1, b2]) / a0
-    a = np.array([a0, a1, a2]) / a0
-
-    return b, a
-
-
 def create_high_shelf(fc, G, Q, fs):
     """
     Creates the coefficients for a digital high-shelf filter.
@@ -125,56 +88,6 @@ def plot_bode(ax, b, a, fs):
     return freq, magnitude_db
 
 
-def create_era_filter(fs, era_position=0):
-    # Q1 = 0.15 + era_position * 0.05
-    Q1 = 0.7 + era_position * 0.1
-    Q2 = 0.6 + era_position * 0.5
-    wc = 3000
-    # Simple version
-    # a2 = 4.7e-7 * (era_position + 0.1)
-    # a1 = 2.10e-4
-    a2 = (wc**-2) * (era_position + 0.1)
-    a1 = (a2**0.5) / Q2
-    a0 = 1.0
-
-    # b2 = 5.17e-8
-    # b2 = 19 * (5.5 ** (1 - era_position)) * a2
-    # b1 = 6.8e-4
-    # b0 = 1.0
-    b2 = 19 * (5.5 ** (1 - era_position)) * a2
-    b1 = b2**0.5 / Q1
-    b0 = 1.0
-
-    T = 1.0 / fs
-    K = 2.0 / T
-
-    A0 = b2 * K * K + b1 * K + b0
-    A1 = 2.0 * (b0 - b2 * K * K)
-    A2 = b2 * K * K - b1 * K + b0
-
-    B0 = a2 * K * K + a1 * K + a0
-    B1 = 2.0 * (a0 - a2 * K * K)
-    B2 = a2 * K * K - a1 * K + a0
-
-    norm = 1.0 / A0
-    bb0 = B0 * norm
-    bb1 = B1 * norm
-    bb2 = B2 * norm
-    aa0 = 1.0
-    aa1 = A1 * norm
-    aa2 = A2 * norm
-
-    mix = 1.0
-
-    b0m = (1.0 - mix) * aa0 + mix * bb0
-    b1m = (1.0 - mix) * aa1 + mix * bb1
-    b2m = (1.0 - mix) * aa2 + mix * bb2
-
-    a = [aa0, aa1, aa2]
-    b = [b0m, b1m, b2m]
-    return b, a
-
-
 if __name__ == "__main__":
     fs = 96000  # Sampling frequency in Hz
 
@@ -185,33 +98,10 @@ if __name__ == "__main__":
     ax.set_title("Magnitude Response")
     ax.set_xlim(5, fs / 2)
 
-    # ax.semilogx(f2, m2, label="High Shelf Filter")
-    # for i in [0, 4]:
-    #     pos = i / 4.0
-    #     b, a = create_era_filter(fs, era_position=pos)
-    #     f, m = plot_bode(ax, b, a, fs)
-    #
-    #     b2, a2 = create_high_shelf(
-    #         fc=500 - (i / 4) * 180, G=-40 + 12 * (i / 4), Q=0.7, fs=fs
-    #     )
-    #     f2, m2 = plot_bode(ax, b2, a2, fs)
-    #
-    #     ax.semilogx(f2, m2, label=f"Classic shelf ({i})", linewidth=2)
-    #     ax.semilogx(f, m, label=f"Era Response ({i})", linewidth=2)
-
-    # gain = np.array(GAIN_DB[i]) - 1.05 + 110
-    # ax.semilogx(FREQUENCY, gain, label="Target Gain dB", linestyle="--")
-
-    # b, a = create_peak_filter(fc=702, Q=0.707, G=-10, fs=fs)
-    # f, m = plot_bode(ax, b, a, fs)
-    # ax.semilogx(f, m, label="Peak Filter fc=702Hz")
-    #
-    b, a = create_high_shelf(fc=250, Q=0.707, G=-18, fs=fs)
-    f, m = plot_bode(ax, b, a, fs)
-    b2, a2 = create_high_shelf(fc=160, Q=0.707, G=-6, fs=fs)
-    f2, m2 = plot_bode(ax, b2, a2, fs)
-    ax.semilogx(f, m, label="High Shelf Filter 1")
-    ax.semilogx(f2, m2, label="High Shelf Filter 2")
+    for g in [3, 6, 9, 12, 15, 18]:
+        b2, a2 = create_high_shelf(fc=330, Q=0.707, G=1, fs=fs)
+        f2, m2 = plot_bode(ax, b2, a2, fs)
+        ax.semilogx(f2, g * m2, label=f"High Shelf Filter {g} dB")
 
     plt.legend()
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])

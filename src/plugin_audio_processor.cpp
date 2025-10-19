@@ -190,7 +190,7 @@ bool PluginAudioProcessor::isBusesLayoutSupported(
     const BusesLayout& layouts
 ) const
 {
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono() &&
+    if (layouts.getMainInputChannelSet() != juce::AudioChannelSet::mono() &&
         layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
