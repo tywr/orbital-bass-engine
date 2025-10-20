@@ -14,7 +14,7 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     }
     else if (parameterID == "compressor_threshold")
     {
-        compressor.setThreshold(juce::Decibels::decibelsToGain(v));
+        compressor.setThresholdDecibels(v);
     }
     else if (parameterID == "compressor_level_db")
     {

@@ -2,6 +2,8 @@ inline std::shared_ptr<juce::dsp::IIR::Coefficients<float>> makeDriveFilter(
     float fs, float f_hpf, float f_lpf, float gain
 )
 {
+    // Creates a broad bandpass filter with a gain boost in the passband
+    
     const float pi = juce::MathConstants<float>::pi;
 
     const float tau_hpf = 1.0f / (2 * pi * f_hpf);

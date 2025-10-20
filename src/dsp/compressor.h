@@ -16,7 +16,9 @@ class Compressor
 
     void setRatio(float newRatio)
     {
-        ratio = newRatio;
+        float v = juce::jlimit(0.0f, 1.0f, newRatio);
+        ratio.setTargetValue(v);
+        raw_ratio = v;
     }
     void setBypass(bool newBypass)
     {
@@ -24,16 +26,22 @@ class Compressor
     }
     void setMix(float newMix)
     {
-        mix = newMix;
+        float v = juce::jlimit(0.0f, 1.0f, newMix);
+        mix.setTargetValue(v);
+        raw_mix = v;
     }
-    void setThreshold(float newThreshold)
+    void setThresholdDecibels(float newThreshold)
     {
-        threshold = newThreshold;
+        float v = juce::jlimit(-60.0f, 6.0f, newThreshold);
+        threshold_db.setTargetValue(v);
+        raw_threshold_db = v;
     }
 
     void setLevel(float newLevel)
     {
-        level = newLevel;
+        float v = juce::jlimit(0.0f, 10.0f, newLevel);
+        level.setTargetValue(v);
+        raw_level = v;
     }
 
     void setTypeFromIndex(int index)
@@ -44,7 +52,7 @@ class Compressor
 
     float getGainReductionDb()
     {
-        return gainReductionDb;
+        return gain_smooth_db;
     }
 
   private:
@@ -54,16 +62,16 @@ class Compressor
     // gui parameters
     int type;
     bool bypass;
-    float mix;
-    float threshold;
-    float level;
-    float ratio;
+
+    float raw_mix, raw_level, raw_threshold_db, raw_ratio;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> mix, level,
+        threshold_db, ratio;
 
     // internal state of compressor
-    float envelopeLevel = 1.0f;
-    float previous_level = 1.0f;
-    float gainReductionDb = 0.0f;
-    float gainReduction = 1.0f;
+    float current_level = 1.0f;
+    float current_level_db = 1.0f;
+    float gain_smooth_db = 0.0f;
+    float gain_smooth = 1.0f;
 
     // hardcoded parameters for optometric compressor
     struct
@@ -71,8 +79,6 @@ class Compressor
         float attack = 0.01f;
         float release1 = 0.06f;
         float release2 = 0.5f;
-        float saturationAmount = 0.2f;
-        float saturationMix = 0.05f;
         float gainSmoothingTime = 0.05f;
     } optoParams;
 
@@ -80,17 +86,12 @@ class Compressor
     {
         float attack = 0.0003f;
         float release = 0.1f;
-        float saturationAmount = 0.4f;
-        float saturationMix = 0.15f;
-        float gainSmoothingTime = 0.01f;
     } fetParams;
 
     struct
     {
         float attack = 0.005f;
         float release = 0.4f;
-        float saturationAmount = 0.2f;
-        float saturationMix = 0.05f;
         float gainSmoothingTime = 0.01f;
         float kneeWidth = 2.0f;
     } vcaParams;

@@ -2,19 +2,6 @@
 
 #include <juce_dsp/juce_dsp.h>
 
-void Compressor::applyLevel(juce::AudioBuffer<float>& buffer)
-{
-    if (juce::approximatelyEqual(level, previous_level))
-    {
-        buffer.applyGain(level);
-    }
-    else
-    {
-        buffer.applyGainRamp(0, buffer.getNumSamples(), previous_level, level);
-        previous_level = level;
-    }
-}
-
 void Compressor::prepare(const juce::dsp::ProcessSpec& spec)
 {
     processSpec = spec;
@@ -25,183 +12,148 @@ void Compressor::computeGainReductionOptometric(float& sample, float sampleRate)
     // Optometric Compressor
     //
     // Envelope processing
-    float absSample = std::abs(sample);
+    float input_level = std::abs(sample);
+    float input_level_db = juce::Decibels::gainToDecibels(input_level + 1e-10f);
+    float current_threshold_db = threshold_db.getCurrentValue();
+    float current_ratio = ratio.getCurrentValue();
 
     float coef;
-    if (absSample > envelopeLevel)
+    if (input_level_db > current_level_db)
     {
-        coef = std::exp(-1.0f / (sampleRate * optoParams.attack));
+        coef = std::exp(std::log(0.01f) / (sampleRate * optoParams.attack));
     }
     else
     {
-        if (envelopeLevel > threshold)
+        if (current_level_db > current_threshold_db)
         {
-            coef = std::exp(-1.0f / (sampleRate * optoParams.release1));
+            coef =
+                std::exp(std::log(0.01f) / (sampleRate * optoParams.release1));
         }
         else
         {
-            coef = std::exp(-1.0f / (sampleRate * optoParams.release2));
+            coef =
+                std::exp(std::log(0.01f) / (sampleRate * optoParams.release2));
         }
     }
-    envelopeLevel = (coef * envelopeLevel) + ((1.0f - coef) * absSample);
+    current_level_db = input_level_db;
+    current_level = juce::Decibels::decibelsToGain(current_level_db);
 
-    // Gain Comutation
-    float rawGainReduction;
-    float rawGainReductionDb;
-    if (envelopeLevel > threshold)
+    // Gain Computation
+    float target_gain_db;
+    if (current_level_db > current_threshold_db)
     {
-        float overThreshold = juce::Decibels::gainToDecibels(envelopeLevel) -
-                              juce::Decibels::gainToDecibels(threshold);
-        rawGainReductionDb = -overThreshold * (1.0f - 1.0f / ratio);
+        target_gain_db = (current_threshold_db - input_level_db) *
+                         (1.0f - 1.0f / current_ratio);
     }
     else
     {
-        rawGainReductionDb = 0.0f; // No compression when below threshold
+        target_gain_db = 0.0f;
     }
 
-    rawGainReduction = juce::Decibels::decibelsToGain(rawGainReductionDb);
-
-    float gainSmoothingCoef =
-        std::exp(-1.0f / (sampleRate * optoParams.gainSmoothingTime));
-
-    gainReduction = (gainSmoothingCoef * gainReduction) +
-                    ((1.0f - gainSmoothingCoef) * rawGainReduction);
-    gainReductionDb = juce::Decibels::gainToDecibels(gainReduction);
-    sample = (sample * gainReduction * mix) + (sample * (1.0f - mix));
-
-    // Saturation
-    float saturated = std::tanh(sample * (1.0f + optoParams.saturationAmount));
-    sample = sample + (saturated - sample) * optoParams.saturationAmount *
-                          optoParams.saturationMix;
+    gain_smooth_db = (coef * gain_smooth_db) + ((1.0f - coef) * target_gain_db);
+    gain_smooth = juce::Decibels::decibelsToGain(gain_smooth_db);
+    sample = sample * gain_smooth;
 }
 
 void Compressor::computeGainReductionFet(float& sample, float sampleRate)
 {
-    // FET-style peak envelope processing (much faster)
-    float absSample = std::abs(sample);
+    float output = sample * gain_smooth;
+    float output_level = std::abs(output);
+    float output_level_db =
+        juce::Decibels::gainToDecibels(output_level + 1e-10f);
+    float current_threshold_db = threshold_db.getCurrentValue();
+    float current_ratio = ratio.getCurrentValue();
+
+    float target_gain_db;
+    if (output_level_db > current_threshold_db)
+    {
+        target_gain_db = (current_threshold_db - output_level_db) *
+                         (1.0f - 1.0f / current_ratio);
+    }
+    else
+    {
+        target_gain_db = 0.0f;
+    }
+
     float coef;
-
-    if (absSample > envelopeLevel)
+    if (target_gain_db < gain_smooth_db)
     {
-        coef = std::exp(-1.0f / (sampleRate * fetParams.attack));
+        coef = std::exp(std::log(0.01f) / (sampleRate * fetParams.attack));
     }
     else
     {
-        coef = std::exp(-1.0f / (sampleRate * fetParams.release));
-    }
-    envelopeLevel = (coef * envelopeLevel) + ((1.0f - coef) * absSample);
-
-    // FET Gain Reduction (more aggressive, higher ratios)
-    float rawGainReduction;
-    float rawGainReductionDb;
-    if (envelopeLevel > threshold)
-    {
-        float overThreshold = juce::Decibels::gainToDecibels(envelopeLevel) -
-                              juce::Decibels::gainToDecibels(threshold);
-        rawGainReductionDb = -overThreshold * (1.0f - 1.0f / ratio);
-
-        rawGainReductionDb = std::max(rawGainReductionDb, -40.0f);
-    }
-    else
-    {
-        rawGainReductionDb = 0.0f;
-    }
-    rawGainReduction = juce::Decibels::decibelsToGain(rawGainReductionDb);
-
-    float gainSmoothingCoef =
-        std::exp(-1.0f / (sampleRate * fetParams.gainSmoothingTime));
-    gainReduction = (gainSmoothingCoef * gainReduction) +
-                    ((1.0f - gainSmoothingCoef) * rawGainReduction);
-    gainReductionDb = juce::Decibels::gainToDecibels(gainReduction);
-
-    // Apply compression
-    sample = (sample * gainReduction * mix) + (sample * (1.0f - mix));
-
-    // FET-style saturation (more aggressive, asymmetric)
-    float driven = sample * (1.0f + fetParams.saturationAmount * 2.0f);
-    float fetSaturated;
-    if (driven > 0.0f)
-    {
-        fetSaturated = std::tanh(driven * 1.5f); // Harder positive saturation
-    }
-    else
-    {
-        fetSaturated = std::tanh(driven * 0.8f); // Softer negative (asymmetric)
+        coef = std::exp(std::log(0.01f) / (sampleRate * fetParams.release));
     }
 
-    // More aggressive saturation blend for FET punch
-    sample = sample + (fetSaturated - sample) * fetParams.saturationAmount *
-                          fetParams.saturationMix;
+    gain_smooth_db = (coef * gain_smooth_db) + ((1.0f - coef) * target_gain_db);
+    gain_smooth = juce::Decibels::decibelsToGain(gain_smooth_db);
+
+    sample = sample * gain_smooth;
 }
 
 void Compressor::computeGainReductionVca(float& sample, float sampleRate)
 {
-    float absSample = std::abs(sample);
+    float input_level = std::abs(sample);
+    float input_level_db = juce::Decibels::gainToDecibels(input_level + 1e-10f);
+    float current_threshold_db = threshold_db.getCurrentValue();
+    float current_ratio = ratio.getCurrentValue();
 
-    static float rmsBuffer[64] = {0}; // Small buffer for RMS calculation
-    static int rmsIndex = 0;
+    static float rms_buffer[64] = {0};
+    static int rms_index = 0;
 
-    rmsBuffer[rmsIndex] = absSample * absSample;
-    rmsIndex = (rmsIndex + 1) % 64;
+    rms_buffer[rms_index] = input_level * input_level;
+    rms_index = (rms_index + 1) % 64;
 
-    float rmsSum = 0.0f;
+    float rms_sum = 0.0f;
     for (int i = 0; i < 64; ++i)
-        rmsSum += rmsBuffer[i];
+        rms_sum += rms_buffer[i];
 
-    float rmsLevel = std::sqrt(rmsSum / 64.0f);
+    float rms_level = std::sqrt(rms_sum / 64.0f);
+    float rms_level_db = juce::Decibels::gainToDecibels(rms_level + 1e-10f);
 
     float coef;
-    if (rmsLevel > envelopeLevel)
+    if (rms_level_db > current_level_db)
     {
-        coef = std::exp(-1.0f / (sampleRate * vcaParams.attack));
+        coef = std::exp(std::log(0.01) / (sampleRate * vcaParams.attack));
     }
     else
     {
-        coef = std::exp(-1.0f / (sampleRate * vcaParams.release));
+        coef = std::exp(std::log(0.01) / (sampleRate * vcaParams.release));
     }
-    envelopeLevel = (coef * envelopeLevel) + ((1.0f - coef) * rmsLevel);
+    current_level_db =
+        (coef * current_level_db) + ((1.0f - coef) * rms_level_db);
 
-    float rawGainReduction;
+    float target_gain_db;
     float rawGainReductionDb;
-    if (envelopeLevel > threshold)
+    if (current_level_db > current_threshold_db)
     {
-        float overThreshold = juce::Decibels::gainToDecibels(envelopeLevel) -
-                              juce::Decibels::gainToDecibels(threshold);
+        float over_threshold = current_level_db - current_threshold_db;
+        target_gain_db = -over_threshold * (1.0f - 1.0f / current_ratio);
 
-        rawGainReductionDb = -overThreshold * (1.0f - 1.0f / ratio);
-
-        if (overThreshold < vcaParams.kneeWidth)
+        if (over_threshold < vcaParams.kneeWidth)
         {
-            float kneeRatio = overThreshold / vcaParams.kneeWidth;
-            rawGainReductionDb *= (kneeRatio * kneeRatio);
+            float kneeRatio = over_threshold / vcaParams.kneeWidth;
+            target_gain_db *= (kneeRatio * kneeRatio);
         }
     }
     else
     {
-        rawGainReductionDb = 0.0f;
+        target_gain_db = 0.0f;
     }
 
-    rawGainReduction = juce::Decibels::decibelsToGain(rawGainReductionDb);
+    float target_gain = juce::Decibels::decibelsToGain(target_gain_db);
 
-    float gainSmoothingCoef =
-        std::exp(-1.0f / (sampleRate * vcaParams.gainSmoothingTime));
-    gainReduction = (gainSmoothingCoef * gainReduction) +
-                    ((1.0f - gainSmoothingCoef) * rawGainReduction);
-    gainReductionDb = juce::Decibels::gainToDecibels(gainReduction);
+    gain_smooth_db = target_gain_db;
+    gain_smooth = juce::Decibels::decibelsToGain(gain_smooth_db);
 
-    sample = (sample * gainReduction * mix) + (sample * (1.0f - mix));
-
-    float cleanSaturated =
-        sample / (1.0f + std::abs(sample * vcaParams.saturationAmount * 0.5f));
-    sample = sample + (cleanSaturated - sample) * vcaParams.saturationAmount *
-                          vcaParams.saturationMix;
+    sample = sample * gain_smooth;
 }
 
 void Compressor::process(juce::AudioBuffer<float>& buffer)
 {
     if (bypass)
     {
-        gainReductionDb = 0.0f;
+        gain_smooth_db = 0.0f;
         return;
     }
     float sampleRate = static_cast<float>(processSpec.sampleRate);
@@ -209,19 +161,37 @@ void Compressor::process(juce::AudioBuffer<float>& buffer)
     auto* channelData = buffer.getWritePointer(0);
     for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
     {
+        if (threshold_db.isSmoothing())
+            threshold_db.skip(1);
+
+        if (ratio.isSmoothing())
+            ratio.skip(1);
+
+        if (mix.isSmoothing())
+            mix.skip(1);
+
+        if (level.isSmoothing())
+            level.skip(1);
+
+        float wet = channelData[sample];
+        float dry = channelData[sample];
         switch (type)
         {
         case 0:
-            computeGainReductionOptometric(channelData[sample], sampleRate);
+            computeGainReductionOptometric(wet, sampleRate);
             break;
         case 1:
-            computeGainReductionFet(channelData[sample], sampleRate);
+            computeGainReductionFet(wet, sampleRate);
             break;
         case 2:
-            computeGainReductionVca(channelData[sample], sampleRate);
+            computeGainReductionVca(wet, sampleRate);
             break;
         }
+
+        float current_mix = mix.getCurrentValue();
+        float current_level = level.getCurrentValue();
+
+        channelData[sample] =
+            (dry * (1.0f - current_mix) + wet * current_mix * current_level);
     }
-    // apply level
-    applyLevel(buffer);
 }
