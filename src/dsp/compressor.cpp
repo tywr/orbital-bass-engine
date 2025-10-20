@@ -57,38 +57,38 @@ void Compressor::computeGainReductionOptometric(float& sample, float sampleRate)
 
 void Compressor::computeGainReductionFet(float& sample, float sampleRate)
 {
-    float output = sample * gain_smooth;
-    float output_level = std::abs(output);
+    float output = sample;
+    float output_level =
+        std::max(std::abs(gain_smooth * output), current_level * 0.99f);
     float output_level_db =
         juce::Decibels::gainToDecibels(output_level + 1e-10f);
     float current_threshold_db = threshold_db.getCurrentValue();
-    float current_ratio = ratio.getCurrentValue();
+    float current_ratio = static_cast<float>(ratio.getCurrentValue());
 
-    float target_gain_db;
+    float target_gain_db = 0.0f;
     if (output_level_db > current_threshold_db)
     {
         target_gain_db = (current_threshold_db - output_level_db) *
                          (1.0f - 1.0f / current_ratio);
     }
-    else
-    {
-        target_gain_db = 0.0f;
-    }
 
     float coef;
     if (target_gain_db < gain_smooth_db)
     {
-        coef = std::exp(std::log(0.01f) / (sampleRate * fetParams.attack));
+        coef = std::exp(-1.0f / (sampleRate * fetParams.attack));
     }
     else
     {
-        coef = std::exp(std::log(0.01f) / (sampleRate * fetParams.release));
+        coef = std::exp(-1.0f / (sampleRate * fetParams.release));
     }
 
     gain_smooth_db = (coef * gain_smooth_db) + ((1.0f - coef) * target_gain_db);
     gain_smooth = juce::Decibels::decibelsToGain(gain_smooth_db);
 
     sample = sample * gain_smooth;
+    current_level = sample;
+    current_level_db =
+        juce::Decibels::gainToDecibels(std::abs(current_level) + 1e-10f);
 }
 
 void Compressor::computeGainReductionVca(float& sample, float sampleRate)
@@ -175,6 +175,7 @@ void Compressor::process(juce::AudioBuffer<float>& buffer)
 
         float wet = channelData[sample];
         float dry = channelData[sample];
+
         switch (type)
         {
         case 0:

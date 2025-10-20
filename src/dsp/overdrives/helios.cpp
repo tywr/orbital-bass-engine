@@ -23,6 +23,7 @@ void HeliosOverdrive::resetFilters()
     post_lpf3.reset();
     attack_shelf.reset();
     drive_filter.reset();
+    grunt_filter.reset();
 }
 
 void HeliosOverdrive::resetSmoothedValues()
@@ -59,6 +60,9 @@ void HeliosOverdrive::prepareFilters()
 
     drive_filter.prepare(processSpec);
     updateDriveFilter();
+
+    grunt_filter.prepare(processSpec);
+    updateGruntFilter();
 
     pre_lpf.prepare(processSpec);
     auto pre_lpf_coefficients =
@@ -102,8 +106,8 @@ void HeliosOverdrive::updateAttackFilter()
     float attack_shelf_q = 0.7f;
     float min_frequency = 1540.0f;
     float max_frequency = 1540.0f;
-    float min_gain_db = -48.0f;
-    float max_gain_db = 0.0f;
+    float min_gain_db = -24.0f;
+    float max_gain_db = 24.0f;
     float shelf_frequency =
         min_frequency + (max_frequency - min_frequency) * current_attack * 0.1f;
     float shelf_gain = juce::Decibels::decibelsToGain(
@@ -119,20 +123,22 @@ void HeliosOverdrive::updateAttackFilter()
 
 void HeliosOverdrive::updateDriveFilter()
 {
-    float current_grunt = grunt.getCurrentValue();
+    // float current_grunt = grunt.getCurrentValue();
     float current_drive = drive.getCurrentValue();
     float drive_filter_q = 0.7f;
 
     // Set the frequency based on the grunt parameter
-    float rolloff_frequency = 2200.0f;
-    float min_frequency = 120.0f;
-    float max_frequency = 320.0f;
-    float drive_frequency =
-        min_frequency + (max_frequency - min_frequency) * current_grunt * 0.1f;
+    float rolloff_frequency = 3200.0f;
+    // float min_frequency = 120.0f;
+    // float max_frequency = 320.0f;
+    // float drive_frequency =
+    //     min_frequency + (max_frequency - min_frequency) * current_grunt *
+    //     0.1f;
+    float drive_frequency = 219.0f;
 
     // Set the gain based on the drive parameter
-    float min_gain_db = 3.0f;
-    float max_gain_db = 40.0f;
+    float min_gain_db = 0.0f;
+    float max_gain_db = 36.0f;
     float drive_filter_gain = juce::Decibels::decibelsToGain(
         min_gain_db + (max_gain_db - min_gain_db) * current_drive * 0.1f
     );
@@ -142,6 +148,23 @@ void HeliosOverdrive::updateDriveFilter()
         drive_filter_gain
     );
     *drive_filter.coefficients = *drive_filter_coefficients;
+}
+
+void HeliosOverdrive::updateGruntFilter()
+{
+    float current_grunt = grunt.getCurrentValue();
+    float max_frequency = 700.0f;
+    float min_frequency = 2200.0f;
+    float grunt_frequency =
+        min_frequency + (max_frequency - min_frequency) * current_grunt * 0.1f;
+    float max_gain = juce::Decibels::decibelsToGain(-10.0f);
+    float min_gain = juce::Decibels::decibelsToGain(-14.0f);
+    float gain = min_gain + (max_gain - min_gain) * current_grunt * 0.1f;
+    auto grunt_filter_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+            processSpec.sampleRate, grunt_frequency, 0.707f, gain
+        );
+    *grunt_filter.coefficients = *grunt_filter_coefficients;
 }
 
 void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
@@ -165,7 +188,7 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
         if (grunt.isSmoothing())
         {
             grunt.getNextValue();
-            updateDriveFilter();
+            updateGruntFilter();
         }
         if (drive.isSmoothing())
         {
@@ -195,9 +218,10 @@ void HeliosOverdrive::applyOverdrive(float& sample)
     float drived = drive_filter.processSample(attacked);
 
     float distorted = cmos.processSample(drived);
+    float mid_scooped = grunt_filter.processSample(distorted);
 
     // Apply three consecutive LPF to smooth out top-end
-    float lpfed1 = post_lpf.processSample(distorted);
+    float lpfed1 = post_lpf.processSample(mid_scooped);
     float lpfed2 = post_lpf2.processSample(lpfed1);
     float out = post_lpf3.processSample(lpfed2);
 

@@ -16,7 +16,7 @@ class Compressor
 
     void setRatio(float newRatio)
     {
-        float v = juce::jlimit(0.0f, 1.0f, newRatio);
+        float v = juce::jlimit(0.0f, 20.0f, newRatio);
         ratio.setTargetValue(v);
         raw_ratio = v;
     }
