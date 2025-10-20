@@ -18,7 +18,20 @@ logger = Logging.setup_logging()
 # --- Analysis Settings ---
 pot_settings = {
     str(x): x
-    for x in [0, 0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 0.9, 0.99, 0.999, 0.9999, 0.99999]
+    for x in [
+        0,
+        0.00001,
+        0.0001,
+        0.001,
+        0.01,
+        0.1,
+        0.5,
+        0.9,
+        0.99,
+        0.999,
+        0.9999,
+        0.99999,
+    ]
 }
 
 # Setup the plot
@@ -70,18 +83,17 @@ for label, setting in pot_settings.items():
     drive_resistance = (1.0 - setting) * pot_total_resistance + 1e-3
     circuit.R("drive", "pot_node", "vb", drive_resistance @ u_Ohm)
 
-    # --- Simulation ---
     simulator = circuit.simulator(temperature=25, nominal_temperature=25)
     analysis = simulator.ac(
         start_frequency=20 @ u_Hz,
-        stop_frequency=10 @ u_kHz,  # Adjusted for better view of audio range
+        stop_frequency=100 @ u_kHz,  # Adjusted for better view of audio range
         number_of_points=100,
         variation="dec",
     )
 
     # Plot the final output after the C13/R16 filter
     out_db = 20 * np.log10(np.abs(analysis.out))
-    ax.semilogx(analysis.frequency, out_db - np.min(out_db), label=label)
+    ax.semilogx(analysis.frequency, out_db, label=label)
 
 # --- Finalize and show the plot ---
 ax.legend()

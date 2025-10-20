@@ -8,7 +8,7 @@
 PluginAudioProcessor::PluginAudioProcessor()
     : AudioProcessor(
           BusesProperties()
-              .withInput("Input", juce::AudioChannelSet::mono(), true)
+              .withInput("Input", juce::AudioChannelSet::stereo(), true)
               .withOutput("Output", juce::AudioChannelSet::stereo(), true)
       ),
       parameters(
@@ -226,51 +226,56 @@ void PluginAudioProcessor::processBlock(
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
+    int num_samples = buffer.getNumSamples();
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear(i, 0, buffer.getNumSamples());
+        buffer.clear(i, 0, num_samples);
 
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    juce::AudioBuffer<float> mono_buffer(1, num_samples);
+    mono_buffer.clear();
+
+    if (totalNumInputChannels == 1)
     {
-        auto* channelData = buffer.getWritePointer(channel);
-        juce::ignoreUnused(channelData);
+        mono_buffer.copyFrom(0, 0, buffer, 0, 0, num_samples);
+    }
+    else if (totalNumInputChannels >= 2)
+    {
+        // Stereo input → average the two channels
+        auto* left = buffer.getReadPointer(0);
+        auto* right = buffer.getReadPointer(1);
+        auto* mono = mono_buffer.getWritePointer(0);
+
+        for (int i = 0; i < num_samples; ++i)
+            mono[i] = 0.5f * (left[i] + right[i]);
     }
 
     current_input_gain.setTargetValue(
         juce::Decibels::decibelsToGain(input_gain_parameter->load())
     );
-    current_input_gain.applyGain(buffer, buffer.getNumSamples());
-    updateInputLevel(buffer);
+    current_input_gain.applyGain(mono_buffer, num_samples);
+    updateInputLevel(mono_buffer);
 
-    compressor.process(buffer);
+    compressor.process(mono_buffer);
     compressorGainReductionDb.setValue(compressor.getGainReductionDb());
 
     if (auto* od = current_overdrive.load())
-        od->process(buffer);
+        od->process(mono_buffer);
 
-    // amp_eq.process(buffer);
+    // amp_eq.process(mono_buffer);
     //
     // if (!isAmpBypassed)
-    //     applyAmpMasterGain(buffer);
+    //     applyAmpMasterGain(mono_buffer);
 
-    irConvolver.process(buffer);
+    irConvolver.process(mono_buffer);
 
     current_output_gain.setTargetValue(
         juce::Decibels::decibelsToGain(output_gain_parameter->load())
     );
-    current_output_gain.applyGain(buffer, buffer.getNumSamples());
-    updateOutputLevel(buffer);
+    current_output_gain.applyGain(mono_buffer, num_samples);
+    updateOutputLevel(mono_buffer);
 
-    // Convert mono to stereo if needed
-    const float* input = buffer.getReadPointer(0);
-    float* left = buffer.getWritePointer(0);
-    float* right = buffer.getWritePointer(1);
-    for (int i = 0; i < buffer.getNumSamples(); ++i)
-    {
-        float mono_sample = input[i];
-        left[i] = mono_sample;
-        right[i] = mono_sample;
-    }
+    for (int channel = 0; channel < totalNumOutputChannels; ++channel)
+        buffer.copyFrom(channel, 0, mono_buffer, 0, 0, num_samples);
 }
 
 //==============================================================================

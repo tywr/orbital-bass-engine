@@ -1,5 +1,6 @@
-#include "Helios.h"
+#include "helios.h"
 #include "../circuits/silicon_diode.h"
+#include "../filters/drive_filter.h"
 #include <cmath>
 
 #include <juce_dsp/juce_dsp.h>
@@ -123,6 +124,7 @@ void HeliosOverdrive::updateDriveFilter()
     float drive_filter_q = 0.7f;
 
     // Set the frequency based on the grunt parameter
+    float rolloff_frequency = 2200.0f;
     float min_frequency = 120.0f;
     float max_frequency = 320.0f;
     float drive_frequency =
@@ -135,11 +137,10 @@ void HeliosOverdrive::updateDriveFilter()
         min_gain_db + (max_gain_db - min_gain_db) * current_drive * 0.1f
     );
 
-    auto drive_filter_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeHighShelf(
-            processSpec.sampleRate, drive_frequency, drive_filter_q,
-            drive_filter_gain
-        );
+    auto drive_filter_coefficients = makeDriveFilter(
+        processSpec.sampleRate, drive_frequency, rolloff_frequency,
+        drive_filter_gain
+    );
     *drive_filter.coefficients = *drive_filter_coefficients;
 }
 

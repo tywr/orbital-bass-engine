@@ -1,6 +1,5 @@
-#include <JuceHeader.h>
-#include "PluginProcessor.h"
-#include "PluginEditor.h"
+#include "plugin_audio_processor.h"
+#include "plugin_editor.h"
 
 class MonoStandaloneWindow : public juce::StandaloneFilterWindow
 {
@@ -11,6 +10,13 @@ public:
     {
         // Force mono input and output
         createAudioDeviceManager(1, 1);
+        AudioDeviceManager::AudioDeviceSetup setup;
+        deviceManager.getAudioDeviceSetup(setup);
+        setup.inputChannels.clear();
+        setup.inputChannels.set(1, true);  // channel 2 = index 1
+
+        // Apply the new setup
+        deviceManager.setAudioDeviceSetup(setup, true);
     }
 };
 

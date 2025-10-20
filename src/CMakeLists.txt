@@ -27,7 +27,6 @@ target_sources(${PROJECT_NAME}
         plugin_editor.cpp
         plugin_audio_processor.cpp
         plugin_audio_process_parameters.cpp
-        standalone.cpp
         gui/looks/amp_small_look_and_feel.cpp
         gui/looks/base_look_and_feel.cpp
         gui/looks/compressor_look_and_feel.cpp
@@ -52,6 +51,10 @@ target_sources(${PROJECT_NAME}
         dsp/amp_eq.cpp
         )
 
+if(JUCE_BUILD_STANDALONE)
+    target_sources(${PROJECT_NAME} PRIVATE src/standalone.cpp)
+endif()
+
 
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC
@@ -66,6 +69,7 @@ target_link_libraries(${PROJECT_NAME}
         # AudioPluginData           # If we'd created a binary data target, we'd link to it here
         juce::juce_audio_utils
         juce::juce_dsp
+        juce::juce_audio_plugin_client
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
