@@ -46,7 +46,7 @@ class AmpComponent : public juce::Component
         &borealis_button, "borealis", ColourCodes::blue1, ColourCodes::blue2
     };
     AmpType nebula_type = {
-        &nebula_button, "nebula", ColourCodes::aurora_red, ColourCodes::white0
+        &nebula_button, "nebula", ColourCodes::nebula_violet, ColourCodes::nebula_red
     };
 
     std::vector<AmpType> types = {helios_type, borealis_type, nebula_type};

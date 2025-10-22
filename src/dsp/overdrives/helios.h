@@ -15,7 +15,7 @@ class HeliosOverdrive : public Overdrive
     void resetFilters();
     float driveToGain(float);
     void updateAttackFilter();
-    void updateGruntFilter();
+    void updateEraFilter();
     void updateMidScoop();
     void updateDriveFilter();
     void applyOverdrive(float& sample);
@@ -30,7 +30,7 @@ class HeliosOverdrive : public Overdrive
 
     juce::dsp::IIR::Filter<float> drive_filter;
     juce::dsp::IIR::Filter<float> attack_shelf;
-    juce::dsp::IIR::Filter<float> grunt_filter;
+    juce::dsp::IIR::Filter<float> era_filter;
 
     juce::dsp::IIR::Filter<float> post_lpf;
     float post_lpf_cutoff = 2200.0f;

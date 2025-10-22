@@ -57,23 +57,14 @@ for label, setting in pot_settings.items():
     circuit.V("input", "in", circuit.gnd, f"DC 4.5V AC 0.001V")
 
     circuit.R(12, "in", circuit.gnd, 470 @ u_kOhm)
-    circuit.C(9, "in", "opamp_in", 100 @ u_nF)
-    circuit.R(13, "opamp_in", "vb", 1 @ u_MOhm)
+    circuit.C(9, "in", "n1", 100 @ u_nF)
+    circuit.R(13, "in", "vb", 1 @ u_MOhm)
 
-    circuit.X(
-        "IC1B",
-        "TL074",
-        "opamp_in",  # IN+ (Pin 5)
-        "feedback_node",  # IN- (Pin 6)
-        "va",  # V+
-        "vee",  # V-
-        "opamp_out",  # OUT (Pin 7)
-    )
-    circuit.R(14, "opamp_out", "feedback_node", 330 @ u_kOhm)
-    circuit.C(10, "opamp_out", "feedback_node", 220 @ u_pF)
-    circuit.R(15, "feedback_node", "pot_node", 3.3 @ u_kOhm)
-    circuit.C(13, "opamp_out", "n11", 4.7 @ u_nF)
-    circuit.R(16, "n11", "out", 6.65 @ u_kOhm)
+    circuit.R(14, "n1", "n2", 330 @ u_kOhm)
+    circuit.C(10, "n1", "n2", 220 @ u_pF)
+    circuit.R(15, "n1", "pot_node", 3.3 @ u_kOhm)
+    circuit.C(13, "n2", "n3", 220 @ u_nF)
+    circuit.R(16, "n3", "out", 6.65 @ u_kOhm)
 
     circuit.R(100, "out", circuit.gnd, 1 @ u_MOhm)
     circuit.R(101, "out", "vb", 1 @ u_MOhm)

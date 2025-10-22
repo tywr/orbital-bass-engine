@@ -1,4 +1,5 @@
 #include "nebula.h"
+#include "../circuits/opamp.h"
 
 #include <juce_dsp/juce_dsp.h>
 
@@ -16,8 +17,6 @@ void NebulaOverdrive::resetSmoothedValues()
     mix.setCurrentAndTargetValue(raw_mix);
     cross_frequency.reset(processSpec.sampleRate, smoothing_time);
     cross_frequency.setCurrentAndTargetValue(raw_cross_frequency);
-    high_level.reset(processSpec.sampleRate, smoothing_time);
-    high_level.setCurrentAndTargetValue(raw_high_level);
 }
 
 void NebulaOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
@@ -32,8 +31,6 @@ void NebulaOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
     resetSmoothedValues();
 
     prepareFilters();
-
-    diode = GermaniumDiode(oversampled_spec.sampleRate);
 }
 
 void NebulaOverdrive::prepareFilters()
@@ -81,6 +78,5 @@ void NebulaOverdrive::applyOverdrive(float& sample)
 {
     float current_drive = drive.getNextValue();
     float drive_gain = driveToGain(current_drive);
-
-    sample = sample * drive_gain;
+    sample = opamp.processSample(sample * drive_gain);
 }

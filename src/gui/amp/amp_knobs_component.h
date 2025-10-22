@@ -41,10 +41,10 @@ class AmpKnobsComponent : public juce::Component
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         level_slider_attachment;
 
-    juce::Slider grunt_slider;
-    juce::Label grunt_label;
+    juce::Slider era_slider;
+    juce::Label era_label;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        grunt_slider_attachment;
+        era_slider_attachment;
 
     juce::Slider attack_slider;
     juce::Label attack_label;
@@ -56,10 +56,10 @@ class AmpKnobsComponent : public juce::Component
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         cross_frequency_slider_attachment;
 
-    juce::Slider high_level_slider;
-    juce::Label high_level_label;
+    juce::Slider bass_frequency_slider;
+    juce::Label bass_frequency_label;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        high_level_slider_attachment;
+        bass_frequency_slider_attachment;
 
     juce::Slider mod_slider;
     juce::Label mod_label;
@@ -106,29 +106,29 @@ class AmpKnobsComponent : public juce::Component
         slider_attachments;
 
     std::vector<AmpKnob> knobs = {
-        {&drive_slider,           &drive_label,           "overdrive_drive",    "drive"  },
-        {&grunt_slider,           &grunt_label,           "overdrive_grunt",    "grunt"  },
-        {&attack_slider,          &attack_label,          "overdrive_attack",   "attack" },
-        {&cross_frequency_slider, &cross_frequency_label, "overdrive_x_frequency",
-         "hi pass"                                                                       },
-        {&high_level_slider,      &high_level_label,      "overdrive_x_level",
-         "hi level"                                                                      },
-        {&mod_slider,             &mod_label,             "overdrive_mod",      "mod"    },
-        {&aggro_slider,           &aggro_label,           "overdrive_aggro",    "aggro"  },
-        {&mix_slider,             &mix_label,             "overdrive_mix",      "mix"    },
-        {&level_slider,           &level_label,           "overdrive_level_db", "level"  },
-        {&bass_slider,            &bass_label,            "amp_eq_bass",        "bass"   },
-        {&low_mid_slider,         &low_mid_label,         "amp_eq_low_mid",     "lo mids"},
-        {&hi_mid_slider,          &hi_mid_label,          "amp_eq_hi_mid",      "hi mids"},
-        {&treble_slider,          &treble_label,          "amp_eq_treble",      "treble" },
-        {&master_slider,          &master_label,          "amp_master",         "master" },
+        {&drive_slider,           &drive_label,           "overdrive_drive",    "drive"   },
+        {&era_slider,             &era_label,             "overdrive_era",      "era"     },
+        {&attack_slider,          &attack_label,          "overdrive_attack",   "attack"  },
+        {&bass_frequency_slider,  &bass_frequency_label,
+         "overdrive_bass_frequency",                                            "low pass"},
+        {&cross_frequency_slider, &cross_frequency_label,
+         "overdrive_x_frequency",                                               "hi pass" },
+        {&mod_slider,             &mod_label,             "overdrive_mod",      "mod"     },
+        {&aggro_slider,           &aggro_label,           "overdrive_aggro",    "aggro"   },
+        {&level_slider,           &level_label,           "overdrive_level_db", "level"   },
+        {&mix_slider,             &mix_label,             "overdrive_mix",      "mix"     },
+        {&bass_slider,            &bass_label,            "amp_eq_bass",        "bass"    },
+        {&low_mid_slider,         &low_mid_label,         "amp_eq_low_mid",     "lo mids" },
+        {&hi_mid_slider,          &hi_mid_label,          "amp_eq_hi_mid",      "hi mids" },
+        {&treble_slider,          &treble_label,          "amp_eq_treble",      "treble"  },
+        {&master_slider,          &master_label,          "amp_master",         "master"  },
     };
     std::vector<AmpKnob> current_knobs = {
         {&drive_slider,   &drive_label,   "overdrive_drive",    "drive"  },
-        {&grunt_slider,   &grunt_label,   "overdrive_grunt",    "grunt"  },
+        {&era_slider,     &era_label,     "overdrive_era",      "era"    },
         {&attack_slider,  &attack_label,  "overdrive_attack",   "attack" },
-        {&mix_slider,     &mix_label,     "overdrive_mix",      "mix"    },
         {&level_slider,   &level_label,   "overdrive_level_db", "level"  },
+        {&mix_slider,     &mix_label,     "overdrive_mix",      "mix"    },
         {&bass_slider,    &bass_label,    "amp_eq_bass",        "bass"   },
         {&low_mid_slider, &low_mid_label, "amp_eq_low_mid",     "lo mids"},
         {&hi_mid_slider,  &hi_mid_label,  "amp_eq_hi_mid",      "hi mids"},

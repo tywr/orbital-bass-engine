@@ -31,6 +31,9 @@ juce::Colour const aurora_red = juce::Colour(191, 97, 106);
 
 juce::Colour const helios_yellow = juce::Colour(242, 165, 61);
 juce::Colour const helios_orange = juce::Colour(138, 38, 27);
+
+juce::Colour const nebula_red = juce::Colour(191, 97, 106);
+juce::Colour const nebula_violet = juce::Colour(180, 142, 173);
 } // namespace ColourCodes
 
 namespace GuiColours

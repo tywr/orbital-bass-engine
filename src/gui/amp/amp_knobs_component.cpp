@@ -60,7 +60,7 @@ void AmpKnobsComponent::switchType(AmpType new_type)
     if (new_type.id == "helios")
     {
         current_knobs[1] = {
-            &grunt_slider, &grunt_label, "overdrive_grunt", "grunt"
+            &era_slider, &era_label, "overdrive_era", "era"
         };
         current_knobs[2] = {
             &attack_slider, &attack_label, "overdrive_attack", "attack"
@@ -69,12 +69,12 @@ void AmpKnobsComponent::switchType(AmpType new_type)
     if (new_type.id == "borealis")
     {
         current_knobs[1] = {
-            &cross_frequency_slider, &cross_frequency_label, "overdrive_x_frequency",
-            "hi pass"
+            &bass_frequency_slider, &bass_frequency_label,
+            "overdrive_bass_frequency", "low pass"
         };
         current_knobs[2] = {
-            &high_level_slider, &high_level_label, "overdrive_x_level",
-            "hi level"
+            &cross_frequency_slider, &cross_frequency_label,
+            "overdrive_x_frequency", "hi pass"
         };
     }
     if (new_type.id == "nebula")

@@ -21,11 +21,11 @@ class Overdrive
         attack.setTargetValue(v);
         raw_attack = v;
     }
-    void virtual setGrunt(float newGrunt)
+    void virtual setEra(float newEra)
     {
-        float v = juce::jlimit(0.0f, 10.0f, newGrunt);
-        grunt.setTargetValue(v);
-        raw_grunt = v;
+        float v = juce::jlimit(0.0f, 10.0f, newEra);
+        era.setTargetValue(v);
+        raw_era = v;
     }
     void virtual setCrossFrequency(float new_cross_frequency)
     {
@@ -33,11 +33,11 @@ class Overdrive
         cross_frequency.setTargetValue(v);
         raw_cross_frequency = v;
     }
-    void virtual setHighLevel(float new_high_level)
+    void virtual setBassFrequency(float new_high_level)
     {
-        float v = juce::jlimit(0.0f, 8.0f, new_high_level);
-        high_level.setTargetValue(v);
-        raw_high_level = v;
+        float v = juce::jlimit(50.0f, 500.0f, new_high_level);
+        bass_frequency.setTargetValue(v);
+        raw_bass_frequency = v;
     }
     void virtual setMod(float new_mod)
     {
@@ -98,8 +98,8 @@ class Overdrive
     // gui parameters
     int type;
     bool bypass;
-    float raw_level, raw_drive, raw_mix, raw_attack, raw_grunt,
-        raw_cross_frequency, raw_high_level, raw_mod, raw_aggro;
+    float raw_level, raw_drive, raw_mix, raw_attack, raw_era,
+        raw_cross_frequency, raw_bass_frequency, raw_mod, raw_aggro;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> level, drive,
-        mix, attack, grunt, cross_frequency, high_level, mod, aggro;
+        mix, attack, era, cross_frequency, bass_frequency, mod, aggro;
 };

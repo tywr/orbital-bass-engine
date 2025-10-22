@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../circuits/bjt.h"
-#include "../circuits/germanium_diode.h"
+#include "../circuits/opamp.h"
 #include "overdrive.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_dsp/juce_dsp.h>
@@ -18,6 +17,8 @@ class NebulaOverdrive : public Overdrive
     void prepareFilters();
 
   private:
+    OpAmp opamp = OpAmp();
+
     juce::dsp::IIR::Filter<float> ff1_hpf;
     float ff1_hpf_cutoff = 50.0f;
 
@@ -37,8 +38,6 @@ class NebulaOverdrive : public Overdrive
     float post_lpf_cutoff = 3400.0f;
 
     float padding = juce::Decibels::decibelsToGain(-6.0f);
-
-    GermaniumDiode diode = GermaniumDiode(44100.0f);
 
     juce::dsp::Oversampling<float> oversampler2x{
         2, 2,

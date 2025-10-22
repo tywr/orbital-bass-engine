@@ -223,7 +223,7 @@ if __name__ == "__main__":
     for alpha in [0.0, 0.01, 0.1, 0.5, 0.9, 0.99, 1.0]:
         drive_setting = alpha
         b, a = create_generalized_filter(
-            f_hpf=55, f_lpf=2200, drive_setting=drive_setting, fs=fs, max_gain=10.0
+            f_hpf=100, f_lpf=5000, drive_setting=drive_setting, fs=fs, max_gain=10.0
         )
         # b, a = create_drive_filter(fc1=55, fc2=2200, G=drive_setting * 10.0, fs=fs)
         f, m = plot_bode(ax, b, a, fs)

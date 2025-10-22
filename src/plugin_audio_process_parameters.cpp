@@ -80,29 +80,27 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
             overdrive->setAttack(v);
         }
     }
-    else if (parameterID == "overdrive_grunt")
+    else if (parameterID == "overdrive_era")
     {
         for (auto& overdrive : overdrives)
         {
-            overdrive->setGrunt(v);
+            overdrive->setEra(v);
         }
     }
     else if (parameterID == "overdrive_x_frequency")
     {
         float bv = juce::jlimit(20.0f, 20000.0f, v);
-        DBG("Overdrive X changed to: " << bv);
         for (auto& overdrive : overdrives)
         {
             overdrive->setCrossFrequency(bv);
         }
     }
-    else if (parameterID == "overdrive_x_level")
+    else if (parameterID == "overdrive_bass_frequency")
     {
-        float bv = juce::jlimit(-120.0f, 6.0f, v);
-        float dbv = juce::Decibels::decibelsToGain(bv);
+        float bv = juce::jlimit(20.0f, 20000.0f, v);
         for (auto& overdrive : overdrives)
         {
-            overdrive->setHighLevel(dbv);
+            overdrive->setBassFrequency(bv);
         }
     }
     else if (parameterID == "overdrive_mod")

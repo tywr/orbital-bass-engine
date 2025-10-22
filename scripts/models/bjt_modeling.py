@@ -89,24 +89,29 @@ if __name__ == "__main__":
     n_samples = int(duration * sample_rate)
 
     bjt = BJT()
-    t = np.linspace(0, duration, n_samples, endpoint=False)
-    y = 5 * np.sin(2 * np.pi * frequency * t)
-    y_clipped = [bjt.process_sample(4.5 + v) for v in y]
+    # t = np.linspace(0, duration, n_samples, endpoint=False)
+    # y = 5 * np.sin(2 * np.pi * frequency * t)
+    # y_clipped = [bjt.process_sample(4.5 + v) for v in y]
+
+    x = np.linspace(-2, 12, n_samples)
+    y = [bjt.process_sample(v) for v in x]
+    plt.plot(x, y, color="red", label="output")
+    plt.show()
 
     # plt.plot(t, y, color="blue", label="input")
     # plt.plot(t, vout, color="red", label="output")
     # plt.legend()
     # plt.show()
 
-    Y = np.fft.fft(y)
-    Y_clipped = np.fft.fft(y_clipped)
-    xf = np.fft.fftfreq(n_samples, 1 / sample_rate)
-
-    Y_norm = 2 / n_samples * np.abs(Y[0 : n_samples // 2])
-    Y_clipped_norm = 2 / n_samples * np.abs(Y_clipped[0 : n_samples // 2])
-    xf_pos = xf[0 : n_samples // 2]
-
-    plt.plot(xf_pos, Y_norm, alpha=0.5)
-    plt.plot(xf_pos, Y_clipped_norm, alpha=0.5, color="red")
-    plt.xlim(0, 8000)
-    plt.show()
+    # Y = np.fft.fft(y)
+    # Y_clipped = np.fft.fft(y_clipped)
+    # xf = np.fft.fftfreq(n_samples, 1 / sample_rate)
+    #
+    # Y_norm = 2 / n_samples * np.abs(Y[0 : n_samples // 2])
+    # Y_clipped_norm = 2 / n_samples * np.abs(Y_clipped[0 : n_samples // 2])
+    # xf_pos = xf[0 : n_samples // 2]
+    #
+    # plt.plot(xf_pos, Y_norm, alpha=0.5)
+    # plt.plot(xf_pos, Y_clipped_norm, alpha=0.5, color="red")
+    # plt.xlim(0, 8000)
+    # plt.show()
