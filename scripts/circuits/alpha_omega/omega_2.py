@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -5,28 +6,38 @@ import numpy as np
 from PySpice.Spice.Netlist import Circuit
 from PySpice.Unit import *
 
-# --- Circuit Definition ---
-# Create a new circuit object
 circuit = Circuit("RC Bridged-T Filter")
 
-# Define the input voltage source.
-# For AC analysis, we use an AC magnitude of 1V for easy gain calculation.
-# It is connected between the input node 'in' and ground.
-circuit.V("input", "in", circuit.gnd, "DC 0V AC 1V")
 
-# Add the components based on the schematic
-# Note: 8k2 = 8.2 kOhms, 2n2 = 2.2 nF
-circuit.R(25, "in", "node1", 8.2 @ u_kOhm)
-circuit.C(18, "in", "out", 2.2 @ u_nF)
-circuit.R(26, "node1", "out", 150 @ u_kOhm)
-circuit.C(22, "node1", circuit.gnd, 22 @ u_nF)
+script_path = "scripts/spice"
+circuit = Circuit("Active Filter with Op-Amp")
+circuit.include(os.path.join(script_path, "TL074.lib"))
 
-# --- Simulation Setup ---
-# Create a simulator instance
+circuit.V("input", "input", circuit.gnd, "DC 4.5V AC 0.1V")
+circuit.V("va", "va", circuit.gnd, 9 @u_V)
+circuit.V("vb", "vb", circuit.gnd, 9 @u_V)
+
+circuit.X(
+    "U1",
+    "TL074",
+    "op+",
+    "op-",
+    "va",
+    circuit.gnd,
+    "out",
+)
+
+
+circuit.R("jumper", "input", "op+", 0 @ u_Ohm)
+circuit.R(54, "vb", "n1", 10 @ u_kOhm)
+circuit.C(6, "n1", "n2", 120 @ u_nF)
+circuit.R(53, "n1", "n2", 10 @ u_kOhm)
+circuit.C(20, "n2", "input", 6.8 @ u_nF)
+circuit.R(52, "input", "op-", 10 @ u_kOhm)
+circuit.R(46, "op-", "out", 10 @ u_kOhm)
+
 simulator = circuit.simulator(temperature=25, nominal_temperature=25)
 
-# Perform an AC analysis (frequency sweep)
-# from 1 Hz to 1 MHz with 100 points per decade
 analysis = simulator.ac(
     start_frequency=1 @ u_Hz,
     stop_frequency=1 @ u_MHz,
@@ -34,13 +45,8 @@ analysis = simulator.ac(
     variation="dec",
 )
 
-# --- Plotting Results ---
-# Create a figure with two subplots (for magnitude and phase)
 figure, axes = plt.subplots(2, figsize=(10, 8), sharex=True)
-
-# Plot Magnitude (Gain in dB)
 axes[0].set_title("Bode Plot - Magnitude")
-# The gain in dB is 20 * log10(|V_out/V_in|). Since V_in is 1V, this is 20*log10(|V_out|)
 axes[0].semilogx(analysis.frequency, 20 * np.log10(np.absolute(analysis.out)))
 axes[0].set_ylabel("Gain [dB]")
 axes[0].grid(which="both", linestyle="--")

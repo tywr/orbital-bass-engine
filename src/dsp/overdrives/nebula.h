@@ -14,30 +14,36 @@ class NebulaOverdrive : public Overdrive
     float driveToGain(float);
     void applyOverdrive(float& sample);
     void resetSmoothedValues();
+    void updateDriveFilter();
     void prepareFilters();
 
   private:
     OpAmp opamp = OpAmp();
 
-    juce::dsp::IIR::Filter<float> ff1_hpf;
-    float ff1_hpf_cutoff = 50.0f;
-
-    juce::dsp::IIR::Filter<float> ff1_lpf;
-    float ff1_lpf_cutoff = 330.0f;
-
-    juce::dsp::IIR::Filter<float> attack_shelf;
-    float attack_shelf_freq = 500.0f;
-
     juce::dsp::IIR::Filter<float> pre_hpf;
-    float pre_hpf_cutoff = 500.0f;
+    float pre_hpf_cutoff = 50.0f;
 
-    juce::dsp::IIR::Filter<float> pre_lpf;
-    float pre_lpf_cutoff = 3300.0f;
+    juce::dsp::IIR::Filter<float> drive_filter;
 
-    juce::dsp::IIR::Filter<float> post_lpf;
-    float post_lpf_cutoff = 3400.0f;
+    juce::dsp::IIR::Filter<float> alpha_1_filter;
+    float alpha_1_gain = juce::Decibels::decibelsToGain(-3.5f);
+    float alpha_1_frequency = 666.0f;
 
-    float padding = juce::Decibels::decibelsToGain(-6.0f);
+    juce::dsp::IIR::Filter<float> alpha_2_filter;
+    float alpha_2_frequency = 177.0f;
+
+    juce::dsp::IIR::Filter<float> alpha_3_filter;
+    float alpha_3_frequency = 177.0f;
+
+    juce::dsp::IIR::Filter<float> omega_1_filter;
+    float omega_1_frequency = 106.0f;
+
+    juce::dsp::IIR::Filter<float> omega_2_filter;
+    float omega_2_frequency = 3300.0f;
+
+    juce::dsp::IIR::Filter<float> omega_3_filter;
+    float omega_3_frequency = 300.0f;
+    float omega_3_gain = juce::Decibels::decibelsToGain(-15.0f);
 
     juce::dsp::Oversampling<float> oversampler2x{
         2, 2,
