@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../circuits/bjt.h"
+#include "../circuits/cmos.h"
 #include "../circuits/germanium_diode.h"
 #include "overdrive.h"
 #include <juce_audio_basics/juce_audio_basics.h>
@@ -18,6 +18,7 @@ class BorealisOverdrive : public Overdrive
     void applyOverdrive(float& sample);
     void prepareFilters();
     void updateXFilter();
+    void updateLowFilter();
 
   private:
     float x_output_padding = juce::Decibels::decibelsToGain(-20.0f);
@@ -32,6 +33,7 @@ class BorealisOverdrive : public Overdrive
     float lowmids_lpf_cutoff = 330.0f;
 
     juce::dsp::IIR::Filter<float> x_hpf;
+    juce::dsp::IIR::Filter<float> bass_lpf;
 
     juce::dsp::IIR::Filter<float> post_lpf;
     float post_lpf_cutoff = 3300.0f;
@@ -43,6 +45,7 @@ class BorealisOverdrive : public Overdrive
     float post_lpf3_cutoff = 7200.0f;
 
     GermaniumDiode diode = GermaniumDiode(44100.0f);
+    CMOS cmos = CMOS();
 
     juce::dsp::Oversampling<float> oversampler2x{
         2, 2,

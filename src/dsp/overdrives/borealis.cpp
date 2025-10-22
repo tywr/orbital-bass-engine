@@ -21,6 +21,7 @@ void BorealisOverdrive::resetFilters()
     post_lpf2.reset();
     post_lpf3.reset();
     x_hpf.reset();
+    bass_lpf.reset();
 }
 
 void BorealisOverdrive::resetSmoothedValues()
@@ -33,8 +34,8 @@ void BorealisOverdrive::resetSmoothedValues()
     mix.setCurrentAndTargetValue(raw_mix);
     cross_frequency.reset(processSpec.sampleRate, smoothing_time);
     cross_frequency.setCurrentAndTargetValue(raw_cross_frequency);
-    high_level.reset(processSpec.sampleRate, smoothing_time);
-    high_level.setCurrentAndTargetValue(raw_high_level);
+    bass_frequency.reset(processSpec.sampleRate, smoothing_time);
+    bass_frequency.setCurrentAndTargetValue(raw_bass_frequency);
 }
 
 void BorealisOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
@@ -52,6 +53,9 @@ void BorealisOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
 
     x_hpf.prepare(processSpec);
     updateXFilter();
+
+    bass_lpf.prepare(processSpec);
+    updateLowFilter();
 
     diode = GermaniumDiode(oversampled_spec.sampleRate);
 }
@@ -103,12 +107,21 @@ void BorealisOverdrive::prepareFilters()
 
 void BorealisOverdrive::updateXFilter()
 {
-    DBG("Updating X Filter" << cross_frequency.getTargetValue());
     float current_x_frequency = std::max(cross_frequency.getNextValue(), 1.0f);
     auto x_coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(
         processSpec.sampleRate, current_x_frequency
     );
     *x_hpf.coefficients = *x_coefficients;
+}
+
+void BorealisOverdrive::updateLowFilter()
+{
+    float current_bass_frequency =
+        std::max(bass_frequency.getNextValue(), 1.0f);
+    auto bass_coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(
+        processSpec.sampleRate, current_bass_frequency
+    );
+    *bass_lpf.coefficients = *bass_coefficients;
 }
 
 float BorealisOverdrive::driveToGain(float d)
@@ -137,6 +150,9 @@ void BorealisOverdrive::process(juce::AudioBuffer<float>& buffer)
         if (cross_frequency.isSmoothing())
             updateXFilter();
 
+        if (bass_frequency.isSmoothing())
+            updateLowFilter();
+
         float dry = channelData[i];
         float wet = channelData[i];
         applyOverdrive(wet);
@@ -157,7 +173,7 @@ void BorealisOverdrive::applyOverdrive(float& sample)
     float in = pre_lpf.processSample(pre_hpf.processSample(sample));
 
     // Get the fixed lowmids signal
-    float lowmids = lowmids_lpf.processSample(in);
+    float bass = bass_lpf.processSample(in);
 
     // Get the X-over Signal
     float x_signal = current_drive_gain * x_hpf.processSample(in);
@@ -168,5 +184,5 @@ void BorealisOverdrive::applyOverdrive(float& sample)
     float x_out = post_lpf3.processSample(lpf2);
 
     // Mix the lowmids and the distorted X-over signal
-    sample = lowmids + current_level * x_out;
+    sample = bass + current_level * x_out;
 }
