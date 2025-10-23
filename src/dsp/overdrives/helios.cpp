@@ -9,6 +9,7 @@ void HeliosOverdrive::reset()
 {
     oversampler2x.reset();
     cmos.reset();
+    cmos2.reset();
     resetSmoothedValues();
     resetFilters();
     prepareFilters();
@@ -19,11 +20,13 @@ void HeliosOverdrive::resetFilters()
     pre_lpf.reset();
     pre_hpf.reset();
     post_lpf.reset();
-    post_lpf2.reset();
-    post_lpf3.reset();
-    attack_shelf.reset();
-    drive_filter.reset();
-    era_filter.reset();
+    b3k_attack_shelf.reset();
+    vmt_attack_shelf.reset();
+    b3k_drive_filter.reset();
+    vmt_drive_filter.reset();
+    b3k_pre_filter_1.reset();
+    b3k_pre_filter_2.reset();
+    vmt_pre_filter.reset();
 }
 
 void HeliosOverdrive::resetSmoothedValues()
@@ -55,14 +58,13 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
 
 void HeliosOverdrive::prepareFilters()
 {
-    attack_shelf.prepare(processSpec);
+    vmt_attack_shelf.prepare(processSpec);
+    b3k_attack_shelf.prepare(processSpec);
     updateAttackFilter();
 
-    drive_filter.prepare(processSpec);
+    vmt_drive_filter.prepare(processSpec);
+    b3k_drive_filter.prepare(processSpec);
     updateDriveFilter();
-
-    era_filter.prepare(processSpec);
-    updateEraFilter();
 
     pre_lpf.prepare(processSpec);
     auto pre_lpf_coefficients =
@@ -78,6 +80,44 @@ void HeliosOverdrive::prepareFilters()
         );
     *pre_hpf.coefficients = *pre_hpf_coefficients;
 
+    b3k_pre_filter_1.prepare(processSpec);
+    auto b3k_pre_coefficients_1 =
+        juce::dsp::IIR::Coefficients<float>::makeHighPass(
+            processSpec.sampleRate, 106.0f, 0.707f
+        );
+    *b3k_pre_filter_1.coefficients = *b3k_pre_coefficients_1;
+
+    b3k_pre_filter_2.prepare(processSpec);
+    auto b3k_pre_coefficients_2 =
+        juce::dsp::IIR::Coefficients<float>::makeNotch(
+            processSpec.sampleRate, 320.0f, 0.18f
+        );
+    *b3k_pre_filter_2.coefficients = *b3k_pre_coefficients_2;
+
+    vmt_pre_filter.prepare(processSpec);
+    auto vmt_pre_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+            processSpec.sampleRate, 280.0f, 1.0f,
+            juce::Decibels::decibelsToGain(-34.0f)
+        );
+    *vmt_pre_filter.coefficients = *vmt_pre_coefficients;
+
+    b3k_post_filter.prepare(processSpec);
+    auto b3k_post_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+            processSpec.sampleRate, 360.0f, 0.707f,
+            juce::Decibels::decibelsToGain(-15.0f)
+        );
+    *b3k_post_filter.coefficients = *b3k_post_coefficients;
+
+    vmt_post_filter.prepare(processSpec);
+    auto vmt_post_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+            processSpec.sampleRate, 700.0f, 0.707f,
+            juce::Decibels::decibelsToGain(-6.0f)
+        );
+    *vmt_post_filter.coefficients = *vmt_post_coefficients;
+
     post_lpf.prepare(processSpec);
     auto post_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
@@ -85,19 +125,12 @@ void HeliosOverdrive::prepareFilters()
         );
     *post_lpf.coefficients = *post_lpf_coefficients;
 
-    post_lpf2.prepare(processSpec);
-    auto post_lpf2_coefficients =
+    post_lpf_2.prepare(processSpec);
+    auto post_lpf_coefficients_2 =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, post_lpf2_cutoff
+            processSpec.sampleRate, post_lpf_cutoff_2
         );
-    *post_lpf2.coefficients = *post_lpf2_coefficients;
-
-    post_lpf3.prepare(processSpec);
-    auto post_lpf3_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, post_lpf3_cutoff
-        );
-    *post_lpf3.coefficients = *post_lpf3_coefficients;
+    *post_lpf_2.coefficients = *post_lpf_coefficients_2;
 }
 
 void HeliosOverdrive::updateAttackFilter()
@@ -118,7 +151,8 @@ void HeliosOverdrive::updateAttackFilter()
         juce::dsp::IIR::Coefficients<float>::makeHighShelf(
             processSpec.sampleRate, shelf_frequency, attack_shelf_q, shelf_gain
         );
-    *attack_shelf.coefficients = *attack_shelf_coefficients;
+    *vmt_attack_shelf.coefficients = *attack_shelf_coefficients;
+    *b3k_attack_shelf.coefficients = *attack_shelf_coefficients;
 }
 
 void HeliosOverdrive::updateDriveFilter()
@@ -129,11 +163,11 @@ void HeliosOverdrive::updateDriveFilter()
 
     // Set the frequency based on the grunt parameter
     float rolloff_frequency = 3200.0f;
-    float drive_frequency = 219.0f;
+    float drive_frequency = 209.0f;
 
     // Set the gain based on the drive parameter
     float min_gain_db = 0.0f;
-    float max_gain_db = 36.0f;
+    float max_gain_db = 48.0f;
     float drive_filter_gain = juce::Decibels::decibelsToGain(
         min_gain_db + (max_gain_db - min_gain_db) * current_drive * 0.1f
     );
@@ -142,24 +176,8 @@ void HeliosOverdrive::updateDriveFilter()
         processSpec.sampleRate, drive_frequency, rolloff_frequency,
         drive_filter_gain
     );
-    *drive_filter.coefficients = *drive_filter_coefficients;
-}
-
-void HeliosOverdrive::updateEraFilter()
-{
-    float current_era = era.getCurrentValue();
-    float max_frequency = 700.0f;
-    float min_frequency = 2200.0f;
-    float era_frequency =
-        min_frequency + (max_frequency - min_frequency) * current_era * 0.1f;
-    float max_gain = juce::Decibels::decibelsToGain(-6.0f);
-    float min_gain = juce::Decibels::decibelsToGain(-9.0f);
-    float gain = min_gain + (max_gain - min_gain) * current_era * 0.1f;
-    auto era_filter_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
-            processSpec.sampleRate, era_frequency, 0.707f, gain
-        );
-    *era_filter.coefficients = *era_filter_coefficients;
+    *vmt_drive_filter.coefficients = *drive_filter_coefficients;
+    *b3k_drive_filter.coefficients = *drive_filter_coefficients;
 }
 
 void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
@@ -179,11 +197,6 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
         {
             attack.getNextValue();
             updateAttackFilter();
-        }
-        if (era.isSmoothing())
-        {
-            era.getNextValue();
-            updateEraFilter();
         }
         if (drive.isSmoothing())
         {
@@ -205,21 +218,27 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
 
 void HeliosOverdrive::applyOverdrive(float& sample)
 {
+    float current_era = 0.1f * era.getNextValue();
     float input_padding = juce::Decibels::decibelsToGain(0.0f);
     float raw_input = sample * input_padding;
     float filtered = pre_lpf.processSample(pre_hpf.processSample(raw_input));
 
-    float attacked = attack_shelf.processSample(filtered);
-    float drived = drive_filter.processSample(attacked);
+    float vmt_pre = vmt_pre_filter.processSample(filtered);
+    float vmt_attacked = vmt_attack_shelf.processSample(vmt_pre);
+    float vmt_drived = vmt_drive_filter.processSample(vmt_attacked);
+    float vmt_distorted = cmos.processSample(vmt_drived);
+    float vmt_post = vmt_post_filter.processSample(vmt_distorted);
 
-    float distorted = cmos.processSample(drived);
-    float mid_scooped = era_filter.processSample(distorted);
+    float b3k_pre_1 = b3k_pre_filter_1.processSample(filtered);
+    float b3k_pre_2 = b3k_pre_filter_2.processSample(b3k_pre_1);
+    float b3k_attacked = b3k_attack_shelf.processSample(b3k_pre_2);
+    float b3k_drived = b3k_drive_filter.processSample(b3k_attacked);
+    float b3k_distorted = cmos2.processSample(b3k_drived);
+    float b3k_post = b3k_post_filter.processSample(b3k_distorted);
 
-    // Apply three consecutive LPF to smooth out top-end
-    float lpfed1 = post_lpf.processSample(mid_scooped);
-    float lpfed2 = post_lpf2.processSample(lpfed1);
-    float out = post_lpf3.processSample(lpfed2);
+    float post = vmt_post * (1.0f - current_era) + b3k_post * current_era;
 
-    float output_padding = juce::Decibels::decibelsToGain(0.0f);
-    sample = output_padding * out;
+    float post1 = post_lpf.processSample(post);
+    float post2 = post_lpf_2.processSample(post1);
+    sample = post2;
 }

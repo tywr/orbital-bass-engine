@@ -1,4 +1,5 @@
 #include "nebula.h"
+#include "../circuits/cmos.h"
 #include "../circuits/opamp.h"
 #include "../filters/drive_filter.h"
 
@@ -6,6 +7,7 @@
 
 void NebulaOverdrive::reset()
 {
+    cmos.reset();
 }
 
 void NebulaOverdrive::resetSmoothedValues()
@@ -89,6 +91,12 @@ void NebulaOverdrive::prepareFilters()
             processSpec.sampleRate, omega_3_frequency, 0.707f, omega_3_gain
         );
     *omega_3_filter.coefficients = *omega_3_coefficients;
+
+    lpf_filter.prepare(processSpec);
+    auto lpf_coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(
+        processSpec.sampleRate, lpf_cutoff, 0.707f
+    );
+    *lpf_filter.coefficients = *lpf_coefficients;
 }
 
 void NebulaOverdrive::updateDriveFilter()
@@ -97,11 +105,11 @@ void NebulaOverdrive::updateDriveFilter()
     float drive_filter_q = 0.707f;
 
     float rolloff_frequency = 3200.0f;
-    float drive_frequency = 109.0f;
+    float drive_frequency = 209.0f;
 
     // Set the gain based on the drive parameter
     float min_gain_db = 0.0f;
-    float max_gain_db = 42.0f;
+    float max_gain_db = 36.0f;
     float drive_filter_gain = juce::Decibels::decibelsToGain(
         min_gain_db + (max_gain_db - min_gain_db) * current_drive * 0.1f
     );
@@ -157,12 +165,14 @@ void NebulaOverdrive::applyOverdrive(float& sample)
     float drived = drive_filter.processSample(sample);
 
     float alpha_1 = alpha_1_filter.processSample(drived);
-    float alpha_out = opamp.processSample(alpha_1);
+    float alpha_out = cmos.processSample(alpha_1);
 
     float omega_1 = omega_1_filter.processSample(drived);
     float omega_2 = omega_2_filter.processSample(omega_1);
-    float omega_3 = opamp.processSample(omega_2);
+    // float omega_3 = opamp.processSample(omega_2);
+    float omega_3 = cmos.processSample(omega_2);
     float omega_out = omega_3_filter.processSample(omega_3);
 
-    sample = alpha_out * (1.0f - current_mod) + omega_out * current_mod;
+    float out = alpha_out * (1.0f - current_mod) + omega_out * current_mod;
+    sample = lpf_filter.processSample(out);
 }

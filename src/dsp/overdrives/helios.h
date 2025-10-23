@@ -28,20 +28,27 @@ class HeliosOverdrive : public Overdrive
     juce::dsp::IIR::Filter<float> pre_lpf;
     float pre_lpf_cutoff = 1540.0f;
 
-    juce::dsp::IIR::Filter<float> drive_filter;
-    juce::dsp::IIR::Filter<float> attack_shelf;
     juce::dsp::IIR::Filter<float> era_filter;
+    juce::dsp::IIR::Filter<float> vmt_drive_filter;
+    juce::dsp::IIR::Filter<float> b3k_drive_filter;
+    juce::dsp::IIR::Filter<float> vmt_attack_shelf;
+    juce::dsp::IIR::Filter<float> b3k_attack_shelf;
+
+    juce::dsp::IIR::Filter<float> b3k_pre_filter_1;
+    juce::dsp::IIR::Filter<float> b3k_pre_filter_2;
+    juce::dsp::IIR::Filter<float> vmt_pre_filter;
+    juce::dsp::IIR::Filter<float> b3k_post_filter;
+    juce::dsp::IIR::Filter<float> vmt_post_filter;
 
     juce::dsp::IIR::Filter<float> post_lpf;
-    float post_lpf_cutoff = 2200.0f;
+    float post_lpf_cutoff = 1580.0f;
+    float post_lpf_q = 3.0f;
 
-    juce::dsp::IIR::Filter<float> post_lpf2;
-    float post_lpf2_cutoff = 7240.0f;
-
-    juce::dsp::IIR::Filter<float> post_lpf3;
-    float post_lpf3_cutoff = 1540.0f;
+    juce::dsp::IIR::Filter<float> post_lpf_2;
+    float post_lpf_cutoff_2 = 3200.0f;
 
     CMOS cmos = CMOS();
+    CMOS cmos2 = CMOS();
 
     juce::dsp::Oversampling<float> oversampler2x{
         2, 2,

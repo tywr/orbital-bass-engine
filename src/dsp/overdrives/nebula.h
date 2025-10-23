@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../circuits/cmos.h"
 #include "../circuits/opamp.h"
 #include "overdrive.h"
 #include <juce_audio_basics/juce_audio_basics.h>
@@ -19,6 +20,7 @@ class NebulaOverdrive : public Overdrive
 
   private:
     OpAmp opamp = OpAmp();
+    CMOS cmos = CMOS();
 
     juce::dsp::IIR::Filter<float> pre_hpf;
     float pre_hpf_cutoff = 50.0f;
@@ -44,6 +46,9 @@ class NebulaOverdrive : public Overdrive
     juce::dsp::IIR::Filter<float> omega_3_filter;
     float omega_3_frequency = 300.0f;
     float omega_3_gain = juce::Decibels::decibelsToGain(-15.0f);
+
+    juce::dsp::IIR::Filter<float> lpf_filter;
+    float lpf_cutoff = 1590.0f;
 
     juce::dsp::Oversampling<float> oversampler2x{
         2, 2,

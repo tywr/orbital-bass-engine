@@ -1,4 +1,4 @@
-set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE Debug)
 
 juce_add_plugin(${PROJECT_NAME}
     PLIST_TO_MERGE "<key>NSMicrophoneUsageDescription</key><string>This app needs to use your microphone to process the audio signal.</string>"
