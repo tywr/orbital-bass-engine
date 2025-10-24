@@ -11,8 +11,6 @@ struct IRType
 {
     juce::ToggleButton* button;
     juce::String id;
-    const char* data;
-    int size;
 };
 
 class Modern410ToggleButton : public juce::ToggleButton
@@ -35,7 +33,7 @@ class Modern410ToggleButton : public juce::ToggleButton
         }
         else
         {
-            c = findColour(juce::ToggleButton::textColourId).withAlpha(0.3f);
+            c = ColourCodes::grey3;
         }
         paintIconModern410(g, bounds, c);
     }
@@ -61,7 +59,7 @@ class Classic810ToggleButton : public juce::ToggleButton
         }
         else
         {
-            c = findColour(juce::ToggleButton::textColourId).withAlpha(0.3f);
+            c = ColourCodes::grey3;
         }
         paintIconClassic810(g, bounds, c);
     }
@@ -87,7 +85,7 @@ class Crunchy212ToggleButton : public juce::ToggleButton
         }
         else
         {
-            c = findColour(juce::ToggleButton::textColourId).withAlpha(0.3f);
+            c = ColourCodes::grey3;
         }
         paintIconCrunchy212(g, bounds, c);
     }
@@ -113,7 +111,7 @@ class VintageB15ToggleButton : public juce::ToggleButton
         }
         else
         {
-            c = findColour(juce::ToggleButton::textColourId).withAlpha(0.3f);
+            c = ColourCodes::grey3;
         }
         paintIconVintageB15(g, bounds, c);
     }

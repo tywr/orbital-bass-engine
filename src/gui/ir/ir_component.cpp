@@ -9,9 +9,19 @@
 IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
     : parameters(params)
 {
+    addAndMakeVisible(drag_tooltip);
+    drag_tooltip.setJustificationType(juce::Justification::centred);
+    drag_tooltip.setAlwaysOnTop(true);
+    drag_tooltip.setColour(juce::Label::backgroundColourId, ColourCodes::bg0);
 
     addAndMakeVisible(bypassButton);
     bypassButton.setButtonText("bypass");
+    bypassButton.setColour(
+        juce::ToggleButton::tickColourId, ColourCodes::grey3
+    );
+    bypassButton.setColour(
+        juce::ToggleButton::tickDisabledColourId, ColourCodes::white0
+    );
     bypassButton.onClick = [this]() { switchColour(); };
     bypassButtonAttachment =
         std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
@@ -27,6 +37,9 @@ IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
     {
         addAndMakeVisible(type.button);
         type.button->onClick = [this, type]() { switchIR(type); };
+        type.button->setColour(
+            juce::ToggleButton::textColourId, ColourCodes::white0
+        );
     }
     initType();
 
@@ -35,15 +48,8 @@ IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
 
     ir_mix_label.setText("mix", juce::dontSendNotification);
     ir_mix_label.setJustificationType(juce::Justification::centred);
-    ir_mix_label.attachToComponent(&ir_mix_slider, false);
     ir_mix_slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    ir_mix_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
-    ir_mix_slider.setColour(
-        juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack
-    );
-    ir_mix_slider.setColour(
-        juce::Slider::textBoxTextColourId, ColourCodes::grey3
-    );
+    ir_mix_slider.setTextBoxStyle(juce::Slider::NoTextBox, false, 100, 20);
     ir_mix_slider.setColour(
         juce::Slider::rotarySliderFillColourId, ColourCodes::white0
     );
@@ -54,25 +60,20 @@ IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
 
     addAndMakeVisible(gain_slider);
     addAndMakeVisible(gain_label);
-    gain_label.setText("gain", juce::dontSendNotification);
+    gain_label.setText("level", juce::dontSendNotification);
     gain_label.setJustificationType(juce::Justification::centred);
-    gain_label.attachToComponent(&gain_slider, false);
     gain_slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    gain_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
+    gain_slider.setTextBoxStyle(juce::Slider::NoTextBox, false, 100, 20);
     gain_slider.setColour(
         juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack
-    );
-    gain_slider.setColour(
-        juce::Slider::textBoxTextColourId, ColourCodes::grey3
-    );
-    gain_slider.setColour(
-        juce::Slider::rotarySliderFillColourId, ColourCodes::white0
     );
     gain_sliderAttachment =
         std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             parameters, "ir_level", gain_slider
         );
 
+    setupSliderTooltipHandling(&ir_mix_slider, &ir_mix_label);
+    setupSliderTooltipHandling(&gain_slider, &gain_label);
     switchColour();
 }
 
@@ -122,7 +123,16 @@ IRComponent::~IRComponent()
 
 void IRComponent::paint(juce::Graphics& g)
 {
-    ignoreUnused(g);
+    auto bounds = getLocalBounds().toFloat();
+    bounds.removeFromTop(IRDimensions::IR_TYPE_BUTTONS_HEIGHT);
+    auto ir_bounds =
+        bounds.withSizeKeepingCentre(IRDimensions::WIDTH, IRDimensions::HEIGHT);
+    g.setColour(ColourCodes::bg0);
+    g.fillRoundedRectangle(ir_bounds, IRDimensions::CORNER_RADIUS);
+    g.setColour(current_colour);
+    g.drawRoundedRectangle(
+        ir_bounds, IRDimensions::CORNER_RADIUS, IRDimensions::BORDER_THICKNESS
+    );
 }
 
 void IRComponent::resized()
@@ -150,11 +160,19 @@ void IRComponent::resized()
         IRDimensions::WIDTH - 2 * IRDimensions::SIDE_PADDING,
         IRDimensions::HEIGHT
     );
+    auto knob_bounds = middle_bounds.withSizeKeepingCentre(
+        middle_bounds.getWidth(), IRDimensions::BOX_HEIGHT
+    );
+    auto label_bounds = knob_bounds.removeFromTop(IRDimensions::LABEL_HEIGHT);
+    ir_mix_label.setBounds(
+        label_bounds.removeFromRight(IRDimensions::KNOB_SIZE)
+    );
+    gain_label.setBounds(label_bounds.removeFromLeft(IRDimensions::KNOB_SIZE));
 
-    const int knob_size = middle_bounds.getWidth() / 3;
-
-    gain_slider.setBounds(middle_bounds.removeFromLeft(knob_size));
-    ir_mix_slider.setBounds(middle_bounds.removeFromRight(knob_size));
+    gain_slider.setBounds(knob_bounds.removeFromLeft(IRDimensions::KNOB_SIZE));
+    ir_mix_slider.setBounds(
+        knob_bounds.removeFromRight(IRDimensions::KNOB_SIZE)
+    );
 
     auto left_bounds = ir_bounds.removeFromLeft(IRDimensions::SIDE_PADDING);
     bypassButton.setBounds(left_bounds.withSizeKeepingCentre(
@@ -166,13 +184,62 @@ void IRComponent::switchColour()
 {
     if (bypassButton.getToggleState())
     {
-        iRColour = ColourCodes::grey3;
+        current_colour = ColourCodes::grey3;
     }
     else
     {
-        iRColour = ColourCodes::white0;
+        current_colour = ColourCodes::white0;
     }
-    ir_mix_slider.setColour(juce::Slider::rotarySliderFillColourId, iRColour);
-    gain_slider.setColour(juce::Slider::rotarySliderFillColourId, iRColour);
+    ir_mix_slider.setColour(
+        juce::Slider::rotarySliderFillColourId, current_colour
+    );
+    gain_slider.setColour(
+        juce::Slider::rotarySliderFillColourId, current_colour
+    );
     repaint();
+}
+
+void IRComponent::setupSliderTooltipHandling(
+    juce::Slider* slider, juce::Label* label
+)
+{
+
+    slider->onDragStart = [this, slider = slider, label = label]()
+    {
+        slider_being_dragged = true;
+        drag_tooltip.setVisible(false);
+        // delay using a Timer
+        juce::Timer::callAfterDelay(
+            300,
+            [this, slider, label]()
+            {
+                if (slider->isMouseButtonDown())
+                {
+                    drag_tooltip.setText(
+                        juce::String(slider->getValue(), 2),
+                        juce::dontSendNotification
+                    );
+                    drag_tooltip.setBounds(
+                        label->getX(), label->getY(), label->getWidth(),
+                        label->getHeight()
+                    );
+                    drag_tooltip.toFront(true);
+                    drag_tooltip.setVisible(true);
+                    drag_tooltip.repaint();
+                }
+            }
+        );
+    };
+    slider->onDragEnd = [this]()
+    {
+        slider_being_dragged = false;
+        drag_tooltip.setVisible(false);
+    };
+    slider->onValueChange = [this, slider = slider]()
+    {
+        if (slider_being_dragged && drag_tooltip.isVisible())
+            drag_tooltip.setText(
+                juce::String(slider->getValue(), 2), juce::dontSendNotification
+            );
+    };
 }

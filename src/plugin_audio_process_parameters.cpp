@@ -152,12 +152,4 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     {
         irConvolver.setTypeFromIndex(static_cast<int>(v));
     }
-    else if (parameterID == "ir_filepath")
-    {
-        // Load IR from the new filepath
-        juce::String newFilepath =
-            parameters.state.getProperty("ir_filepath").toString();
-        irConvolver.setFilepath(newFilepath);
-        irConvolver.loadIR();
-    }
 }

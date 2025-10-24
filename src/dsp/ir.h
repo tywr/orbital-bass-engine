@@ -27,13 +27,10 @@ class IRConvolver
     {
         bypass = newBypass;
     }
-    void setFilepath(juce::String newFilepath)
-    {
-        filepath = newFilepath;
-    }
     void setTypeFromIndex(int index)
     {
         type = index;
+        loadIR();
     }
     juce::String getFilepath()
     {

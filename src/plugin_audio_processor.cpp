@@ -106,26 +106,8 @@ void PluginAudioProcessor::parameterChanged(
     setParameterValue(parameterID, newValue);
 }
 
-void PluginAudioProcessor::valueTreePropertyChanged(
-    juce::ValueTree& tree, const juce::Identifier& id
-)
-{
-    if (id.toString() == "ir_filepath") // check the property name
-    {
-        auto filepath = tree.getProperty(id).toString();
-        DBG("IR path changed: " << filepath);
-        irConvolver.setFilepath(filepath);
-        irConvolver.loadIR();
-    }
-}
-
 void PluginAudioProcessor::prepareParameters()
 {
-    juce::String filepath =
-        parameters.state.getProperty("ir_filepath").toString();
-    irConvolver.setFilepath(filepath);
-    irConvolver.loadIR();
-
     int amp_index =
         static_cast<int>(parameters.getRawParameterValue("amp_type")->load());
     current_overdrive.store(overdrives[amp_index]);

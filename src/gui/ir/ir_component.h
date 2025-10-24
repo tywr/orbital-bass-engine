@@ -2,6 +2,7 @@
 
 #include "../../assets/impulse_response_binary.h"
 #include "../colours.h"
+#include "../components/solid_tooltip.h"
 #include "ir_type.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -18,12 +19,17 @@ class IRComponent : public juce::Component
     void switchColour();
     void switchIR(IRType);
     void initType();
+    void setupSliderTooltipHandling(
+        juce::Slider* slider, juce::Label* label
+    );
 
   private:
     juce::AudioProcessorValueTreeState& parameters;
-    void chooseFile();
-    juce::String choosenFilePath;
-    juce::Colour iRColour = ColourCodes::white0;
+
+    SolidTooltip drag_tooltip;
+    bool slider_being_dragged = false;
+
+    juce::Colour current_colour = ColourCodes::white0;
 
     juce::ToggleButton bypassButton;
     juce::Label bypassLabel;
@@ -47,33 +53,27 @@ class IRComponent : public juce::Component
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         type_slider_attachment;
 
-    IRType modern_410_type = {
-        &modern_410_button, "modern_410", ImpulseResponseBinary::modern_410_wav,
-        ImpulseResponseBinary::modern_410_wavSize
-    };
+    IRType modern_410_type = {&modern_410_button, "modern_410"};
     Modern410ToggleButton modern_410_button =
         Modern410ToggleButton(modern_410_type);
 
     IRType classic_810_type = {
-        &classic_810_button, "classic_810",
-        ImpulseResponseBinary::classic_810_wav,
-        ImpulseResponseBinary::classic_810_wavSize
+        &classic_810_button,
+        "classic_810",
     };
     Classic810ToggleButton classic_810_button =
         Classic810ToggleButton(classic_810_type);
 
     IRType crunchy_212_type = {
-        &crunchy_212_button, "crunchy_212",
-        ImpulseResponseBinary::crunchy_212_wav,
-        ImpulseResponseBinary::crunchy_212_wavSize
+        &crunchy_212_button,
+        "crunchy_212",
     };
     Crunchy212ToggleButton crunchy_212_button =
         Crunchy212ToggleButton(crunchy_212_type);
 
     IRType vintage_b15_type = {
-        &vintage_b15_button, "vintage_b15",
-        ImpulseResponseBinary::vintage_B15_wav,
-        ImpulseResponseBinary::vintage_B15_wavSize
+        &vintage_b15_button,
+        "vintage_b15",
     };
     VintageB15ToggleButton vintage_b15_button =
         VintageB15ToggleButton(vintage_b15_type);

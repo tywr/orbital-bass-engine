@@ -115,7 +115,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "ir_level", "Impulse Response Level",
-            juce::NormalisableRange<float>(-24.0f, 6.0f, 0.1f, 1.0f), 0.0f
+            juce::NormalisableRange<float>(-36.0f, 12.0f, 0.1f, 1.0f), -12.0f
         )
     };
 }

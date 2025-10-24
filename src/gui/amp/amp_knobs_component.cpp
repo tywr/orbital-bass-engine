@@ -59,9 +59,7 @@ void AmpKnobsComponent::switchType(AmpType new_type)
 {
     if (new_type.id == "helios")
     {
-        current_knobs[1] = {
-            &era_slider, &era_label, "overdrive_era", "era"
-        };
+        current_knobs[1] = {&era_slider, &era_label, "overdrive_era", "era"};
         current_knobs[2] = {
             &attack_slider, &attack_label, "overdrive_attack", "attack"
         };
@@ -98,14 +96,6 @@ void AmpKnobsComponent::switchType(AmpType new_type)
         // knob.label->attachToComponent(knob.slider, false);
         knob.slider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
         knob.slider->setTextBoxStyle(juce::Slider::NoTextBox, false, 70, 20);
-        // knob.slider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70,
-        // 20); knob.label->setColour(
-        //     juce::Slider::textBoxOutlineColourId,
-        //     juce::Colours::transparentBlack
-        // );
-        // knob.label->setColour(
-        //     juce::Slider::textBoxTextColourId, ColourCodes::grey3
-        // );
         slider_attachments.push_back(
             std::make_unique<
                 juce::AudioProcessorValueTreeState::SliderAttachment>(

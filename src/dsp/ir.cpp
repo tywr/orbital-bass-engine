@@ -1,11 +1,13 @@
 #include "ir.h"
 
+#include "../assets/impulse_response_binary.h"
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <juce_dsp/juce_dsp.h>
 
 void IRConvolver::prepare(const juce::dsp::ProcessSpec& spec)
 {
     processSpec = spec;
+    loadIR();
 }
 
 void IRConvolver::process(juce::AudioBuffer<float>& buffer)
@@ -14,10 +16,6 @@ void IRConvolver::process(juce::AudioBuffer<float>& buffer)
     {
         return;
     }
-    // if (!is_ir_loaded)
-    // {
-    //     return;
-    // }
     juce::ScopedNoDenormals noDenormals;
     juce::AudioBuffer<float> wetBuffer(
         buffer.getNumChannels(), buffer.getNumSamples()
@@ -46,35 +44,25 @@ void IRConvolver::process(juce::AudioBuffer<float>& buffer)
 
 void IRConvolver::loadIR()
 {
-    DBG("Loading IR from file: " + filepath);
-    juce::File file = juce::File(filepath);
+    const char* data;
+    const int size = 3044;
 
-    if (!file.existsAsFile())
+    switch (type)
     {
-        is_ir_loaded = false;
-        DBG("File does not exist: " + filepath);
-        return;
+    case 0:
+        data = (char*)ImpulseResponseBinary::modern_410_wav;
+    case 1:
+        data = (char*)ImpulseResponseBinary::crunchy_212_wav;
+    case 2:
+        data = (char*)ImpulseResponseBinary::vintage_B15_wav;
+    case 3:
+        data = (char*)ImpulseResponseBinary::classic_810_wav;
     }
-    try
-    {
-        convolution.loadImpulseResponse(
-            file, juce::dsp::Convolution::Stereo::yes,
-            juce::dsp::Convolution::Trim::no, 0,
-            juce::dsp::Convolution::Normalise::no
-        );
 
-        convolution.prepare(processSpec);
-        DBG("Loaded IR from file: " + file.getFullPathName());
-        is_ir_loaded = true;
-    }
-    catch (const std::exception& e)
-    {
-        DBG("Error loading IR: " + juce::String(e.what()));
-        is_ir_loaded = false;
-    }
-    catch (...)
-    {
-        DBG("Unknown error loading IR.");
-        is_ir_loaded = false;
-    }
+    convolution.loadImpulseResponse(
+        data, size, juce::dsp::Convolution::Stereo::yes,
+        juce::dsp::Convolution::Trim::no, 0,
+        juce::dsp::Convolution::Normalise::no
+    );
+    convolution.prepare(processSpec);
 }
