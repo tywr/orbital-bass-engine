@@ -1,4 +1,4 @@
-inline void paintIconModern410(
+inline void paintIconClassic810(
     juce::Graphics& g, juce::Rectangle<float> bounds, juce::Colour c
 )
 {
@@ -6,7 +6,7 @@ inline void paintIconModern410(
     g.setColour(c);
 
     auto amp_bounds = bounds.withSizeKeepingCentre(
-        bounds.getWidth() * 0.5f, bounds.getHeight() * 0.5f
+        bounds.getWidth() * 0.5f, bounds.getHeight()
     );
     const float w = amp_bounds.getWidth();
     const float h = amp_bounds.getHeight();
@@ -26,14 +26,14 @@ inline void paintIconModern410(
 
     // Divide the speaker area into a 2x2 grid
     const float cellW = gW / 2.0f;
-    const float cellH = gH / 2.0f;
+    const float cellH = gH / 4.0f;
 
     // Define speaker radii
     const float speakerOuterRadius = juce::jmin(cellW, cellH) * 0.42f;
     const float speakerInnerRadius = speakerOuterRadius * 0.45f;
 
-    // Loop through the 2x2 grid
-    for (int row = 0; row < 2; ++row)
+    // Loop through the 4x2 grid
+    for (int row = 0; row < 4; ++row)
     {
         for (int col = 0; col < 2; ++col)
         {
@@ -55,32 +55,10 @@ inline void paintIconModern410(
         }
     }
 
-    // --- 6. Draw Central Tweeter ---
-
-    // It's in the exact center of the speaker area
-    const auto centerPoint = speakerArea.getCentre();
-
-    // Define tweeter size (a rounded square)
-    const float tweeterSize = speakerInnerRadius * 2.2f;
-    const float tweeterCorner = tweeterSize * 0.2f;
-
-    // Create the tweeter's rectangle, centered
-    juce::Rectangle<float> tweeterRect(tweeterSize, tweeterSize);
-    tweeterRect.setCentre(centerPoint);
-
-    // Draw the rounded rectangle
-    g.drawRoundedRectangle(tweeterRect, tweeterCorner, lineThickness);
-
-    // Draw the tweeter's inner circle
-    const float tweeterInnerRadius = tweeterSize * 0.25f;
-    g.drawEllipse(
-        centerPoint.x - tweeterInnerRadius, centerPoint.y - tweeterInnerRadius,
-        tweeterInnerRadius * 2.0f, tweeterInnerRadius * 2.0f, lineThickness
-    );
-
     const float grilleLineSpacing = speakerArea.getWidth() * 0.06f;
     for (float x = speakerArea.getX();
-         x < speakerArea.getRight() + grilleLineSpacing; x += grilleLineSpacing)
+         x < speakerArea.getRight() + grilleLineSpacing;
+         x += grilleLineSpacing)
     {
         g.drawLine(
             x, speakerArea.getY(), x, speakerArea.getBottom(),

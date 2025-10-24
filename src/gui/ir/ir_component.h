@@ -33,15 +33,15 @@ class IRComponent : public juce::Component
     juce::Label statusLabel;
     std::unique_ptr<juce::FileChooser> chooser;
 
-    juce::Slider irMixSlider;
-    juce::Label irMixLabel;
+    juce::Slider ir_mix_slider;
+    juce::Label ir_mix_label;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        irMixSliderAttachment;
+        ir_mix_sliderAttachment;
 
-    juce::Slider gainSlider;
-    juce::Label gainLabel;
+    juce::Slider gain_slider;
+    juce::Label gain_label;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        gainSliderAttachment;
+        gain_sliderAttachment;
 
     juce::Slider type_slider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
@@ -54,7 +54,33 @@ class IRComponent : public juce::Component
     Modern410ToggleButton modern_410_button =
         Modern410ToggleButton(modern_410_type);
 
-    std::vector<IRType> types = {modern_410_type};
+    IRType classic_810_type = {
+        &classic_810_button, "classic_810",
+        ImpulseResponseBinary::classic_810_wav,
+        ImpulseResponseBinary::classic_810_wavSize
+    };
+    Classic810ToggleButton classic_810_button =
+        Classic810ToggleButton(classic_810_type);
+
+    IRType crunchy_212_type = {
+        &crunchy_212_button, "crunchy_212",
+        ImpulseResponseBinary::crunchy_212_wav,
+        ImpulseResponseBinary::crunchy_212_wavSize
+    };
+    Crunchy212ToggleButton crunchy_212_button =
+        Crunchy212ToggleButton(crunchy_212_type);
+
+    IRType vintage_b15_type = {
+        &vintage_b15_button, "vintage_b15",
+        ImpulseResponseBinary::vintage_B15_wav,
+        ImpulseResponseBinary::vintage_B15_wavSize
+    };
+    VintageB15ToggleButton vintage_b15_button =
+        VintageB15ToggleButton(vintage_b15_type);
+
+    std::vector<IRType> types = {
+        modern_410_type, crunchy_212_type, vintage_b15_type, classic_810_type
+    };
     IRType selected_type = types[0];
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(IRComponent);

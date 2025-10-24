@@ -30,49 +30,47 @@ IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
     }
     initType();
 
-    addAndMakeVisible(statusLabel);
-    statusLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(ir_mix_slider);
+    addAndMakeVisible(ir_mix_label);
 
-    addAndMakeVisible(irMixSlider);
-    addAndMakeVisible(irMixLabel);
-    irMixLabel.setText("mix", juce::dontSendNotification);
-    irMixLabel.setJustificationType(juce::Justification::centred);
-    irMixLabel.attachToComponent(&irMixSlider, false);
-    irMixSlider.setRange(0.0, 1.0, 0.01);
-    irMixSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    irMixSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
-    irMixSlider.setColour(
+    ir_mix_label.setText("mix", juce::dontSendNotification);
+    ir_mix_label.setJustificationType(juce::Justification::centred);
+    ir_mix_label.attachToComponent(&ir_mix_slider, false);
+    ir_mix_slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    ir_mix_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
+    ir_mix_slider.setColour(
         juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack
     );
-    irMixSlider.setColour(
+    ir_mix_slider.setColour(
         juce::Slider::textBoxTextColourId, ColourCodes::grey3
     );
-    irMixSlider.setColour(
+    ir_mix_slider.setColour(
         juce::Slider::rotarySliderFillColourId, ColourCodes::white0
     );
-    irMixSliderAttachment =
+    ir_mix_sliderAttachment =
         std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-            parameters, "ir_mix", irMixSlider
+            parameters, "ir_mix", ir_mix_slider
         );
 
-    addAndMakeVisible(gainSlider);
-    addAndMakeVisible(gainLabel);
-    gainLabel.setText("gain", juce::dontSendNotification);
-    gainLabel.setJustificationType(juce::Justification::centred);
-    gainLabel.attachToComponent(&gainSlider, false);
-    gainSlider.setRange(0.0, 1.0, 0.01);
-    gainSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    gainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
-    gainSlider.setColour(
+    addAndMakeVisible(gain_slider);
+    addAndMakeVisible(gain_label);
+    gain_label.setText("gain", juce::dontSendNotification);
+    gain_label.setJustificationType(juce::Justification::centred);
+    gain_label.attachToComponent(&gain_slider, false);
+    gain_slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    gain_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
+    gain_slider.setColour(
         juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack
     );
-    gainSlider.setColour(juce::Slider::textBoxTextColourId, ColourCodes::grey3);
-    gainSlider.setColour(
+    gain_slider.setColour(
+        juce::Slider::textBoxTextColourId, ColourCodes::grey3
+    );
+    gain_slider.setColour(
         juce::Slider::rotarySliderFillColourId, ColourCodes::white0
     );
-    gainSliderAttachment =
+    gain_sliderAttachment =
         std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-            parameters, "ir_level", gainSlider
+            parameters, "ir_level", gain_slider
         );
 
     switchColour();
@@ -129,13 +127,6 @@ void IRComponent::paint(juce::Graphics& g)
 
 void IRComponent::resized()
 {
-    const int xpadding = 50;
-    const int ypadding = 50;
-    const int load_button_height = 30;
-    const int button_size = 50;
-    const int label_padding = 20;
-    const int inner_knob_padding = 60;
-
     auto bounds = getLocalBounds();
 
     auto type_bounds =
@@ -162,8 +153,8 @@ void IRComponent::resized()
 
     const int knob_size = middle_bounds.getWidth() / 3;
 
-    gainSlider.setBounds(middle_bounds.removeFromLeft(knob_size));
-    irMixSlider.setBounds(middle_bounds.removeFromRight(knob_size));
+    gain_slider.setBounds(middle_bounds.removeFromLeft(knob_size));
+    ir_mix_slider.setBounds(middle_bounds.removeFromRight(knob_size));
 
     auto left_bounds = ir_bounds.removeFromLeft(IRDimensions::SIDE_PADDING);
     bypassButton.setBounds(left_bounds.withSizeKeepingCentre(
@@ -181,7 +172,7 @@ void IRComponent::switchColour()
     {
         iRColour = ColourCodes::white0;
     }
-    irMixSlider.setColour(juce::Slider::rotarySliderFillColourId, iRColour);
-    gainSlider.setColour(juce::Slider::rotarySliderFillColourId, iRColour);
+    ir_mix_slider.setColour(juce::Slider::rotarySliderFillColourId, iRColour);
+    gain_slider.setColour(juce::Slider::rotarySliderFillColourId, iRColour);
     repaint();
 }
