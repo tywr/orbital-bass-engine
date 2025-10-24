@@ -87,9 +87,9 @@ class ModelLlama:
 
     def solve(self, x: float) -> float:
         vin = x + self.bias
-        vout = self.V_dd / 2.0
+        vout = self.bias
 
-        for _ in range(5):
+        for i in range(5):
             # NMOS:
             vgs_n = vin
             vds_n = vout
@@ -112,11 +112,15 @@ class ModelLlama:
 
             # Newton-Raphson update step
             vout = vout - f_x / (f_prime_x + 1e-9)  # Add epsilon for stability
+            if abs(f_x / (f_prime_x + 1e-9)) < 1e-6:
+                print(f"Converged in {i} iterations.")
+                break
 
             # Clamp vout to the supply rails for stability during iteration
             vout = np.clip(vout, 0, self.V_dd)
 
-        return 1 - 2 * vout / self.V_dd
+        # return 1 - 2 * vout / self.V_dd
+        return vout
 
 
 def poly_exp(x, *coefficients):
@@ -131,36 +135,10 @@ if __name__ == "__main__":
     vin = np.linspace(-10, 10, 1000)
     vout = np.array([model.solve(v) for v in vin])
 
-    # bias = 3.44
-    # fs = 44100
-    # frequency = 440
-    # t = np.linspace(0, 3 / frequency, fs)
-    # y = np.sin(2 * np.pi * frequency * t)
-    # yp = [model.solve(bias + sample) for sample in y]
-
-    # modelp = ModelLlama(V_dd=9, delta=0.06)
-    # xp = np.linspace(4.5 - 0.7, 4.5 + 0.7, 5000)
-    # yp = np.array([modelp.solve(v) for v in xp])
-
-    # amp_in = np.linspace(0, 5, 5000)
-    # amp_out = np.array(
-    #     [model.solve(max(3.8, 4.5 - a)) - model.solve(4.5 + a) for a in amp_in]
-    # )
-
-    # p0 = [0, 0, 0, 0, 0, 0, 0]
-    # params, _ = curve_fit(poly_exp, x, y, p0=p0, maxfev=10000)
-    # print(params)
-    # x_fit = np.linspace(3, 20, 10000)
-    # y_fit = poly_exp(x_fit, *params)
-    #
-    # for x, y in zip(x_fit, y_fit):
-    #     if y < 1e-7:
-    #         print(f"x: {x}, y: {y}")
-    #         break
+    vg = np.linspace(-1, 1, 100)
+    guess = -10 * vg + 4.5
 
     plt.figure(figsize=(10, 6))
     plt.plot(vin, vout)
-    # plt.plot(t, y)
-    # plt.plot(t, yp)
-    # plt.plot(t, yp, color="blue", alpha=0.5)
+    plt.plot(vg, guess)
     plt.show()

@@ -25,6 +25,10 @@ class AmpComponent : public juce::Component
     void paintBorder(juce::Graphics&, juce::Rectangle<float>, float);
 
   private:
+    void buildCache(float scale);
+    juce::Image background_cache;
+    bool is_cache_dirty = true;
+
     juce::AudioProcessorValueTreeState& parameters;
     AmpKnobsComponent knobs_component;
     juce::ToggleButton bypass_button;
@@ -46,7 +50,8 @@ class AmpComponent : public juce::Component
         &borealis_button, "borealis", ColourCodes::blue1, ColourCodes::blue2
     };
     AmpType nebula_type = {
-        &nebula_button, "nebula", ColourCodes::nebula_violet, ColourCodes::nebula_red
+        &nebula_button, "nebula", ColourCodes::nebula_violet,
+        ColourCodes::nebula_red
     };
 
     std::vector<AmpType> types = {helios_type, borealis_type, nebula_type};

@@ -19,14 +19,21 @@ void HeliosOverdrive::resetFilters()
 {
     pre_lpf.reset();
     pre_hpf.reset();
-    post_lpf.reset();
+
     b3k_attack_shelf.reset();
-    vmt_attack_shelf.reset();
     b3k_drive_filter.reset();
-    vmt_drive_filter.reset();
     b3k_pre_filter_1.reset();
     b3k_pre_filter_2.reset();
+    b3k_post_filter_1.reset();
+    b3k_post_filter_2.reset();
+    b3k_post_filter_3.reset();
+
+    vmt_attack_shelf.reset();
+    vmt_drive_filter.reset();
     vmt_pre_filter.reset();
+    vmt_post_filter_1.reset();
+    vmt_post_filter_2.reset();
+    vmt_post_filter_3.reset();
 }
 
 void HeliosOverdrive::resetSmoothedValues()
@@ -102,35 +109,49 @@ void HeliosOverdrive::prepareFilters()
         );
     *vmt_pre_filter.coefficients = *vmt_pre_coefficients;
 
-    b3k_post_filter.prepare(processSpec);
-    auto b3k_post_coefficients =
+    b3k_post_filter_1.prepare(processSpec);
+    auto b3k_post_coefficients_1 =
         juce::dsp::IIR::Coefficients<float>::makePeakFilter(
             processSpec.sampleRate, 360.0f, 0.707f,
             juce::Decibels::decibelsToGain(-15.0f)
         );
-    *b3k_post_filter.coefficients = *b3k_post_coefficients;
+    *b3k_post_filter_1.coefficients = *b3k_post_coefficients_1;
 
-    vmt_post_filter.prepare(processSpec);
-    auto vmt_post_coefficients =
+    b3k_post_filter_2.prepare(processSpec);
+    auto b3k_post_coefficients_2 =
+        juce::dsp::IIR::Coefficients<float>::makeLowPass(
+            processSpec.sampleRate, b3k_post_lpf_cutoff_2, b3k_post_lpf_q_2
+        );
+    *b3k_post_filter_2.coefficients = *b3k_post_coefficients_2;
+
+    b3k_post_filter_3.prepare(processSpec);
+    auto b3k_post_coefficients_3 =
+        juce::dsp::IIR::Coefficients<float>::makeLowPass(
+            processSpec.sampleRate, b3k_post_lpf_cutoff_3, b3k_post_lpf_q_3
+        );
+    *b3k_post_filter_3.coefficients = *b3k_post_coefficients_3;
+
+    vmt_post_filter_1.prepare(processSpec);
+    auto vmt_post_coefficients_1 =
         juce::dsp::IIR::Coefficients<float>::makePeakFilter(
             processSpec.sampleRate, 700.0f, 0.707f,
             juce::Decibels::decibelsToGain(-6.0f)
         );
-    *vmt_post_filter.coefficients = *vmt_post_coefficients;
+    *vmt_post_filter_1.coefficients = *vmt_post_coefficients_1;
 
-    post_lpf.prepare(processSpec);
-    auto post_lpf_coefficients =
+    vmt_post_filter_2.prepare(processSpec);
+    auto vmt_post_coefficients_2 =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, post_lpf_cutoff
+            processSpec.sampleRate, vmt_post_lpf_cutoff_2, vmt_post_lpf_q_2
         );
-    *post_lpf.coefficients = *post_lpf_coefficients;
+    *vmt_post_filter_2.coefficients = *vmt_post_coefficients_2;
 
-    post_lpf_2.prepare(processSpec);
-    auto post_lpf_coefficients_2 =
+    vmt_post_filter_3.prepare(processSpec);
+    auto vmt_post_coefficients_3 =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, post_lpf_cutoff_2
+            processSpec.sampleRate, vmt_post_lpf_cutoff_3, vmt_post_lpf_q_3
         );
-    *post_lpf_2.coefficients = *post_lpf_coefficients_2;
+    *vmt_post_filter_3.coefficients = *vmt_post_coefficients_3;
 }
 
 void HeliosOverdrive::updateAttackFilter()
@@ -139,8 +160,8 @@ void HeliosOverdrive::updateAttackFilter()
     float attack_shelf_q = 0.7f;
     float min_frequency = 1540.0f;
     float max_frequency = 1540.0f;
-    float min_gain_db = -24.0f;
-    float max_gain_db = 24.0f;
+    float min_gain_db = -18.0f;
+    float max_gain_db = 18.0f;
     float shelf_frequency =
         min_frequency + (max_frequency - min_frequency) * current_attack * 0.1f;
     float shelf_gain = juce::Decibels::decibelsToGain(
@@ -219,26 +240,27 @@ void HeliosOverdrive::process(juce::AudioBuffer<float>& buffer)
 void HeliosOverdrive::applyOverdrive(float& sample)
 {
     float current_era = 0.1f * era.getNextValue();
-    float input_padding = juce::Decibels::decibelsToGain(0.0f);
-    float raw_input = sample * input_padding;
+    float raw_input = sample;
     float filtered = pre_lpf.processSample(pre_hpf.processSample(raw_input));
 
     float vmt_pre = vmt_pre_filter.processSample(filtered);
     float vmt_attacked = vmt_attack_shelf.processSample(vmt_pre);
     float vmt_drived = vmt_drive_filter.processSample(vmt_attacked);
     float vmt_distorted = cmos.processSample(vmt_drived);
-    float vmt_post = vmt_post_filter.processSample(vmt_distorted);
+    float vmt_post = vmt_post_filter_1.processSample(vmt_distorted);
+    float vmt_post_2 = vmt_post_filter_2.processSample(vmt_post);
+    float vmt_post_3 = vmt_post_filter_3.processSample(vmt_post_2);
 
     float b3k_pre_1 = b3k_pre_filter_1.processSample(filtered);
     float b3k_pre_2 = b3k_pre_filter_2.processSample(b3k_pre_1);
     float b3k_attacked = b3k_attack_shelf.processSample(b3k_pre_2);
     float b3k_drived = b3k_drive_filter.processSample(b3k_attacked);
     float b3k_distorted = cmos2.processSample(b3k_drived);
-    float b3k_post = b3k_post_filter.processSample(b3k_distorted);
+    float b3k_post = b3k_post_filter_1.processSample(b3k_distorted);
+    float b3k_post_2 = b3k_post_filter_2.processSample(b3k_post);
+    float b3k_post_3 = b3k_post_filter_3.processSample(b3k_post_2);
 
-    float post = vmt_post * (1.0f - current_era) + b3k_post * current_era;
+    float post = vmt_post_3 * (1.0f - current_era) + b3k_post_3 * current_era;
 
-    float post1 = post_lpf.processSample(post);
-    float post2 = post_lpf_2.processSample(post1);
-    sample = post2;
+    sample = post;
 }

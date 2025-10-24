@@ -82,7 +82,9 @@ void CompressorComponent::paint(juce::Graphics& g)
     knobs_component.switchColour(colour1, colour2);
     meter_component.switchColour(colour1, colour2);
 
-    paintGravity(g, inner_bounds);
+    g.drawImageAt(
+        gravity_cache, (int)inner_bounds.getX(), (int)inner_bounds.getY()
+    );
 }
 
 void CompressorComponent::resized()
@@ -109,4 +111,21 @@ void CompressorComponent::resized()
         CompressorDimensions::KNOBS_BOTTOM_BOX_HEIGHT +
         CompressorDimensions::KNOBS_ROW_PADDING
     ));
+
+    float border_thickness = CompressorDimensions::BORDER_THICKNESS;
+    auto outer_bounds =
+        getLocalBounds()
+            .withSizeKeepingCentre(
+                CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
+            )
+            .toFloat();
+    auto inner_bounds = outer_bounds.reduced(border_thickness).toFloat();
+
+    gravity_cache = juce::Image(
+        juce::Image::ARGB, (int)inner_bounds.getWidth(),
+        (int)inner_bounds.getHeight(), true
+    );
+
+    juce::Graphics gCache(gravity_cache);
+    paintGravity(gCache, gravity_cache.getBounds().toFloat());
 }

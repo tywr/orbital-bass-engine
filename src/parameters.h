@@ -110,6 +110,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
             "ir_mix", "Impulse Response Mix",
             juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f
         ),
+        std::make_unique<juce::AudioParameterChoice>(
+            "ir_type", "IR Type", juce::StringArray{"modern_410"}, 0
+        ),
         std::make_unique<juce::AudioParameterFloat>(
             "ir_level", "Impulse Response Level",
             juce::NormalisableRange<float>(-24.0f, 6.0f, 0.1f, 1.0f), 0.0f

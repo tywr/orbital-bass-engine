@@ -19,7 +19,11 @@ AmpComponent::AmpComponent(juce::AudioProcessorValueTreeState& params)
         std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
             parameters, "amp_bypass", bypass_button
         );
-    bypass_button.onClick = [this]() { repaint(); };
+    bypass_button.onClick = [this]()
+    {
+        is_cache_dirty = true;
+        repaint();
+    };
 
     type_slider_attachment =
         std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
@@ -59,6 +63,7 @@ void AmpComponent::initType()
 
 void AmpComponent::switchType(AmpType new_type)
 {
+    is_cache_dirty = true;
     selected_type = new_type;
     knobs_component.switchType(new_type);
     double index = 0;
@@ -130,78 +135,26 @@ void AmpComponent::paintBorder(
 
 void AmpComponent::paint(juce::Graphics& g)
 {
-    paintTypeButtons(g);
-
-    bool bypass = bypass_button.getToggleState();
-
-    if (!bypass)
+    float scale = g.getInternalContext().getPhysicalPixelScaleFactor();
+    if (is_cache_dirty)
     {
-        current_colour1 = selected_type.colour1;
-        current_colour2 = selected_type.colour2;
+        buildCache(scale);
+        is_cache_dirty = false;
     }
-    else
-    {
-        current_colour1 = GuiColours::DEFAULT_INACTIVE_COLOUR;
-        current_colour2 = GuiColours::DEFAULT_INACTIVE_COLOUR;
-    }
+
+    g.drawImage(background_cache, getLocalBounds().toFloat());
     bypass_button.setColour(
         juce::ToggleButton::tickColourId, GuiColours::DEFAULT_INACTIVE_COLOUR
     );
     bypass_button.setColour(
         juce::ToggleButton::tickDisabledColourId, current_colour1
     );
-
-    auto outer_bounds =
-        getLocalBounds()
-            .withTrimmedTop(AmpDimensions::AMP_TYPE_BUTTONS_HEIGHT)
-            .withSizeKeepingCentre(
-                AmpDimensions::AMP_WIDTH, AmpDimensions::AMP_HEIGHT
-            )
-            .toFloat();
-
-    // paintBorder(g, outer_bounds, AmpDimensions::AMP_BORDER_RADIUS);
-
-    auto frame_bounds = outer_bounds.reduced(AmpDimensions::AMP_FRAME_PADDING);
-    auto higher_frame_bounds = frame_bounds.withTrimmedBottom(
-        AmpDimensions::AMP_KNOBS_BOTTOM_BOX_HEIGHT +
-        AmpDimensions::AMP_INNER_TOP_PADDING
-    );
-    auto lower_frame_bounds =
-        frame_bounds.withTrimmedTop(higher_frame_bounds.getHeight());
-
-    g.setColour(GuiColours::AMP_BG_COLOUR);
-    g.fillRect(frame_bounds);
-
-    g.setColour(GuiColours::DEFAULT_INACTIVE_COLOUR);
-    g.drawLine(
-        lower_frame_bounds.getX(), lower_frame_bounds.getY(),
-        lower_frame_bounds.getRight(), lower_frame_bounds.getY(), 1.0f
-    );
-
-    paintDesign(g, higher_frame_bounds);
-
     knobs_component.switchColour(current_colour1, current_colour2);
-
-    juce::Path path;
-    path.addRoundedRectangle(outer_bounds, AmpDimensions::AMP_BORDER_RADIUS);
-    path.addRoundedRectangle(
-        frame_bounds,
-        AmpDimensions::AMP_BORDER_RADIUS - AmpDimensions::AMP_FRAME_PADDING
-    );
-    path.setUsingNonZeroWinding(false);
-    juce::ColourGradient gradient(
-        current_colour1, outer_bounds.getX(),
-        outer_bounds.getY(), // start color and point
-        current_colour2, outer_bounds.getX(),
-        outer_bounds.getBottom(), // end color and point
-        false                     // not radial
-    );
-    g.setGradientFill(gradient);
-    g.fillPath(path);
 }
 
 void AmpComponent::resized()
 {
+    is_cache_dirty = true;
     auto bounds = getLocalBounds();
 
     // Type buttons at the top
@@ -239,4 +192,79 @@ void AmpComponent::resized()
     bottom_bounds.removeFromRight(AmpDimensions::AMP_SIDE_WIDTH);
     bottom_bounds.removeFromBottom(AmpDimensions::AMP_INNER_BOTTOM_PADDING);
     knobs_component.setBounds(bottom_bounds);
+}
+
+void AmpComponent::buildCache(float scale)
+{
+    background_cache = juce::Image(
+        juce::Image::ARGB, scale * getWidth(), scale * getHeight(), true
+    );
+
+    juce::Graphics g(background_cache);
+    juce::Graphics cache(background_cache);
+
+    cache.addTransform(juce::AffineTransform::scale(scale));
+    paintTypeButtons(g);
+
+    bool bypass = bypass_button.getToggleState();
+    juce::Colour colour1, colour2; // Use local colours
+
+    if (!bypass)
+    {
+        colour1 = selected_type.colour1;
+        colour2 = selected_type.colour2;
+    }
+    else
+    {
+        colour1 = GuiColours::DEFAULT_INACTIVE_COLOUR;
+        colour2 = GuiColours::DEFAULT_INACTIVE_COLOUR;
+    }
+    // We update current_colour1/2 members for other components to read
+    current_colour1 = colour1;
+    current_colour2 = colour2;
+
+    // Calculate all bounds (same as in old paint())
+    auto outer_bounds =
+        getLocalBounds()
+            .withTrimmedTop(AmpDimensions::AMP_TYPE_BUTTONS_HEIGHT)
+            .withSizeKeepingCentre(
+                AmpDimensions::AMP_WIDTH, AmpDimensions::AMP_HEIGHT
+            )
+            .toFloat();
+
+    auto frame_bounds = outer_bounds.reduced(AmpDimensions::AMP_FRAME_PADDING);
+    auto higher_frame_bounds = frame_bounds.withTrimmedBottom(
+        AmpDimensions::AMP_KNOBS_BOTTOM_BOX_HEIGHT +
+        AmpDimensions::AMP_INNER_TOP_PADDING
+    );
+    auto lower_frame_bounds =
+        frame_bounds.withTrimmedTop(higher_frame_bounds.getHeight());
+
+    // --- All drawing operations ---
+    g.setColour(GuiColours::AMP_BG_COLOUR);
+    g.fillRect(frame_bounds);
+
+    g.setColour(GuiColours::DEFAULT_INACTIVE_COLOUR);
+    g.drawLine(
+        lower_frame_bounds.getX(), lower_frame_bounds.getY(),
+        lower_frame_bounds.getRight(), lower_frame_bounds.getY(), 1.0f
+    );
+
+    // Call the expensive design function
+    paintDesign(g, higher_frame_bounds);
+
+    // Draw the expensive gradient border
+    juce::Path path;
+    path.addRoundedRectangle(outer_bounds, AmpDimensions::AMP_BORDER_RADIUS);
+    path.addRoundedRectangle(
+        frame_bounds,
+        AmpDimensions::AMP_BORDER_RADIUS - AmpDimensions::AMP_FRAME_PADDING
+    );
+    path.setUsingNonZeroWinding(false);
+    juce::ColourGradient gradient(
+        colour1, outer_bounds.getX(), outer_bounds.getY(), colour2,
+        outer_bounds.getX(), outer_bounds.getBottom(), false
+    );
+    g.setGradientFill(gradient);
+    g.fillPath(path);
 }

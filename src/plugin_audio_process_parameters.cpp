@@ -148,6 +148,10 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     {
         irConvolver.setLevel(juce::Decibels::decibelsToGain(v));
     }
+    else if (parameterID == "ir_type")
+    {
+        irConvolver.setTypeFromIndex(static_cast<int>(v));
+    }
     else if (parameterID == "ir_filepath")
     {
         // Load IR from the new filepath

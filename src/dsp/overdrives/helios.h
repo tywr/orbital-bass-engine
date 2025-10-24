@@ -37,15 +37,26 @@ class HeliosOverdrive : public Overdrive
     juce::dsp::IIR::Filter<float> b3k_pre_filter_1;
     juce::dsp::IIR::Filter<float> b3k_pre_filter_2;
     juce::dsp::IIR::Filter<float> vmt_pre_filter;
-    juce::dsp::IIR::Filter<float> b3k_post_filter;
-    juce::dsp::IIR::Filter<float> vmt_post_filter;
 
-    juce::dsp::IIR::Filter<float> post_lpf;
-    float post_lpf_cutoff = 1580.0f;
-    float post_lpf_q = 3.0f;
+    juce::dsp::IIR::Filter<float> b3k_post_filter_1;
 
-    juce::dsp::IIR::Filter<float> post_lpf_2;
-    float post_lpf_cutoff_2 = 3200.0f;
+    juce::dsp::IIR::Filter<float> b3k_post_filter_2;
+    float b3k_post_lpf_cutoff_2 = 4877.0f;
+    float b3k_post_lpf_q_2 = 1.0f;
+
+    juce::dsp::IIR::Filter<float> b3k_post_filter_3;
+    float b3k_post_lpf_cutoff_3 = 3337.0f;
+    float b3k_post_lpf_q_3 = 0.67f;
+
+    juce::dsp::IIR::Filter<float> vmt_post_filter_1;
+
+    juce::dsp::IIR::Filter<float> vmt_post_filter_2;
+    float vmt_post_lpf_cutoff_2 = 10730.0f;
+    float vmt_post_lpf_q_2 = 1.0f;
+
+    juce::dsp::IIR::Filter<float> vmt_post_filter_3;
+    float vmt_post_lpf_cutoff_3 = 2287.0f;
+    float vmt_post_lpf_q_3 = 0.67f;
 
     CMOS cmos = CMOS();
     CMOS cmos2 = CMOS();

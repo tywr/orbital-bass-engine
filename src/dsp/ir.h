@@ -31,6 +31,10 @@ class IRConvolver
     {
         filepath = newFilepath;
     }
+    void setTypeFromIndex(int index)
+    {
+        type = index;
+    }
     juce::String getFilepath()
     {
         return filepath;
@@ -48,6 +52,7 @@ class IRConvolver
 
     float raw_mix = 1.0f;
     float raw_level = 1.0f;
+    int type = 0;
 
     juce::dsp::Convolution convolution;
 };

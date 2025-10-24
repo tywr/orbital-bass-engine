@@ -2,7 +2,7 @@
 #include "amp/amp_component.h"
 #include "colours.h"
 #include "compressor/compressor_component.h"
-#include "ir_gui.h"
+#include "ir/ir_component.h"
 
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_gui_basics/juce_gui_basics.h>
