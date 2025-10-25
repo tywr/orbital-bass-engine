@@ -18,7 +18,6 @@ Header::Header(
     inputMeter.setSliderColour(headerColour);
     outputMeter.setSliderColour(headerColour);
 
-
     addAndMakeVisible(inputGainSlider);
     inputGainSlider.setSkewFactor(3.0);
     inputGainSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -50,7 +49,7 @@ Header::~Header()
 
 void Header::paint(juce::Graphics& g)
 {
-    // g.fillAll(AuroraColors::bg);
+    ignoreUnused(g);
 }
 
 void Header::resized()

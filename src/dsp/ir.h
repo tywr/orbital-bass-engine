@@ -8,6 +8,7 @@ class IRConvolver
   public:
     void prepare(const juce::dsp::ProcessSpec& spec);
     void process(juce::AudioBuffer<float>& buffer);
+    void resetSmoothedValues();
 
     void loadIR();
     void applyGain(juce::AudioBuffer<float>& buffer);
@@ -30,7 +31,6 @@ class IRConvolver
     void setTypeFromIndex(int index)
     {
         type = index;
-        loadIR();
     }
     juce::String getFilepath()
     {
@@ -45,11 +45,12 @@ class IRConvolver
     bool bypass = false;
     juce::String filepath;
 
+    float smoothing_time = 0.05f;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> level, mix;
-
     float raw_mix = 1.0f;
     float raw_level = 1.0f;
     int type = 0;
+    int loaded_type = -1;
 
     juce::dsp::Convolution convolution;
 };

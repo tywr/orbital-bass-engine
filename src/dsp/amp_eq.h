@@ -9,6 +9,8 @@ class AmpEQ
     void prepare(const juce::dsp::ProcessSpec& spec);
     void process(juce::AudioBuffer<float>& buffer);
     void applyEQ(float& sample, float sampleRate);
+    void resetSmoothedValues();
+    void reset();
 
     void setBassGain(float gain)
     {

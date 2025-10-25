@@ -15,6 +15,7 @@ class PluginEditor final : public juce::AudioProcessorEditor
 
     //==============================================================================
     void paint(juce::Graphics&) override;
+    void paintBackground(float scale);
     void resized() override;
 
     void setupGainControl(
@@ -25,6 +26,8 @@ class PluginEditor final : public juce::AudioProcessorEditor
     void resizeGainControls();
 
   private:
+    juce::Image background;
+    bool is_background_drawn = false;
     PluginAudioProcessor& processorRef;
     juce::AudioProcessorValueTreeState& parameters;
     Header header;

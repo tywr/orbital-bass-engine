@@ -13,6 +13,7 @@ class Compressor
     void computeGainReductionOptometric(float& sample, float sampleRate);
     void computeGainReductionFet(float& sample, float sampleRate);
     void computeGainReductionVca(float& sample, float sampleRate);
+    void resetSmoothedValues();
 
     void setRatio(float newRatio)
     {
@@ -63,6 +64,7 @@ class Compressor
     int type;
     bool bypass;
 
+    float smoothing_time = 0.05f;
     float raw_mix, raw_level, raw_threshold_db, raw_ratio;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> mix, level,
         threshold_db, ratio;

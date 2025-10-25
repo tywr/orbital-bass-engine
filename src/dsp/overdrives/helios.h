@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../circuits/cmos.h"
+#include "../circuits/cmos_approx.h"
 #include "overdrive.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_dsp/juce_dsp.h>
@@ -60,6 +61,8 @@ class HeliosOverdrive : public Overdrive
 
     CMOS cmos = CMOS();
     CMOS cmos2 = CMOS();
+    // CMOS2 cmos = CMOS2();
+    // CMOS2 cmos2 = CMOS2();
 
     juce::dsp::Oversampling<float> oversampler2x{
         2, 2,

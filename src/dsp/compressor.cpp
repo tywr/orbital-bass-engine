@@ -1,10 +1,27 @@
 #include "compressor.h"
 
 #include <juce_dsp/juce_dsp.h>
+#include <algorithm>
+
+void Compressor::resetSmoothedValues()
+{
+    float sample_rate = static_cast<float>(processSpec.sampleRate);
+    sample_rate = std::max(1.0f, sample_rate);
+
+    mix.reset(sample_rate, smoothing_time);
+    mix.setCurrentAndTargetValue(raw_mix);
+    level.reset(sample_rate, smoothing_time);
+    level.setCurrentAndTargetValue(raw_level);
+    threshold_db.reset(sample_rate, smoothing_time);
+    threshold_db.setCurrentAndTargetValue(raw_threshold_db);
+    ratio.reset(sample_rate, smoothing_time);
+    ratio.setCurrentAndTargetValue(raw_ratio);
+}
 
 void Compressor::prepare(const juce::dsp::ProcessSpec& spec)
 {
     processSpec = spec;
+    resetSmoothedValues();
 }
 
 void Compressor::computeGainReductionOptometric(float& sample, float sampleRate)

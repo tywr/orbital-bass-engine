@@ -35,6 +35,24 @@ PluginEditor::~PluginEditor()
 //==============================================================================
 void PluginEditor::paint(juce::Graphics& g)
 {
+    float scale = g.getInternalContext().getPhysicalPixelScaleFactor();
+    if (!is_background_drawn)
+    {
+        paintBackground(scale);
+        is_background_drawn = true;
+    }
+    auto bounds = getLocalBounds();
+    g.drawImageAt(background, bounds.getX(), bounds.getY());
+}
+
+void PluginEditor::paintBackground(float scale)
+{
+    background = juce::Image(
+        juce::Image::ARGB, scale * getWidth(), scale * getHeight(), true
+    );
+
+    juce::Graphics g(background);
+    juce::Graphics cache(background);
     g.fillAll(juce::Colours::black);
 
     juce::Random random(3);
@@ -57,31 +75,6 @@ void PluginEditor::paint(juce::Graphics& g)
         }
     }
 }
-
-// void PluginEditor::paint(juce::Graphics& g)
-// {
-//     g.fillAll(juce::Colours::black);
-//
-//     juce::Random random(12345);
-//     const int gridSize = 30;    // Space between dots
-//     const float dotSize = 3.0f; // Fixed dot size
-//
-//     for (int x = 0; x < getWidth(); x += gridSize)
-//     {
-//         for (int y = 0; y < getHeight(); y += gridSize)
-//         {
-//             float alpha = random.nextFloat() * 0.2f + 0.05f; // Random alpha
-//
-//             g.setColour(juce::Colours::grey.withAlpha(alpha));
-//             g.fillEllipse(
-//                 x - dotSize / 2.0f, // Center the dot on grid point
-//                 y - dotSize / 2.0f, dotSize, dotSize
-//             );
-//         }
-//     }
-//
-//     // ... rest of your UI
-// }
 
 void PluginEditor::resized()
 {

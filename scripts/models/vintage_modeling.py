@@ -1,79 +1,93 @@
 import numpy as np
+import ctypes
 import matplotlib.pyplot as plt
-from numpy.polynomial.polynomial import Polynomial
 from scipy.optimize import curve_fit
-from sklearn.neural_network import MLPRegressor
-from sklearn.preprocessing import StandardScaler
-import onnxruntime as rt
-import skl2onnx
-from skl2onnx import convert_sklearn
-from skl2onnx.common.data_types import FloatTensorType
 
 from cmos_modeling_llama import ModelLlama
-from diode_modeling import DiodeClipper
+
+lib = ctypes.CDLL("scripts/bin/omega.so")
+
+lib.omega4_py.argtypes = [ctypes.c_float]
+lib.omega4_py.restype = ctypes.c_float
 
 
-# --- Demonstration of the function ---
+def omega_small(x):
+    """
+    Approximates the Wright Omega function for small values of x using a
+    5th-order Taylor series expansion.
+    """
+    c0 = 0.5671432904097838
+    c1 = 0.3618963236098023
+    c2 = 0.0736778463779836
+    c3 = -0.0013437346889135
+    c4 = -0.0016355437889344
+    c5 = 0.0002166542734346
+
+    return c0 + c1 * x + c2 * x**2 + c3 * x**3 + c4 * x**4 + c5 * x**5
+
+
+def omega(x: np.array) -> float:
+    out = []
+    for e in x:
+        if abs(e) < 1.5:
+            out.append(lib.omega4_py(e))
+        else:
+            out.append(omega_small(e))
+    return np.array(out)
+
+
+def mixed_func(x, s1, alpha, s2):
+    dy0 = 7.448510216701049
+    return dy0 / ((x / s1) ** alpha + np.exp(x / s2))
+
+
+def rational_func(x, s1, s2):
+    dy0 = 7.448510216701049
+    return dy0 / (1 + (x / s1) + (x / s2) ** 3)
+
+
+def exponential_decay(x, sc, k):
+    dy0 = 7.448510216701049
+    return dy0 * np.exp(-((x / sc) ** k))
+
+
+def tanh_decay(x, xc, s):
+    dy0 = 7.448510216701049
+    return dy0 * 0.5 * (1 - np.tanh((x - xc) / s))
+
+
+def gen_logistic4(x, A, K, B, M):
+    Q = 1.0
+    nu = 1.0
+    return A + (K - A) / ((1 + Q * np.exp(-B * (x - M))) ** (1.0 / nu))
+
+
 if __name__ == "__main__":
-    print("Demonstrating the DAFx 2020 CMOS Inverter Model.")
+    model = ModelLlama()
+    x = np.linspace(0, 7, 1000)
+    y = np.array([-model.solve(-v) for v in x])
+    # x = np.linspace(0, 7, 1000)
+    # y = np.array([model.solve(v) for v in x])
+    dy = np.gradient(y, x)
 
-    sample_rate = 44100
-    model = ModelLlama(V_dd=9.0, delta=0.06)
-    diode_plus = DiodeClipper(sample_rate, side="up")
-    diode_minus = DiodeClipper(sample_rate, side="down")
+    # s1 = 0.04
+    # s2 = 0.75
+    # s1 = 0.2
+    # s2 = 0.4
+    # y_approx = 1 - 2 * (1 + x / s1 + np.exp((x / s2))) ** -1
 
-    frequency = 440
-    max_t = 10 / frequency
-    dt = 1.0 / sample_rate
-    t = np.arange(0, max_t, dt)
+    # omega p
+    # s1 = 0.04
+    # s2 = 0.25
 
-    input = .5 * np.sin(2 * np.pi * frequency * t)
-    output_diode = np.array(
-        [diode_minus.process_sample(.5 * s + .5 * diode_plus.process_sample(s)) for s in input]
-    )
-    output_diode_offset = 4.5 + output_diode
-    output_cmos = np.array([model.solve(v) for v in output_diode])
-    output_cmos = np.array([model.solve(v) for v in input])
+    # omega n
+    s1 = 0.5
+    s2 = 0.1
+    y_approx = 1 - 2 * (1 + x/s1 + omega(1 + x / s2)) ** -1
 
-    plt.plot(t, input, color="blue", alpha=0.5, label="Input")
-    plt.plot(t, output_diode, color="green", alpha=0.5, label="Diode Clipping Vout")
+    plt.plot(x, y, color="green", label="CMOS Model")
+    plt.plot(x, y_approx, color="red")
+    # plt.plot(x, dy)
+    # plt.plot(x, y_fit, linestyle="--", label="Approximation")
+
     plt.show()
-    # plt.plot(t, output_cmos, color="red", alpha=0.5, label="CMOS Inverter Out")
-
-    # plt.plot(input, output_cmos, alpha=0.5)
-    #
-    # plt.grid(True)
-    # plt.legend()
-    # plt.show()
-
-    # Sine wave processing
-    # SAMPLE_RATE = 48000
-    # duration = 0.02
-    # frequency = 500
-    # t = np.linspace(0.0, duration, int(SAMPLE_RATE * duration), endpoint=False)
-    #
-    # # Input sine wave centered around Vdd/2 with large amplitude to show clipping
-    # input_sine = 4.5 + 5 * np.sin(2.0 * np.pi * frequency * t)
-    #
-    # output_sine = np.array([model_dafx_cmos(s) for s in input_sine])
-    #
-    # plt.figure(figsize=(12, 7))
-    # plt.plot(t, input_sine, label="Input Signal (Vin)")
-    # plt.plot(t, output_sine, label="Output Signal (Vout)")
-    # plt.title("CMOS Inverter Processing a Sine Wave with Red LLAMA")
-    # plt.xlabel("Time (s)")
-    # plt.ylabel("Voltage (V)")
-    # plt.grid(True)
-    # plt.legend()
-    # plt.show()
-
-    # n = len(output_cmos)
-    # Y = np.fft.fft(output_cmos)
-    # xf = np.fft.fftfreq(n, 1 / sample_rate)
-    # xf_pos = xf[: n // 2]
-    # Y_abs = np.abs(Y[: n // 2])
-    # Y_norm = Y_abs / n
-    # Y_norm[1:] = Y_norm[1:] * 2
-    #
-    # plt.plot(xf_pos, Y_norm, label="Output Spectrum", alpha=0.5)
-    # plt.show()

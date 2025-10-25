@@ -1,11 +1,39 @@
 #include "amp_eq.h"
+#include <algorithm>
 
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <juce_dsp/juce_dsp.h>
 
+void AmpEQ::reset()
+{
+    resetSmoothedValues();
+    bass_shelf.reset();
+    low_mid_peak.reset();
+    high_mid_peak.reset();
+    treble_shelf.reset();
+    setCoefficients();
+}
+
+void AmpEQ::resetSmoothedValues()
+{
+
+    float sample_rate = static_cast<float>(processSpec.sampleRate);
+    sample_rate = std::max(1.0f, sample_rate);
+
+    bass_gain.reset(sample_rate, smoothing_time);
+    bass_gain.setCurrentAndTargetValue(raw_bass_gain);
+    low_mid_gain.reset(sample_rate, smoothing_time);
+    low_mid_gain.setCurrentAndTargetValue(raw_low_mid_gain);
+    high_mid_gain.reset(sample_rate, smoothing_time);
+    high_mid_gain.setCurrentAndTargetValue(raw_high_mid_gain);
+    treble_gain.reset(sample_rate, smoothing_time);
+    treble_gain.setCurrentAndTargetValue(raw_treble_gain);
+}
+
 void AmpEQ::prepare(const juce::dsp::ProcessSpec& spec)
 {
     processSpec = spec;
+    resetSmoothedValues();
     bass_shelf.prepare(processSpec);
     low_mid_peak.prepare(processSpec);
     high_mid_peak.prepare(processSpec);

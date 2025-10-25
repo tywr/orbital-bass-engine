@@ -26,15 +26,18 @@ void BorealisOverdrive::resetFilters()
 
 void BorealisOverdrive::resetSmoothedValues()
 {
-    level.reset(processSpec.sampleRate, smoothing_time);
+    float sample_rate = static_cast<float>(processSpec.sampleRate);
+    sample_rate = std::max(1.0f, sample_rate);
+
+    level.reset(sample_rate, smoothing_time);
     level.setCurrentAndTargetValue(raw_level);
-    drive.reset(processSpec.sampleRate, smoothing_time);
+    drive.reset(sample_rate, smoothing_time);
     drive.setCurrentAndTargetValue(raw_drive);
-    mix.reset(processSpec.sampleRate, smoothing_time);
+    mix.reset(sample_rate, smoothing_time);
     mix.setCurrentAndTargetValue(raw_mix);
-    cross_frequency.reset(processSpec.sampleRate, smoothing_time);
+    cross_frequency.reset(sample_rate, smoothing_time);
     cross_frequency.setCurrentAndTargetValue(raw_cross_frequency);
-    bass_frequency.reset(processSpec.sampleRate, smoothing_time);
+    bass_frequency.reset(sample_rate, smoothing_time);
     bass_frequency.setCurrentAndTargetValue(raw_bass_frequency);
 }
 

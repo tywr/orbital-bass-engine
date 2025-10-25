@@ -89,7 +89,7 @@ class ModelLlama:
         vin = x + self.bias
         vout = self.bias
 
-        for i in range(5):
+        for i in range(10):
             # NMOS:
             vgs_n = vin
             vds_n = vout
@@ -110,24 +110,12 @@ class ModelLlama:
             # d(isd_p)/d(vout) = d(isd_p)/d(vsd_p) * d(vsd_p)/d(vout) = gsd_p * (-1) = -gsd_p
             f_prime_x = gds_n + gds_p
 
-            # Newton-Raphson update step
             vout = vout - f_x / (f_prime_x + 1e-9)  # Add epsilon for stability
-            if abs(f_x / (f_prime_x + 1e-9)) < 1e-6:
-                print(f"Converged in {i} iterations.")
-                break
 
             # Clamp vout to the supply rails for stability during iteration
             vout = np.clip(vout, 0, self.V_dd)
 
-        # return 1 - 2 * vout / self.V_dd
-        return vout
-
-
-def poly_exp(x, *coefficients):
-    P = 0
-    for i, a in enumerate(coefficients):
-        P += a * x**i
-    return np.exp(P)
+        return 1 - 2 * vout / self.V_dd
 
 
 if __name__ == "__main__":

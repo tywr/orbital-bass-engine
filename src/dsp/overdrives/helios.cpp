@@ -38,15 +38,18 @@ void HeliosOverdrive::resetFilters()
 
 void HeliosOverdrive::resetSmoothedValues()
 {
-    level.reset(processSpec.sampleRate, smoothing_time);
+    float sample_rate = static_cast<float>(processSpec.sampleRate);
+    sample_rate = std::max(1.0f, sample_rate);
+
+    level.reset(sample_rate, smoothing_time);
     level.setCurrentAndTargetValue(raw_level);
-    drive.reset(processSpec.sampleRate, smoothing_time);
+    drive.reset(sample_rate, smoothing_time);
     drive.setCurrentAndTargetValue(raw_drive);
-    mix.reset(processSpec.sampleRate, smoothing_time);
+    mix.reset(sample_rate, smoothing_time);
     mix.setCurrentAndTargetValue(raw_mix);
-    attack.reset(processSpec.sampleRate, smoothing_time);
+    attack.reset(sample_rate, smoothing_time);
     attack.setCurrentAndTargetValue(raw_attack);
-    era.reset(processSpec.sampleRate, smoothing_time);
+    era.reset(sample_rate, smoothing_time);
     era.setCurrentAndTargetValue(raw_era);
 }
 

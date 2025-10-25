@@ -102,7 +102,6 @@ void PluginAudioProcessor::parameterChanged(
     const juce::String& parameterID, float newValue
 )
 {
-    // Big function to map each parameter to its handler
     setParameterValue(parameterID, newValue);
 }
 
@@ -144,10 +143,15 @@ void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
         juce::Decibels::decibelsToGain(input_gain_parameter->load())
     );
 
+    current_output_gain.reset(sampleRate, smoothing_time);
     current_output_gain.setCurrentAndTargetValue(
         juce::Decibels::decibelsToGain(output_gain_parameter->load())
     );
-    current_output_gain.reset(sampleRate, smoothing_time);
+
+    current_amp_master_gain.reset(sampleRate, smoothing_time);
+    current_amp_master_gain.setCurrentAndTargetValue(
+        juce::Decibels::decibelsToGain(amp_master_gain_parameter->load())
+    );
 
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
@@ -243,10 +247,13 @@ void PluginAudioProcessor::processBlock(
     if (auto* od = current_overdrive.load())
         od->process(mono_buffer);
 
-    // amp_eq.process(mono_buffer);
-    //
-    // if (!isAmpBypassed)
-    //     applyAmpMasterGain(mono_buffer);
+    amp_eq.process(mono_buffer);
+
+    current_amp_master_gain.setTargetValue(
+        juce::Decibels::decibelsToGain(amp_master_gain_parameter->load())
+    );
+    if (!isAmpBypassed)
+        current_amp_master_gain.applyGain(mono_buffer, num_samples);
 
     irConvolver.process(mono_buffer);
 

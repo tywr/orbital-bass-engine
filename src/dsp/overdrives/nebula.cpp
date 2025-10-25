@@ -12,15 +12,18 @@ void NebulaOverdrive::reset()
 
 void NebulaOverdrive::resetSmoothedValues()
 {
-    level.reset(processSpec.sampleRate, smoothing_time);
+    float sample_rate = static_cast<float>(processSpec.sampleRate);
+    sample_rate = std::max(1.0f, sample_rate);
+
+    level.reset(sample_rate, smoothing_time);
     level.setCurrentAndTargetValue(raw_level);
-    drive.reset(processSpec.sampleRate, smoothing_time);
+    drive.reset(sample_rate, smoothing_time);
     drive.setCurrentAndTargetValue(raw_drive);
-    mix.reset(processSpec.sampleRate, smoothing_time);
+    mix.reset(sample_rate, smoothing_time);
     mix.setCurrentAndTargetValue(raw_mix);
-    mod.reset(processSpec.sampleRate, smoothing_time);
+    mod.reset(sample_rate, smoothing_time);
     mod.setCurrentAndTargetValue(raw_mod);
-    aggro.reset(processSpec.sampleRate, smoothing_time);
+    aggro.reset(sample_rate, smoothing_time);
     aggro.setCurrentAndTargetValue(raw_aggro);
 }
 
