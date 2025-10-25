@@ -1,15 +1,14 @@
 #include "compressor_meter_component.h"
+#include "../looks/compressor_look_and_feel.h"
 #include "compressor_dimensions.h"
-#include "../looks/compressor_meter_look_and_feel.h"
 
 CompressorMeterComponent::CompressorMeterComponent(
     juce::AudioProcessorValueTreeState& params, juce::Value& v
 )
     : parameters(params), gain_reduction_value(v)
 {
+    setLookAndFeel(new CompressorLookAndFeel());
     startTimerHz(60);
-    setLookAndFeel(new CompressorMeterLookAndFeel());
-
     addAndMakeVisible(gain_reduction_slider);
 
     gain_reduction_slider.setRange(0, 20.0f, 0.5f);
@@ -61,6 +60,7 @@ void CompressorMeterComponent::valueChanged(juce::Value& v)
 
 void CompressorMeterComponent::paint(juce::Graphics& g)
 {
+    ignoreUnused(g);
 }
 
 void CompressorMeterComponent::resized()

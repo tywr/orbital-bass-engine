@@ -69,3 +69,15 @@ void CompressorLookAndFeel::drawLabel(juce::Graphics& g, juce::Label& label)
     g.setColour(label.findColour(juce::Label::textColourId));
     g.drawFittedText(text, bounds, juce::Justification::centred, 1);
 }
+
+void CompressorLookAndFeel::drawLinearSlider(
+    juce::Graphics& g, int x, int y, int width, int height, float sliderPos,
+    float minSliderPos, float maxSliderPos,
+    const juce::Slider::SliderStyle style, juce::Slider& slider
+
+)
+{
+    int pos = static_cast<int>(sliderPos);
+    g.setColour(GuiColours::COMPRESSOR_ACTIVE_COLOUR_1);
+    g.fillRect(x, y, pos-x, height);
+}

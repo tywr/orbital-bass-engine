@@ -82,9 +82,21 @@ void CompressorComponent::paint(juce::Graphics& g)
     knobs_component.switchColour(colour1, colour2);
     meter_component.switchColour(colour1, colour2);
 
+    auto bounds = getLocalBounds().withSizeKeepingCentre(
+        CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
+    );
+    bounds.removeFromBottom(CompressorDimensions::FOOTER_HEIGHT);
+    auto meter_bounds =
+        bounds.removeFromBottom(CompressorDimensions::GAIN_REDUCTION_HEIGHT)
+            .withSizeKeepingCentre(
+                CompressorDimensions::GAIN_REDUCTION_WIDTH,
+                CompressorDimensions::GAIN_REDUCTION_HEIGHT
+            );
     g.drawImageAt(
         gravity_cache, (int)inner_bounds.getX(), (int)inner_bounds.getY()
     );
+    g.setColour(ColourCodes::bg1);
+    g.fillRect(meter_bounds);
 }
 
 void CompressorComponent::resized()
