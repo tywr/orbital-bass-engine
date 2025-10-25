@@ -25,9 +25,9 @@ Tabs::Tabs(
         juce::TabbedComponent::outlineColourId, juce::Colours::transparentBlack
     );
 
-    addTab("comp", ColourCodes::bg, &compressor_component, true);
-    addTab("amp", ColourCodes::bg, &amp_component, true);
-    addTab("chorus", ColourCodes::bg, &chorus_component, true);
+    // addTab("comp", ColourCodes::bg, &compressor_component, true);
+    // addTab("amp", ColourCodes::bg, &amp_component, true);
+    // addTab("chorus", ColourCodes::bg, &chorus_component, true);
     addTab("cabinet", ColourCodes::bg, &ir_component, true);
     setTabBarDepth(60);
 }

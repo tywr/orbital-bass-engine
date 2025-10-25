@@ -88,9 +88,6 @@ void ChorusComponent::resized()
                 ChorusDimensions::BYPASS_BUTTON_HEIGHT
             )
     );
-    title_label.setBounds(
-        bounds.removeFromBottom(ChorusDimensions::TITLE_LABEL_HEIGHT)
-    );
     bounds.removeFromTop(ChorusDimensions::INNER_Y_TOP_PADDING);
     knobs_component.setBounds(bounds.removeFromTop(
         ChorusDimensions::KNOBS_TOP_BOX_HEIGHT +

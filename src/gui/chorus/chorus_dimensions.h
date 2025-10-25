@@ -1,6 +1,5 @@
 #pragma once
 
-
 namespace ChorusDimensions
 {
 constexpr int WIDTH = 300;
@@ -25,6 +24,4 @@ constexpr int LABEL_HEIGHT = 20;
 constexpr int SMALL_KNOB_SIZE = 60;
 constexpr int KNOB_SIZE = 60;
 
-constexpr int TITLE_LABEL_HEIGHT = 100;
-
-} // namespace CompressorDimensions
+} // namespace ChorusDimensions
