@@ -40,7 +40,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         std::make_unique<juce::AudioParameterChoice>(
             "amp_type",                                        // Parameter ID
             "Amp Type",                                        // Display name
-            juce::StringArray{"helios", "borealis", "nebula"}, // Choice options
+            juce::StringArray{"helios", "borealis"}, // Choice options
             0
         ),
         std::make_unique<juce::AudioParameterFloat>(
@@ -76,14 +76,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
             juce::NormalisableRange<float>(50.0f, 500.0f, 1.0f), 275.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "overdrive_mod", "Overdrive Mod",
-            juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f), 5.0f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "overdrive_aggro", "Overdrive Aggro",
-            juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f), 5.0f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
             "overdrive_mix", "Overdrive Mix",
             juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f
         ),
@@ -102,6 +94,21 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         std::make_unique<juce::AudioParameterFloat>(
             "amp_eq_treble", "Amp EQ Treble",
             juce::NormalisableRange<float>(-12.0f, 12.0f, 0.1f, 1.0f), 0.0f
+        ),
+        std::make_unique<juce::AudioParameterBool>(
+            "chorus_bypass", "Chorus Mix", false
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "chorus_mix", "Chorus Mix",
+            juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "chorus_rate", "Chorus Rate",
+            juce::NormalisableRange<float>(0.0f, 10.0f, 0.1f), 5.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "chorus_depth", "Chorus Depth",
+            juce::NormalisableRange<float>(0.0f, 10.0f, 0.1f), 5.0f
         ),
         std::make_unique<juce::AudioParameterBool>(
             "ir_bypass", "Impulse Response Bypass", false

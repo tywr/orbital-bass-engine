@@ -103,20 +103,6 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
             overdrive->setBassFrequency(bv);
         }
     }
-    else if (parameterID == "overdrive_mod")
-    {
-        for (auto& overdrive : overdrives)
-        {
-            overdrive->setMod(v);
-        }
-    }
-    else if (parameterID == "overdrive_aggro")
-    {
-        for (auto& overdrive : overdrives)
-        {
-            overdrive->setAggro(v);
-        }
-    }
     // Amp EQ
     else if (parameterID == "amp_eq_bass")
     {
@@ -133,6 +119,26 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     else if (parameterID == "amp_eq_treble")
     {
         amp_eq.setTrebleGain(juce::Decibels::decibelsToGain(v));
+    }
+    // Chorus
+    else if (parameterID == "chorus_bypass")
+    {
+        // chorus.setBypass((v >= 0.5f) ? true : false);
+    }
+    else if (parameterID == "chorus_mix")
+    {
+        // float bv = juce::jlimit(0.0f, 1.0f, v);
+        // chorus.setMix(v);
+    }
+    else if (parameterID == "chorus_rate")
+    {
+        // float bv = juce::jlimit(0.1f, 10.0f, v);
+        // chorus.setRate(bv);
+    }
+    else if (parameterID == "chorus_depth")
+    {
+        // float bv = juce::jlimit(0.0f, 1.0f, v);
+        // chorus.setDepth(bv);
     }
     // Impulse Response Convolver
     else if (parameterID == "ir_bypass")

@@ -5,7 +5,6 @@
 #include "dsp/ir.h"
 #include "dsp/overdrives/borealis.h"
 #include "dsp/overdrives/helios.h"
-#include "dsp/overdrives/nebula.h"
 #include "dsp/overdrives/overdrive.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
@@ -74,9 +73,8 @@ class PluginAudioProcessor final
     std::atomic<Overdrive*> current_overdrive = nullptr;
     HeliosOverdrive helios_overdrive;
     BorealisOverdrive borealis_overdrive;
-    NebulaOverdrive nebula_overdrive;
     std::vector<Overdrive*> overdrives = {
-        &helios_overdrive, &borealis_overdrive, &nebula_overdrive
+        &helios_overdrive, &borealis_overdrive
     };
 
     AmpEQ amp_eq;

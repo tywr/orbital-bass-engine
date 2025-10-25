@@ -4,7 +4,6 @@
 #include "amp_knobs_component.h"
 #include "designs/borealis.h"
 #include "designs/helios.h"
-#include "designs/nebula.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -99,10 +98,6 @@ void AmpComponent::paintDesign(juce::Graphics& g, juce::Rectangle<float> bounds)
     else if (selected_type.id == "borealis")
     {
         paintDesignBorealis(g, bounds, current_colour1, current_colour2);
-    }
-    else if (selected_type.id == "nebula")
-    {
-        paintDesignNebula(g, bounds, current_colour1, current_colour2);
     }
 }
 

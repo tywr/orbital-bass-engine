@@ -3,7 +3,6 @@
 #include "compressor_dimensions.h"
 #include "compressor_knobs_component.h"
 #include "compressor_meter_component.h"
-#include "designs/gravity.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -92,9 +91,6 @@ void CompressorComponent::paint(juce::Graphics& g)
                 CompressorDimensions::GAIN_REDUCTION_WIDTH,
                 CompressorDimensions::GAIN_REDUCTION_HEIGHT
             );
-    g.drawImageAt(
-        gravity_cache, (int)inner_bounds.getX(), (int)inner_bounds.getY()
-    );
     g.setColour(ColourCodes::bg1);
     g.fillRect(meter_bounds);
 }
@@ -132,12 +128,4 @@ void CompressorComponent::resized()
             )
             .toFloat();
     auto inner_bounds = outer_bounds.reduced(border_thickness).toFloat();
-
-    gravity_cache = juce::Image(
-        juce::Image::ARGB, (int)inner_bounds.getWidth(),
-        (int)inner_bounds.getHeight(), true
-    );
-
-    juce::Graphics gCache(gravity_cache);
-    paintGravity(gCache, gravity_cache.getBounds().toFloat());
 }

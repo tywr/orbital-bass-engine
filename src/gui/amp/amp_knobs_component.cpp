@@ -75,13 +75,6 @@ void AmpKnobsComponent::switchType(AmpType new_type)
             "overdrive_x_frequency", "hi pass"
         };
     }
-    if (new_type.id == "nebula")
-    {
-        current_knobs[1] = {&mod_slider, &mod_label, "overdrive_mod", "mod"};
-        current_knobs[2] = {
-            &aggro_slider, &aggro_label, "overdrive_aggro", "aggro"
-        };
-    }
     resized();
     removeAllChildren();
     addAndMakeVisible(drag_tooltip);

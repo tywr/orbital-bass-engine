@@ -1,5 +1,6 @@
 #include "tabs.h"
 #include "amp/amp_component.h"
+#include "chorus/chorus_component.h"
 #include "colours.h"
 #include "compressor/compressor_component.h"
 #include "ir/ir_component.h"
@@ -14,7 +15,7 @@ Tabs::Tabs(
     : juce::TabbedComponent(juce::TabbedButtonBar::TabsAtTop),
       parameters(params),
       compressor_component(params, compressorGainReductionDb),
-      amp_component(params), ir_component(params)
+      amp_component(params), chorus_component(params), ir_component(params)
 {
     setColour(
         juce::TabbedComponent::backgroundColourId,
@@ -26,7 +27,7 @@ Tabs::Tabs(
 
     addTab("comp", ColourCodes::bg, &compressor_component, true);
     addTab("amp", ColourCodes::bg, &amp_component, true);
-    // addTab("chorus", AuroraColors::bg, new juce::Component(), true);
+    addTab("chorus", ColourCodes::bg, &chorus_component, true);
     addTab("cabinet", ColourCodes::bg, &ir_component, true);
     setTabBarDepth(60);
 }

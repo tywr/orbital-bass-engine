@@ -38,6 +38,8 @@ target_sources(${PROJECT_NAME}
         gui/compressor/compressor_component.cpp
         gui/amp/amp_component.cpp
         gui/amp/amp_knobs_component.cpp
+        gui/chorus/chorus_component.cpp
+        gui/chorus/chorus_knobs_component.cpp
         gui/ir/ir_component.cpp
         gui/meter.cpp
         gui/header.cpp
@@ -47,7 +49,6 @@ target_sources(${PROJECT_NAME}
         dsp/ir.cpp
         dsp/overdrives/helios.cpp
         dsp/overdrives/borealis.cpp
-        dsp/overdrives/nebula.cpp
         dsp/amp_eq.cpp
         )
 

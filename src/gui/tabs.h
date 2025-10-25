@@ -1,6 +1,7 @@
 #pragma once
 
 #include "amp/amp_component.h"
+#include "chorus/chorus_component.h"
 #include "compressor/compressor_component.h"
 #include "ir/ir_component.h"
 #include "tabs.h"
@@ -18,6 +19,7 @@ class Tabs : public juce::TabbedComponent
     juce::AudioProcessorValueTreeState& parameters;
     CompressorComponent compressor_component;
     AmpComponent amp_component;
+    ChorusComponent chorus_component;
     IRComponent ir_component;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Tabs)

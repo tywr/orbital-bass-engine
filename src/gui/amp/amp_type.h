@@ -2,7 +2,6 @@
 #include "../colours.h"
 #include "designs/borealis.h"
 #include "designs/helios.h"
-#include "designs/nebula.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 
 struct AmpType
@@ -76,41 +75,6 @@ class BorealisToggleButton : public juce::ToggleButton
             c2 = findColour(juce::ToggleButton::textColourId);
         }
         paintIconBorealis(g, bounds, c1, c2);
-    }
-
-  private:
-    juce::Colour colour1;
-    juce::Colour colour2;
-};
-
-class NebulaToggleButton : public juce::ToggleButton
-{
-  public:
-    NebulaToggleButton(AmpType t)
-    {
-        colour1 = t.colour1;
-        colour2 = t.colour2;
-    }
-    ~NebulaToggleButton() override
-    {
-    }
-
-    void paint(juce::Graphics& g) override
-    {
-        auto bounds = getLocalBounds().toFloat();
-        juce::Colour c1;
-        juce::Colour c2;
-        if (getToggleState())
-        {
-            c1 = colour1;
-            c2 = colour2;
-        }
-        else
-        {
-            c1 = findColour(juce::ToggleButton::textColourId);
-            c2 = findColour(juce::ToggleButton::textColourId);
-        }
-        paintIconNebula(g, bounds, c1, c2);
     }
 
   private:

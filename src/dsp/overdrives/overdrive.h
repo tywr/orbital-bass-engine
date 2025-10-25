@@ -39,18 +39,6 @@ class Overdrive
         bass_frequency.setTargetValue(v);
         raw_bass_frequency = v;
     }
-    void virtual setMod(float new_mod)
-    {
-        float v = juce::jlimit(0.0f, 10.0f, new_mod);
-        mod.setTargetValue(v);
-        raw_mod = v;
-    }
-    void virtual setAggro(float new_aggro)
-    {
-        float v = juce::jlimit(0.0f, 10.0f, new_aggro);
-        aggro.setTargetValue(v);
-        raw_aggro = v;
-    }
 
     void applyGain(
         juce::AudioBuffer<float>& buffer, float& previous_gain, float& gain

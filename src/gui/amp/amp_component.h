@@ -49,16 +49,11 @@ class AmpComponent : public juce::Component
     AmpType borealis_type = {
         &borealis_button, "borealis", ColourCodes::blue1, ColourCodes::blue2
     };
-    AmpType nebula_type = {
-        &nebula_button, "nebula", ColourCodes::nebula_violet,
-        ColourCodes::nebula_red
-    };
 
-    std::vector<AmpType> types = {helios_type, borealis_type, nebula_type};
+    std::vector<AmpType> types = {helios_type, borealis_type};
 
     HeliosToggleButton helios_button = HeliosToggleButton(helios_type);
     BorealisToggleButton borealis_button = BorealisToggleButton(borealis_type);
-    NebulaToggleButton nebula_button = NebulaToggleButton(nebula_type);
 
     AmpType selected_type = types[0];
 

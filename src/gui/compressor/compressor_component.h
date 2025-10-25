@@ -25,10 +25,6 @@ class CompressorComponent : public juce::Component
     juce::Value& gain_reduction_decibels;
     juce::Rectangle<float> bounds;
 
-    juce::Image gravity_cache;
-
-    void paintStyling(juce::Graphics&, juce::Rectangle<float>);
-
     // Sub-components
     juce::Label title_label;
     CompressorKnobsComponent knobs_component;
