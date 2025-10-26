@@ -58,7 +58,6 @@ void Header::resized()
     int const knob_padding = 3 * padding;
     int const knob_size = getHeight() - padding * 2;
     int const meter_width = 6;
-    int const label_padding = 5;
 
     auto bounds = getLocalBounds().reduced(padding);
 

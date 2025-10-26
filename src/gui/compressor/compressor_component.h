@@ -22,8 +22,6 @@ class CompressorComponent : public juce::Component
 
   private:
     juce::AudioProcessorValueTreeState& parameters;
-    juce::Value& gain_reduction_decibels;
-    juce::Rectangle<float> bounds;
 
     // Sub-components
     juce::Label title_label;

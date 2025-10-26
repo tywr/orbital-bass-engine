@@ -77,6 +77,7 @@ void CompressorLookAndFeel::drawLinearSlider(
 
 )
 {
+    juce::ignoreUnused(width, minSliderPos, maxSliderPos, style, slider);
     int pos = static_cast<int>(sliderPos);
     g.setColour(GuiColours::COMPRESSOR_ACTIVE_COLOUR_1);
     g.fillRect(x, y, pos-x, height);

@@ -13,9 +13,7 @@ class CompressorMeterComponent : public juce::Component,
                                  public juce::Timer
 {
   public:
-    CompressorMeterComponent(
-        juce::AudioProcessorValueTreeState& g, juce::Value& v
-    );
+    CompressorMeterComponent(juce::Value& v);
     ~CompressorMeterComponent() override;
 
     void resized() override;
@@ -26,7 +24,6 @@ class CompressorMeterComponent : public juce::Component,
 
   private:
     void timerCallback() override;
-    juce::AudioProcessorValueTreeState& parameters;
     juce::Value gain_reduction_value;
     juce::Slider gain_reduction_slider;
 

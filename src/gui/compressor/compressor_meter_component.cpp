@@ -2,10 +2,8 @@
 #include "../looks/compressor_look_and_feel.h"
 #include "compressor_dimensions.h"
 
-CompressorMeterComponent::CompressorMeterComponent(
-    juce::AudioProcessorValueTreeState& params, juce::Value& v
-)
-    : parameters(params), gain_reduction_value(v)
+CompressorMeterComponent::CompressorMeterComponent(juce::Value& v)
+    : gain_reduction_value(v)
 {
     setLookAndFeel(new CompressorLookAndFeel());
     startTimerHz(60);
@@ -76,6 +74,7 @@ void CompressorMeterComponent::switchColour(
     juce::Colour colour1, juce::Colour colour2
 )
 {
+    juce::ignoreUnused(colour2);
     gain_reduction_slider.setColour(
         juce::Slider::rotarySliderFillColourId, colour1
     );

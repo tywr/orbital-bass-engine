@@ -204,7 +204,6 @@ void HeliosOverdrive::updateAttackFilter()
 void HeliosOverdrive::updateDriveFilter()
 {
     float current_drive = drive.getCurrentValue();
-    float drive_filter_q = 0.7f;
 
     // Set the frequency based on the grunt parameter
     float rolloff_frequency = 3200.0f;
@@ -218,7 +217,7 @@ void HeliosOverdrive::updateDriveFilter()
     );
 
     auto drive_filter_coefficients = makeDriveFilter(
-        process_spec.sampleRate, drive_frequency, rolloff_frequency,
+        (float)process_spec.sampleRate, drive_frequency, rolloff_frequency,
         drive_filter_gain
     );
     *vmt_drive_filter.coefficients = *drive_filter_coefficients;
@@ -236,12 +235,12 @@ void HeliosOverdrive::process(
 
     if (attack.isSmoothing())
     {
-        attack.skip(num_samples);
+        attack.skip((int)num_samples);
         updateAttackFilter();
     }
     if (drive.isSmoothing())
     {
-        drive.skip(num_samples);
+        drive.skip((int)num_samples);
         updateDriveFilter();
     }
 

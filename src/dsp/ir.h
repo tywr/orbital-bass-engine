@@ -6,7 +6,7 @@
 class IRConvolver : juce::dsp::ProcessorBase
 {
   public:
-    void prepare(const juce::dsp::ProcessSpec& spec);
+    void prepare(const juce::dsp::ProcessSpec& spec) override;
     void process(
         const juce::dsp::ProcessContextReplacing<float>& context
     ) override;

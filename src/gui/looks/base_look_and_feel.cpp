@@ -92,8 +92,9 @@ void BaseLookAndFeel::drawToggleButton(
 
     g.setColour(colour);
 
-    const float strokeWidth = 2.0f;
-    auto bounds = button.getLocalBounds().toFloat().reduced(strokeWidth / 2.0f);
+    const float buttonStrokeWidth = 2.0f;
+    auto bounds =
+        button.getLocalBounds().toFloat().reduced(buttonStrokeWidth / 2.0f);
 
     auto size = juce::jmin(bounds.getWidth(), bounds.getHeight());
     auto area = bounds.withSizeKeepingCentre(size, size);
@@ -104,7 +105,6 @@ void BaseLookAndFeel::drawToggleButton(
 
     juce::Path powerSymbol;
 
-    // Draw an arc with a gap at the top
     powerSymbol.addCentredArc(
         centerX, centerY, radius, radius, 0.0f,
         juce::MathConstants<float>::pi * 0.15f, // Start angle
@@ -112,14 +112,12 @@ void BaseLookAndFeel::drawToggleButton(
         true
     ); // Draw clockwise
 
-    // Draw a vertical line from the center extending through the top gap
     powerSymbol.startNewSubPath(centerX, centerY);
     powerSymbol.lineTo(centerX, area.getY());
 
-    // 5. Draw the final path with the calculated stroke width
     g.strokePath(
         powerSymbol, juce::PathStrokeType(
-                         strokeWidth, juce::PathStrokeType::curved,
+                         buttonStrokeWidth, juce::PathStrokeType::curved,
                          juce::PathStrokeType::rounded
                      )
     ); // Rounded ends look nicer
@@ -197,6 +195,7 @@ void BaseLookAndFeel::drawLinearSlider(
     const juce::Slider::SliderStyle style, juce::Slider& slider
 )
 {
+    juce::ignoreUnused(minSliderPos, maxSliderPos);
     g.fillAll(ColourCodes::grey0);
 
     juce::Rectangle<float> filledTrack;
@@ -218,6 +217,7 @@ void BaseLookAndFeel::drawTabbedButtonBarBackground(
     juce::TabbedButtonBar& buttonBar, juce::Graphics& g
 )
 {
+    juce::ignoreUnused(g, buttonBar);
 }
 
 void BaseLookAndFeel::drawTabButton(

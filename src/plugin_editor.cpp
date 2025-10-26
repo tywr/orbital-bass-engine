@@ -47,9 +47,9 @@ void PluginEditor::paint(juce::Graphics& g)
 
 void PluginEditor::paintBackground(float scale)
 {
-    background = juce::Image(
-        juce::Image::ARGB, scale * getWidth(), scale * getHeight(), true
-    );
+    int width = static_cast<int>(scale * getWidth());
+    int height = static_cast<int>(scale * getHeight());
+    background = juce::Image(juce::Image::ARGB, width, height, true);
 
     juce::Graphics g(background);
     juce::Graphics cache(background);

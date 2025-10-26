@@ -13,7 +13,6 @@ Tabs::Tabs(
     juce::Value& compressorGainReductionDb
 )
     : juce::TabbedComponent(juce::TabbedButtonBar::TabsAtTop),
-      parameters(params),
       compressor_component(params, compressorGainReductionDb),
       amp_component(params), chorus_component(params), ir_component(params),
       post_rack_component(params)

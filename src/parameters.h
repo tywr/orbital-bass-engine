@@ -1,6 +1,6 @@
 #include <juce_dsp/juce_dsp.h>
 
-juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
+inline juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
 {
     return {
         std::make_unique<juce::AudioParameterFloat>(

@@ -39,6 +39,7 @@ ChorusKnobsComponent::~ChorusKnobsComponent()
 
 void ChorusKnobsComponent::paint(juce::Graphics& g)
 {
+    juce::ignoreUnused(g);
 }
 
 void ChorusKnobsComponent::resized()
@@ -46,7 +47,7 @@ void ChorusKnobsComponent::resized()
 
     auto bounds = getLocalBounds();
     auto label_bounds = bounds.removeFromTop(ChorusDimensions::LABEL_HEIGHT);
-    const int knob_box_size = bounds.getWidth() / knobs.size();
+    const int knob_box_size = bounds.getWidth() / (int)knobs.size();
     for (auto knob : knobs)
     {
         knob.label->setBounds(label_bounds.removeFromLeft(knob_box_size)

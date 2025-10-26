@@ -111,29 +111,29 @@ void PluginAudioProcessor::parameterChanged(
 
 void PluginAudioProcessor::prepareParameters()
 {
-    int amp_index =
-        static_cast<int>(parameters.getRawParameterValue("amp_type")->load());
+    size_t amp_index =
+        static_cast<size_t>(parameters.getRawParameterValue("amp_type")->load());
     current_overdrive.store(overdrives[amp_index]);
 
     // iterate over all parameters to set their initial values
     for (auto* p : getParameters())
     {
-        if (auto* param = dynamic_cast<juce::AudioParameterFloat*>(p))
+        if (auto* fparam = dynamic_cast<juce::AudioParameterFloat*>(p))
         {
-            juce::String paramID = param->getParameterID();
-            float v = param->get();
+            juce::String paramID = fparam->getParameterID();
+            float v = fparam->get();
             setParameterValue(paramID, v);
         }
-        else if (auto* param = dynamic_cast<juce::AudioParameterChoice*>(p))
+        else if (auto* cparam = dynamic_cast<juce::AudioParameterChoice*>(p))
         {
-            juce::String paramID = param->getParameterID();
-            float v = param->getIndex();
+            juce::String paramID = cparam->getParameterID();
+            float v = cparam->getIndex();
             setParameterValue(paramID, v);
         }
-        else if (auto* param = dynamic_cast<juce::RangedAudioParameter*>(p))
+        else if (auto* rparam = dynamic_cast<juce::RangedAudioParameter*>(p))
         {
-            juce::String paramID = param->getParameterID();
-            float v = param->getValue();
+            juce::String paramID = rparam->getParameterID();
+            float v = rparam->getValue();
             setParameterValue(paramID, v);
         }
     }

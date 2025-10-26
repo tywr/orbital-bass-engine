@@ -17,7 +17,6 @@ class Tabs : public juce::TabbedComponent
     void paint(juce::Graphics&) override;
 
   private:
-    juce::AudioProcessorValueTreeState& parameters;
     CompressorComponent compressor_component;
     AmpComponent amp_component;
     ChorusComponent chorus_component;

@@ -16,7 +16,6 @@ class ChorusComponent : public juce::Component
 
   private:
     juce::AudioProcessorValueTreeState& parameters;
-    juce::Rectangle<float> bounds;
 
     juce::Label title_label;
     ChorusKnobsComponent knobs_component;
@@ -25,5 +24,5 @@ class ChorusComponent : public juce::Component
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>
         bypass_attachment;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChorusComponent);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChorusComponent)
 };

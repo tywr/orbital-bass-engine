@@ -1,7 +1,7 @@
 #include "compressor.h"
 
-#include <juce_dsp/juce_dsp.h>
 #include <algorithm>
+#include <juce_dsp/juce_dsp.h>
 
 void Compressor::resetSmoothedValues()
 {
@@ -111,7 +111,6 @@ void Compressor::computeGainReductionFet(float& sample, float sampleRate)
 void Compressor::computeGainReductionVca(float& sample, float sampleRate)
 {
     float input_level = std::abs(sample);
-    float input_level_db = juce::Decibels::gainToDecibels(input_level + 1e-10f);
     float current_threshold_db = threshold_db.getCurrentValue();
     float current_ratio = ratio.getCurrentValue();
 
@@ -131,17 +130,16 @@ void Compressor::computeGainReductionVca(float& sample, float sampleRate)
     float coef;
     if (rms_level_db > current_level_db)
     {
-        coef = std::exp(std::log(0.01) / (sampleRate * vcaParams.attack));
+        coef = std::exp(std::log(0.01f) / (sampleRate * vcaParams.attack));
     }
     else
     {
-        coef = std::exp(std::log(0.01) / (sampleRate * vcaParams.release));
+        coef = std::exp(std::log(0.01f) / (sampleRate * vcaParams.release));
     }
     current_level_db =
         (coef * current_level_db) + ((1.0f - coef) * rms_level_db);
 
     float target_gain_db;
-    float rawGainReductionDb;
     if (current_level_db > current_threshold_db)
     {
         float over_threshold = current_level_db - current_threshold_db;
@@ -157,8 +155,6 @@ void Compressor::computeGainReductionVca(float& sample, float sampleRate)
     {
         target_gain_db = 0.0f;
     }
-
-    float target_gain = juce::Decibels::decibelsToGain(target_gain_db);
 
     gain_smooth_db = target_gain_db;
     gain_smooth = juce::Decibels::decibelsToGain(gain_smooth_db);
@@ -207,9 +203,11 @@ void Compressor::process(juce::AudioBuffer<float>& buffer)
         }
 
         float current_mix = mix.getCurrentValue();
-        float current_level = level.getCurrentValue();
+        // current_level is already used for the level detection
+        float current_level_parameter_value = level.getCurrentValue();
 
         channelData[sample] =
-            (dry * (1.0f - current_mix) + wet * current_mix * current_level);
+            (dry * (1.0f - current_mix) +
+             wet * current_mix * current_level_parameter_value);
     }
 }

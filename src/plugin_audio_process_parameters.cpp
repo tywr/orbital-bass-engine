@@ -23,12 +23,12 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     else if (parameterID == "compressor_mix")
     {
         float bv = juce::jlimit(0.0f, 1.0f, v);
-        compressor.setMix(static_cast<int>(v));
+        compressor.setMix(bv);
     }
     else if (parameterID == "amp_type")
     {
         int index = juce::jlimit(0, (int)overdrives.size() - 1, (int)v);
-        Overdrive* next = overdrives[index];
+        Overdrive* next = overdrives[(size_t)index];
 
         if (next != current_overdrive.load())
         {
@@ -127,7 +127,7 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     else if (parameterID == "ir_mix")
     {
         float bv = juce::jlimit(0.0f, 1.0f, v);
-        irConvolver.setMix(v);
+        irConvolver.setMix(bv);
     }
     else if (parameterID == "ir_level")
     {

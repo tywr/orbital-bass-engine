@@ -191,9 +191,9 @@ void AmpComponent::resized()
 
 void AmpComponent::buildCache(float scale)
 {
-    background_cache = juce::Image(
-        juce::Image::ARGB, scale * getWidth(), scale * getHeight(), true
-    );
+    int width = static_cast<int>(scale * getWidth());
+    int height = static_cast<int>(scale * getHeight());
+    background_cache = juce::Image(juce::Image::ARGB, width, height, true);
 
     juce::Graphics g(background_cache);
     juce::Graphics cache(background_cache);

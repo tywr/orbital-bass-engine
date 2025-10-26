@@ -29,7 +29,9 @@ IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
         );
 
     addAndMakeVisible(type_display);
-    type_display.setFont(juce::Font("Oxanium", 24.0f, juce::Font::plain), true);
+    type_display.setFont(
+        juce::Font(juce::FontOptions("Oxanium", 24.0f, juce::Font::plain)), true
+    );
     type_display.setJustification(juce::Justification::centred);
     type_display.setColour(ColourCodes::grey3);
     auto* parameter = parameters.getParameter("ir_type");
@@ -127,7 +129,7 @@ void IRComponent::resized()
     );
     auto label_bounds = knob_bounds.removeFromTop(IRDimensions::LABEL_HEIGHT);
 
-    const int knob_box_size = knob_bounds.getWidth() / (knobs.size());
+    const int knob_box_size = knob_bounds.getWidth() / (int)knobs.size();
     for (size_t i = 0; i < 3; ++i)
     {
         IRKnob knob = knobs[i];
@@ -178,24 +180,24 @@ void IRComponent::setupSliderTooltipHandling(
 )
 {
 
-    slider->onDragStart = [this, slider = slider, label = label]()
+    slider->onDragStart = [this, sl = slider, lab = label]()
     {
         slider_being_dragged = true;
         drag_tooltip.setVisible(false);
         // delay using a Timer
         juce::Timer::callAfterDelay(
             300,
-            [this, slider, label]()
+            [this, sl, lab]()
             {
-                if (slider->isMouseButtonDown())
+                if (sl->isMouseButtonDown())
                 {
                     drag_tooltip.setText(
-                        juce::String(slider->getValue(), 2),
+                        juce::String(sl->getValue(), 2),
                         juce::dontSendNotification
                     );
                     drag_tooltip.setBounds(
-                        label->getX(), label->getY(), label->getWidth(),
-                        label->getHeight()
+                        lab->getX(), lab->getY(), lab->getWidth(),
+                        lab->getHeight()
                     );
                     drag_tooltip.toFront(true);
                     drag_tooltip.setVisible(true);
@@ -209,11 +211,11 @@ void IRComponent::setupSliderTooltipHandling(
         slider_being_dragged = false;
         drag_tooltip.setVisible(false);
     };
-    slider->onValueChange = [this, slider = slider]()
+    slider->onValueChange = [this, sl = slider]()
     {
         if (slider_being_dragged && drag_tooltip.isVisible())
             drag_tooltip.setText(
-                juce::String(slider->getValue(), 2), juce::dontSendNotification
+                juce::String(sl->getValue(), 2), juce::dontSendNotification
             );
     };
 }

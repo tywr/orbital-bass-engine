@@ -46,6 +46,7 @@ CompressorKnobsComponent::~CompressorKnobsComponent()
 
 void CompressorKnobsComponent::paint(juce::Graphics& g)
 {
+    juce::ignoreUnused(g);
 }
 
 void CompressorKnobsComponent::resized()
@@ -74,7 +75,7 @@ void CompressorKnobsComponent::resized()
                                    ));
     }
 
-    const int bottom_knob_box_size = bounds.getWidth() / (knobs.size() - limit);
+    auto bottom_knob_box_size = bounds.getWidth() / ((int)knobs.size() - limit);
     auto bottom_bounds =
         bounds.removeFromBottom(CompressorDimensions::KNOBS_BOTTOM_BOX_HEIGHT);
     auto label_bottom_bounds =

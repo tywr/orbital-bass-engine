@@ -14,7 +14,7 @@ Meter::Meter(juce::Value& v) : measured_value(v)
     measured_value.addListener(this);
     measured_value.setValue(0);
 
-    smoothed_value = static_cast<double>(measured_value.getValue());
+    smoothed_value = measured_value.getValue();
     target_value = smoothed_value;
     peak_hold_value = smoothed_value;
     peak_hold_counter = 0;
@@ -79,8 +79,8 @@ void Meter::visibilityChanged()
 
 void Meter::valueChanged(juce::Value& newValue)
 {
-    double gain = static_cast<double>(newValue.getValue());
-    double dbValue = juce::Decibels::gainToDecibels(gain, -48.0);
+    float gain = newValue.getValue();
+    float dbValue = juce::Decibels::gainToDecibels(gain);
     target_value = dbValue;
 }
 

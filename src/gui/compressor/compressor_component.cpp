@@ -9,8 +9,7 @@
 CompressorComponent::CompressorComponent(
     juce::AudioProcessorValueTreeState& params, juce::Value& value
 )
-    : parameters(params), gain_reduction_decibels(value),
-      knobs_component(params), meter_component(params, value)
+    : parameters(params), knobs_component(params), meter_component(value)
 {
     addAndMakeVisible(knobs_component);
     addAndMakeVisible(meter_component);
@@ -119,13 +118,4 @@ void CompressorComponent::resized()
         CompressorDimensions::KNOBS_BOTTOM_BOX_HEIGHT +
         CompressorDimensions::KNOBS_ROW_PADDING
     ));
-
-    float border_thickness = CompressorDimensions::BORDER_THICKNESS;
-    auto outer_bounds =
-        getLocalBounds()
-            .withSizeKeepingCentre(
-                CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
-            )
-            .toFloat();
-    auto inner_bounds = outer_bounds.reduced(border_thickness).toFloat();
 }

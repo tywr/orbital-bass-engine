@@ -3,7 +3,7 @@ inline std::shared_ptr<juce::dsp::IIR::Coefficients<float>> makeDriveFilter(
 )
 {
     // Creates a broad bandpass filter with a gain boost in the passband
-    
+
     const float pi = juce::MathConstants<float>::pi;
 
     const float tau_hpf = 1.0f / (2 * pi * f_hpf);
@@ -27,5 +27,7 @@ inline std::shared_ptr<juce::dsp::IIR::Coefficients<float>> makeDriveFilter(
     float b1 = 2.0f * (b0s - b2s * Ks) / a0;
     float b2 = (b2s * Ks - b1s * K + b0s) / a0;
 
-    return std::make_shared<juce::dsp::IIR::Coefficients<float>>(b0, b1, b2, 1.0f, a1, a2);
+    return std::make_shared<juce::dsp::IIR::Coefficients<float>>(
+        b0, b1, b2, 1.0f, a1, a2
+    );
 }

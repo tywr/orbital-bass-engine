@@ -67,5 +67,5 @@ class IRComponent : public juce::Component
         {&type_slider,   &type_label,   "ir_type",  "type"},
     };
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(IRComponent);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(IRComponent)
 };

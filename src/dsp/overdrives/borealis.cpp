@@ -127,7 +127,6 @@ void BorealisOverdrive::updateLowFilter()
 void BorealisOverdrive::updateDriveFilter()
 {
     float current_drive = drive.getCurrentValue();
-    float drive_filter_q = 0.7f;
 
     // Set the frequency based on the grunt parameter
     float rolloff_frequency = 3200.0f;
@@ -140,7 +139,7 @@ void BorealisOverdrive::updateDriveFilter()
     );
 
     auto drive_filter_coefficients = makeDriveFilter(
-        process_spec.sampleRate, drive_frequency, rolloff_frequency,
+        (float)process_spec.sampleRate, drive_frequency, rolloff_frequency,
         drive_filter_gain
     );
     *drive_filter.coefficients = *drive_filter_coefficients;
@@ -158,17 +157,17 @@ void BorealisOverdrive::process(
 
     if (cross_frequency.isSmoothing())
     {
-        cross_frequency.skip(num_samples);
+        cross_frequency.skip((int)num_samples);
         updateXFilter();
     }
     if (bass_frequency.isSmoothing())
     {
-        bass_frequency.skip(num_samples);
+        bass_frequency.skip((int)num_samples);
         updateLowFilter();
     }
     if (drive.isSmoothing())
     {
-        drive.skip(num_samples);
+        drive.skip((int)num_samples);
         updateDriveFilter();
     }
 
