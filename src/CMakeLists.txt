@@ -44,6 +44,7 @@ target_sources(${PROJECT_NAME}
         gui/meter.cpp
         gui/header.cpp
         gui/tabs.cpp
+        gui/post_rack.cpp
         dsp/maths/toms917.cpp
         dsp/compressor.cpp
         dsp/ir.cpp

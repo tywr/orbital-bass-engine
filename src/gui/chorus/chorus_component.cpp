@@ -46,7 +46,7 @@ void ChorusComponent::paint(juce::Graphics& g)
         colour2 = GuiColours::DEFAULT_INACTIVE_COLOUR;
     }
     float border_thickness = ChorusDimensions::BORDER_THICKNESS;
-    float border_radius = ChorusDimensions::BORDER_RADIUS;
+    float border_radius = ChorusDimensions::CORNER_RADIUS;
 
     auto outer_bounds =
         getLocalBounds()
@@ -81,26 +81,13 @@ void ChorusComponent::resized()
     auto bounds = getLocalBounds().withSizeKeepingCentre(
         ChorusDimensions::WIDTH, ChorusDimensions::HEIGHT
     );
-    bypass_button.setBounds(
-        bounds.removeFromBottom(ChorusDimensions::FOOTER_HEIGHT)
-            .withSizeKeepingCentre(
-                ChorusDimensions::BYPASS_BUTTON_WIDTH,
-                ChorusDimensions::BYPASS_BUTTON_HEIGHT
-            )
+    auto middle_bounds = bounds.withSizeKeepingCentre(
+        bounds.getWidth() - ChorusDimensions::SIDE_WIDTH * 2, ChorusDimensions::BOX_HEIGHT
     );
-    bounds.removeFromTop(ChorusDimensions::INNER_Y_TOP_PADDING);
-    knobs_component.setBounds(bounds.removeFromTop(
-        ChorusDimensions::KNOBS_TOP_BOX_HEIGHT +
-        ChorusDimensions::KNOBS_BOTTOM_BOX_HEIGHT +
-        ChorusDimensions::KNOBS_ROW_PADDING
-    ));
+    knobs_component.setBounds(middle_bounds);
 
-    float border_thickness = ChorusDimensions::BORDER_THICKNESS;
-    auto outer_bounds =
-        getLocalBounds()
-            .withSizeKeepingCentre(
-                ChorusDimensions::WIDTH, ChorusDimensions::HEIGHT
-            )
-            .toFloat();
-    auto inner_bounds = outer_bounds.reduced(border_thickness).toFloat();
+    auto left_bounds = bounds.removeFromLeft(ChorusDimensions::SIDE_WIDTH);
+    bypass_button.setBounds(left_bounds.withSizeKeepingCentre(
+        ChorusDimensions::BYPASS_SIZE, ChorusDimensions::BYPASS_SIZE
+    ));
 }

@@ -87,6 +87,10 @@ class PluginAudioProcessor final
     std::atomic<float>* input_gain_parameter = nullptr;
     std::atomic<float>* output_gain_parameter = nullptr;
     std::atomic<float>* amp_master_gain_parameter = nullptr;
+    std::atomic<float>* amp_bypass_parameter = nullptr;
+    std::atomic<float>* ir_bypass_parameter = nullptr;
+    std::atomic<float>* compressor_bypass_parameter = nullptr;
+    std::atomic<float>* chorus_bypass_parameter = nullptr;
     bool isAmpBypassed = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginAudioProcessor)

@@ -24,6 +24,7 @@ class CMOS
     std::pair<SIMD_Float, SIMD_Float> nmos_vec(SIMD_Float vgs, SIMD_Float vds);
     std::pair<SIMD_Float, SIMD_Float> pmos_vec(SIMD_Float vgs, SIMD_Float vds);
     void processBlock(juce::AudioBuffer<float>& buffer, int numSamples);
+    void process(const juce::dsp::ProcessContextReplacing<float>& context);
 
   private:
     static constexpr float n_vtc1 = 1.208306917691355f;
@@ -128,4 +129,18 @@ inline float CMOS::processSample(float x)
         vout = std::clamp(vout, 0.0f, v_dd);
     }
     return 1.0f - 2.0f * vout / v_dd;
+}
+
+inline void CMOS::process(
+    const juce::dsp::ProcessContextReplacing<float>& context
+)
+{
+    auto& block = context.getOutputBlock();
+    const size_t num_samples = block.getNumSamples();
+
+    auto* ch = block.getChannelPointer(0);
+    for (size_t i = 0; i < num_samples; ++i)
+    {
+        ch[i] = processSample(ch[i]);
+    }
 }

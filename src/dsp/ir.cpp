@@ -5,6 +5,13 @@
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <juce_dsp/juce_dsp.h>
 
+void IRConvolver::reset()
+{
+    convolution.reset();
+    resetSmoothedValues();
+    loadIR();
+}
+
 void IRConvolver::resetSmoothedValues()
 {
     float sample_rate = static_cast<float>(processSpec.sampleRate);
@@ -19,43 +26,36 @@ void IRConvolver::resetSmoothedValues()
 void IRConvolver::prepare(const juce::dsp::ProcessSpec& spec)
 {
     processSpec = spec;
-    resetSmoothedValues();
-    loadIR();
+    reset();
 }
 
-void IRConvolver::process(juce::AudioBuffer<float>& buffer)
+void IRConvolver::process(
+    const juce::dsp::ProcessContextReplacing<float>& context
+)
 {
-    if (bypass)
-    {
-        return;
-    }
     if (type != loaded_type)
     {
         loadIR();
         loaded_type = type;
     }
-    juce::ScopedNoDenormals noDenormals;
-    juce::AudioBuffer<float> wetBuffer(
-        buffer.getNumChannels(), buffer.getNumSamples()
-    );
-    juce::dsp::AudioBlock<float> wetBlock(wetBuffer);
-    juce::dsp::ProcessContextNonReplacing<float> context(
-        juce::dsp::AudioBlock<float>(buffer), wetBlock
-    );
+
+    auto& block = context.getOutputBlock();
+    const size_t num_channels = block.getNumChannels();
+    const size_t num_samples = block.getNumSamples();
+    dry_buffer.setSize((int)num_channels, (int)num_samples, false, false, true);
+    juce::dsp::AudioBlock<float> dry_block(dry_buffer);
+    dry_block.copyFrom(block);
     convolution.process(context);
-
-    // Only apply gain to the IR signal
-    level.applyGain(wetBuffer, wetBuffer.getNumSamples());
-
-    for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+    for (size_t ch = 0; ch < num_channels; ++ch)
     {
-        auto* channelData = buffer.getWritePointer(channel);
-        auto* wetChannelData = wetBuffer.getReadPointer(channel);
-        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+        auto* dry = dry_block.getChannelPointer(ch);
+        auto* wet = block.getChannelPointer(ch);
+        level.applyGain(wet, num_samples);
+
+        for (size_t i = 0; i < num_samples; ++i)
         {
             float current_mix = mix.getNextValue();
-            channelData[sample] = (channelData[sample] * (1.0f - current_mix)) +
-                                  (wetChannelData[sample] * current_mix);
+            wet[i] = (wet[i] * current_mix) + (dry[i] * (1.0f - current_mix));
         }
     }
 }

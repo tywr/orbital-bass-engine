@@ -22,7 +22,11 @@ PluginAudioProcessor::PluginAudioProcessor()
     input_gain_parameter = parameters.getRawParameterValue("input_gain_db");
     output_gain_parameter = parameters.getRawParameterValue("output_gain_db");
     amp_master_gain_parameter = parameters.getRawParameterValue("amp_master");
-    isAmpBypassed = false;
+    amp_bypass_parameter = parameters.getRawParameterValue("amp_bypass");
+    ir_bypass_parameter = parameters.getRawParameterValue("ir_bypass");
+    chorus_bypass_parameter = parameters.getRawParameterValue("chorus_bypass");
+    compressor_bypass_parameter =
+        parameters.getRawParameterValue("compressor_bypass");
 
     for (auto* p : getParameters())
     {
@@ -209,6 +213,7 @@ void PluginAudioProcessor::processBlock(
 )
 {
     juce::ignoreUnused(midiMessages);
+
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -217,54 +222,59 @@ void PluginAudioProcessor::processBlock(
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, num_samples);
 
-    juce::AudioBuffer<float> mono_buffer(1, num_samples);
-    mono_buffer.clear();
-
-    if (totalNumInputChannels == 1)
+    // Overwrite left channel of buffer with mono signal
+    if (totalNumInputChannels >= 2)
     {
-        mono_buffer.copyFrom(0, 0, buffer, 0, 0, num_samples);
-    }
-    else if (totalNumInputChannels >= 2)
-    {
-        // Stereo input → average the two channels
         auto* left = buffer.getReadPointer(0);
         auto* right = buffer.getReadPointer(1);
-        auto* mono = mono_buffer.getWritePointer(0);
+        auto* mono_left = buffer.getWritePointer(0);
+        auto* mono_right = buffer.getWritePointer(1);
 
         for (int i = 0; i < num_samples; ++i)
-            mono[i] = 0.5f * (left[i] + right[i]);
+        {
+            mono_left[i] = left[i] + right[i];
+            mono_right[i] = 0.0f;
+        }
     }
+
+    juce::dsp::AudioBlock<float> block(buffer);
+    juce::dsp::ProcessContextReplacing<float> context(block);
 
     current_input_gain.setTargetValue(
         juce::Decibels::decibelsToGain(input_gain_parameter->load())
     );
-    current_input_gain.applyGain(mono_buffer, num_samples);
-    updateInputLevel(mono_buffer);
+    current_input_gain.applyGain(buffer, num_samples);
+    updateInputLevel(buffer);
 
-    compressor.process(mono_buffer);
-    compressorGainReductionDb.setValue(compressor.getGainReductionDb());
+    if (compressor_bypass_parameter->load() < 0.5f)
+    {
+        compressor.process(buffer);
+        compressorGainReductionDb.setValue(compressor.getGainReductionDb());
+    }
 
-    if (auto* od = current_overdrive.load())
-        od->process(mono_buffer);
+    if (amp_bypass_parameter->load() < 0.5f)
+    {
+        if (auto* od = current_overdrive.load())
+            od->process(context);
+        
+        amp_eq.process(buffer);
 
-    amp_eq.process(mono_buffer);
+        current_amp_master_gain.setTargetValue(
+            juce::Decibels::decibelsToGain(amp_master_gain_parameter->load())
+        );
+        current_amp_master_gain.applyGain(buffer, num_samples);
+    }
 
-    current_amp_master_gain.setTargetValue(
-        juce::Decibels::decibelsToGain(amp_master_gain_parameter->load())
-    );
-    if (!isAmpBypassed)
-        current_amp_master_gain.applyGain(mono_buffer, num_samples);
-
-    irConvolver.process(mono_buffer);
+    if (ir_bypass_parameter->load() < 0.5f)
+        irConvolver.process(context);
 
     current_output_gain.setTargetValue(
         juce::Decibels::decibelsToGain(output_gain_parameter->load())
     );
-    current_output_gain.applyGain(mono_buffer, num_samples);
-    updateOutputLevel(mono_buffer);
+    current_output_gain.applyGain(buffer, num_samples);
+    updateOutputLevel(buffer);
 
-    for (int channel = 0; channel < totalNumOutputChannels; ++channel)
-        buffer.copyFrom(channel, 0, mono_buffer, 0, 0, num_samples);
+    buffer.copyFrom(1, 0, buffer, 0, 0, buffer.getNumSamples());
 }
 
 //==============================================================================

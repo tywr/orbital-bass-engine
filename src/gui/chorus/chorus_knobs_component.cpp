@@ -1,8 +1,8 @@
+#include "chorus_knobs_component.h"
 #include "../colours.h"
 #include "../looks/compressor_look_and_feel.h"
 #include "../looks/compressor_selector_look_and_feel.h"
 #include "chorus_dimensions.h"
-#include "chorus_knobs_component.h"
 
 ChorusKnobsComponent::ChorusKnobsComponent(
     juce::AudioProcessorValueTreeState& params
@@ -44,23 +44,17 @@ void ChorusKnobsComponent::paint(juce::Graphics& g)
 void ChorusKnobsComponent::resized()
 {
 
-    int const limit = 3;
     auto bounds = getLocalBounds();
-    auto top_bounds =
-        bounds.removeFromTop(ChorusDimensions::KNOBS_TOP_BOX_HEIGHT);
-    auto label_bounds =
-        top_bounds.removeFromTop(ChorusDimensions::LABEL_HEIGHT);
-    const int knob_box_size = bounds.getWidth() / limit;
-
-    for (size_t i = 0; i < limit; ++i)
+    auto label_bounds = bounds.removeFromTop(ChorusDimensions::LABEL_HEIGHT);
+    const int knob_box_size = bounds.getWidth() / knobs.size();
+    for (auto knob : knobs)
     {
-        ChorusKnob knob = knobs[i];
         knob.label->setBounds(label_bounds.removeFromLeft(knob_box_size)
                                   .withSizeKeepingCentre(
                                       ChorusDimensions::KNOB_SIZE,
-                                      ChorusDimensions::KNOB_SIZE
+                                      ChorusDimensions::LABEL_HEIGHT
                                   ));
-        knob.slider->setBounds(top_bounds.removeFromLeft(knob_box_size)
+        knob.slider->setBounds(bounds.removeFromLeft(knob_box_size)
                                    .withSizeKeepingCentre(
                                        ChorusDimensions::KNOB_SIZE,
                                        ChorusDimensions::KNOB_SIZE

@@ -3,11 +3,14 @@
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_dsp/juce_dsp.h>
 
-class IRConvolver
+class IRConvolver : juce::dsp::ProcessorBase
 {
   public:
     void prepare(const juce::dsp::ProcessSpec& spec);
-    void process(juce::AudioBuffer<float>& buffer);
+    void process(
+        const juce::dsp::ProcessContextReplacing<float>& context
+    ) override;
+    void reset() override;
     void resetSmoothedValues();
 
     void loadIR();
@@ -24,10 +27,6 @@ class IRConvolver
         level.setTargetValue(v);
         raw_level = v;
     }
-    void setBypass(bool newBypass)
-    {
-        bypass = newBypass;
-    }
     void setTypeFromIndex(int index)
     {
         type = index;
@@ -39,10 +38,10 @@ class IRConvolver
 
   private:
     juce::dsp::ProcessSpec processSpec{-1, 0, 0};
+    juce::AudioBuffer<float> dry_buffer;
 
     // GUI Parameters
     bool is_ir_loaded = false;
-    bool bypass = false;
     juce::String filepath;
 
     float smoothing_time = 0.05f;

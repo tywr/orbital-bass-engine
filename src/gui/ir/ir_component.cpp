@@ -17,7 +17,7 @@ IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
     addAndMakeVisible(bypassButton);
     bypassButton.setButtonText("bypass");
     bypassButton.setColour(
-        juce::ToggleButton::tickColourId, ColourCodes::grey3
+        juce::ToggleButton::tickColourId, GuiColours::DEFAULT_INACTIVE_COLOUR
     );
     bypassButton.setColour(
         juce::ToggleButton::tickDisabledColourId, ColourCodes::white0
@@ -28,21 +28,22 @@ IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
             parameters, "ir_bypass", bypassButton
         );
 
-    addAndMakeVisible(type_display_label);
+    addAndMakeVisible(type_display);
+    type_display.setFont(juce::Font("Oxanium", 24.0f, juce::Font::plain), true);
+    type_display.setJustification(juce::Justification::centred);
+    type_display.setColour(ColourCodes::grey3);
     auto* parameter = parameters.getParameter("ir_type");
-    type_display_label_attachment = std::make_unique<juce::ParameterAttachment>(
+    type_display_attachment = std::make_unique<juce::ParameterAttachment>(
         *parameter,
         [this, parameter](float new_value)
         {
             juce::StringArray values = parameter->getAllValueStrings();
             juce::String text = values[(int)new_value];
-
-            type_display_label.setText(text, juce::dontSendNotification);
+            type_display.setText(text);
+            repaint();
         }
     );
-    type_display_label_attachment->sendInitialUpdate();
-    // juce::Value ir_type_value = parameters.getParameterAsValue("ir_type");
-    // type_display_label.getTextValue().referTo(ir_type_value);
+    type_display_attachment->sendInitialUpdate();
 
     for (auto knob : knobs)
     {
@@ -55,7 +56,7 @@ IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
             IRDimensions::KNOB_SIZE
         );
         knob.slider->setColour(
-            juce::Slider::rotarySliderFillColourId, ColourCodes::white0
+            juce::Slider::rotarySliderFillColourId, ColourCodes::grey3
         );
         slider_attachments.push_back(
             std::make_unique<
@@ -74,16 +75,43 @@ IRComponent::~IRComponent()
 
 void IRComponent::paint(juce::Graphics& g)
 {
-    auto bounds =
+    bool bypass = bypassButton.getToggleState();
+    juce::Colour colour;
+    if (!bypass)
+    {
+        colour = ColourCodes::white0;
+    }
+    else
+    {
+        colour = GuiColours::DEFAULT_INACTIVE_COLOUR;
+    }
+    auto outer_bounds =
         getLocalBounds()
             .withSizeKeepingCentre(IRDimensions::WIDTH, IRDimensions::HEIGHT)
             .toFloat();
+    auto inner_bounds =
+        outer_bounds.reduced(IRDimensions::BORDER_THICKNESS).toFloat();
+
     g.setColour(ColourCodes::bg0);
-    g.fillRoundedRectangle(bounds, IRDimensions::CORNER_RADIUS);
-    g.setColour(current_colour);
-    g.drawRoundedRectangle(
-        bounds, IRDimensions::CORNER_RADIUS, IRDimensions::BORDER_THICKNESS
+    g.fillRoundedRectangle(inner_bounds, IRDimensions::CORNER_RADIUS);
+
+    juce::Path border_path;
+    border_path.addRoundedRectangle(
+        outer_bounds,
+        IRDimensions::CORNER_RADIUS + IRDimensions::BORDER_THICKNESS
     );
+    border_path.addRoundedRectangle(inner_bounds, IRDimensions::CORNER_RADIUS);
+    border_path.setUsingNonZeroWinding(false);
+    g.setColour(colour);
+    g.fillPath(border_path);
+
+    auto right_bounds =
+        inner_bounds.removeFromRight(IRDimensions::SIDE_WIDTH)
+            .withSizeKeepingCentre(
+                IRDimensions::IR_LABEL_WIDTH, IRDimensions::IR_LABEL_HEIGHT
+            );
+    type_display.setBoundingBox(right_bounds);
+    type_display.draw(g, 1.0f);
 }
 
 void IRComponent::resized()
@@ -120,9 +148,8 @@ void IRComponent::resized()
     ));
 
     auto right_bounds = bounds.removeFromRight(IRDimensions::SIDE_WIDTH);
-    type_display_label.setBounds(right_bounds.withSizeKeepingCentre(
-        IRDimensions::IR_TYPE_BUTTONS_HEIGHT,
-        IRDimensions::IR_TYPE_BUTTONS_HEIGHT
+    type_display.setBounds(right_bounds.withSizeKeepingCentre(
+        IRDimensions::IR_LABEL_WIDTH, IRDimensions::IR_LABEL_HEIGHT
     ));
 }
 
@@ -130,18 +157,19 @@ void IRComponent::switchColour()
 {
     if (bypassButton.getToggleState())
     {
-        current_colour = ColourCodes::grey3;
+        current_colour = GuiColours::DEFAULT_INACTIVE_COLOUR;
     }
     else
     {
         current_colour = ColourCodes::white0;
     }
-    ir_mix_slider.setColour(
-        juce::Slider::rotarySliderFillColourId, current_colour
-    );
-    gain_slider.setColour(
-        juce::Slider::rotarySliderFillColourId, current_colour
-    );
+    for (auto knob : knobs)
+    {
+        knob.slider->setColour(
+            juce::Slider::rotarySliderFillColourId, current_colour
+        );
+    }
+    type_display.setColour(current_colour);
     repaint();
 }
 

@@ -54,9 +54,8 @@ class IRComponent : public juce::Component
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         type_slider_attachment;
 
-    juce::Label type_display_label;
-    std::unique_ptr<juce::ParameterAttachment>
-        type_display_label_attachment;
+    juce::DrawableText type_display;
+    std::unique_ptr<juce::ParameterAttachment> type_display_attachment;
 
     std::vector<
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>>

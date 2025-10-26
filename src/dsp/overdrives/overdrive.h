@@ -1,20 +1,9 @@
 #pragma once
 #include <juce_dsp/juce_dsp.h>
 
-class Overdrive
+class Overdrive : public juce::dsp::ProcessorBase
 {
   public:
-    virtual void prepare(const juce::dsp::ProcessSpec& spec)
-    {
-        juce::ignoreUnused(spec);
-    }
-    virtual void process(juce::AudioBuffer<float>& buffer)
-    {
-        juce::ignoreUnused(buffer);
-    }
-    virtual void reset()
-    {
-    }
     void virtual setAttack(float newAttack)
     {
         float v = juce::jlimit(0.0f, 10.0f, newAttack);
@@ -80,7 +69,7 @@ class Overdrive
     }
 
   protected:
-    juce::dsp::ProcessSpec processSpec{-1, 0, 0};
+    juce::dsp::ProcessSpec process_spec{44100.0f, 512, 2};
     float smoothing_time = 0.05f;
 
     // gui parameters

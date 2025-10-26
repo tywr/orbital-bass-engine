@@ -9,8 +9,12 @@
 class HeliosOverdrive : public Overdrive
 {
   public:
+    void process(
+        const juce::dsp::ProcessContextReplacing<float>& context
+    ) override;
+    void processVMT(const juce::dsp::ProcessContextReplacing<float>& context);
+    void processB3K(const juce::dsp::ProcessContextReplacing<float>& context);
     void prepare(const juce::dsp::ProcessSpec& spec) override;
-    void process(juce::AudioBuffer<float>& buffer) override;
     void reset() override;
     void resetSmoothedValues();
     void resetFilters();
@@ -23,10 +27,15 @@ class HeliosOverdrive : public Overdrive
     void prepareFilters();
 
   private:
-    juce::dsp::IIR::Filter<float> pre_hpf;
+    juce::AudioBuffer<float> b3k_buffer;
+    juce::AudioBuffer<float> vmt_buffer;
+
+    juce::dsp::IIR::Filter<float> vmt_pre_hpf;
+    juce::dsp::IIR::Filter<float> b3k_pre_hpf;
     float pre_hpf_cutoff = 50.0f;
 
-    juce::dsp::IIR::Filter<float> pre_lpf;
+    juce::dsp::IIR::Filter<float> vmt_pre_lpf;
+    juce::dsp::IIR::Filter<float> b3k_pre_lpf;
     float pre_lpf_cutoff = 1540.0f;
 
     juce::dsp::IIR::Filter<float> era_filter;
@@ -61,8 +70,6 @@ class HeliosOverdrive : public Overdrive
 
     CMOS cmos = CMOS();
     CMOS cmos2 = CMOS();
-    // CMOS2 cmos = CMOS2();
-    // CMOS2 cmos2 = CMOS2();
 
     juce::dsp::Oversampling<float> oversampler2x{
         2, 2,

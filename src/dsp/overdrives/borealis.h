@@ -10,7 +10,9 @@ class BorealisOverdrive : public Overdrive
 {
   public:
     void prepare(const juce::dsp::ProcessSpec& spec) override;
-    void process(juce::AudioBuffer<float>& buffer) override;
+    void process(
+        const juce::dsp::ProcessContextReplacing<float>& context
+    ) override;
     void reset() override;
     void resetSmoothedValues();
     void resetFilters();

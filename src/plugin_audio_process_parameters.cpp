@@ -2,11 +2,7 @@
 
 void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
 {
-    if (parameterID == "compressor_bypass")
-    {
-        compressor.setBypass(v >= 0.5f);
-    }
-    else if (parameterID == "compressor_ratio")
+    if (parameterID == "compressor_ratio")
     {
         const float values[] = {2.0f, 4.0f, 8.0f, 12.0f, 20.0f};
         int index = static_cast<int>(v);
@@ -41,15 +37,6 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
         }
     }
     // Overdrive
-    if (parameterID == "amp_bypass")
-    {
-        isAmpBypassed = (v >= 0.5f);
-        amp_eq.setBypass(v >= 0.5f);
-        for (auto& overdrive : overdrives)
-        {
-            overdrive->setBypass(v >= 0.5f);
-        }
-    }
     else if (parameterID == "overdrive_mix")
     {
         float bv = juce::jlimit(0.0f, 1.0f, v);
@@ -121,10 +108,6 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
         amp_eq.setTrebleGain(juce::Decibels::decibelsToGain(v));
     }
     // Chorus
-    else if (parameterID == "chorus_bypass")
-    {
-        // chorus.setBypass((v >= 0.5f) ? true : false);
-    }
     else if (parameterID == "chorus_mix")
     {
         // float bv = juce::jlimit(0.0f, 1.0f, v);
@@ -141,10 +124,6 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
         // chorus.setDepth(bv);
     }
     // Impulse Response Convolver
-    else if (parameterID == "ir_bypass")
-    {
-        irConvolver.setBypass((v >= 0.5f) ? true : false);
-    }
     else if (parameterID == "ir_mix")
     {
         float bv = juce::jlimit(0.0f, 1.0f, v);

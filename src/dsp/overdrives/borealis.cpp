@@ -26,18 +26,15 @@ void BorealisOverdrive::resetFilters()
 
 void BorealisOverdrive::resetSmoothedValues()
 {
-    float sample_rate = static_cast<float>(processSpec.sampleRate);
-    sample_rate = std::max(1.0f, sample_rate);
-
-    level.reset(sample_rate, smoothing_time);
+    level.reset(process_spec.sampleRate, smoothing_time);
     level.setCurrentAndTargetValue(raw_level);
-    drive.reset(sample_rate, smoothing_time);
+    drive.reset(process_spec.sampleRate, smoothing_time);
     drive.setCurrentAndTargetValue(raw_drive);
-    mix.reset(sample_rate, smoothing_time);
+    mix.reset(process_spec.sampleRate, smoothing_time);
     mix.setCurrentAndTargetValue(raw_mix);
-    cross_frequency.reset(sample_rate, smoothing_time);
+    cross_frequency.reset(process_spec.sampleRate, smoothing_time);
     cross_frequency.setCurrentAndTargetValue(raw_cross_frequency);
-    bass_frequency.reset(sample_rate, smoothing_time);
+    bass_frequency.reset(process_spec.sampleRate, smoothing_time);
     bass_frequency.setCurrentAndTargetValue(raw_bass_frequency);
 }
 
@@ -45,7 +42,7 @@ void BorealisOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
 {
     juce::dsp::ProcessSpec oversampled_spec = spec;
     oversampled_spec.sampleRate *= 2.0;
-    processSpec = oversampled_spec;
+    process_spec = oversampled_spec;
 
     oversampler2x.reset();
     oversampler2x.initProcessing(static_cast<size_t>(spec.maximumBlockSize));
@@ -54,10 +51,10 @@ void BorealisOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
 
     prepareFilters();
 
-    x_hpf.prepare(processSpec);
+    x_hpf.prepare(process_spec);
     updateXFilter();
 
-    bass_lpf.prepare(processSpec);
+    bass_lpf.prepare(process_spec);
     updateLowFilter();
 
     diode = GermaniumDiode(oversampled_spec.sampleRate);
@@ -65,45 +62,45 @@ void BorealisOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
 
 void BorealisOverdrive::prepareFilters()
 {
-    pre_hpf.prepare(processSpec);
+    pre_hpf.prepare(process_spec);
     auto pre_hpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeHighPass(
-            processSpec.sampleRate, pre_hpf_cutoff
+            process_spec.sampleRate, pre_hpf_cutoff
         );
     *pre_hpf.coefficients = *pre_hpf_coefficients;
 
-    pre_lpf.prepare(processSpec);
+    pre_lpf.prepare(process_spec);
     auto pre_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, pre_lpf_cutoff
+            process_spec.sampleRate, pre_lpf_cutoff
         );
     *pre_lpf.coefficients = *pre_lpf_coefficients;
 
-    lowmids_lpf.prepare(processSpec);
+    lowmids_lpf.prepare(process_spec);
     auto lowmids_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, lowmids_lpf_cutoff
+            process_spec.sampleRate, lowmids_lpf_cutoff
         );
     *lowmids_lpf.coefficients = *lowmids_lpf_coefficients;
 
-    post_lpf.prepare(processSpec);
+    post_lpf.prepare(process_spec);
     auto post_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, post_lpf_cutoff
+            process_spec.sampleRate, post_lpf_cutoff
         );
     *post_lpf.coefficients = *post_lpf_coefficients;
 
-    post_lpf2.prepare(processSpec);
+    post_lpf2.prepare(process_spec);
     auto post_lpf2_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, post_lpf2_cutoff
+            process_spec.sampleRate, post_lpf2_cutoff
         );
     *post_lpf2.coefficients = *post_lpf2_coefficients;
 
-    post_lpf3.prepare(processSpec);
+    post_lpf3.prepare(process_spec);
     auto post_lpf3_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            processSpec.sampleRate, post_lpf3_cutoff
+            process_spec.sampleRate, post_lpf3_cutoff
         );
     *post_lpf3.coefficients = *post_lpf3_coefficients;
 }
@@ -112,7 +109,7 @@ void BorealisOverdrive::updateXFilter()
 {
     float current_x_frequency = std::max(cross_frequency.getNextValue(), 1.0f);
     auto x_coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(
-        processSpec.sampleRate, current_x_frequency
+        process_spec.sampleRate, current_x_frequency
     );
     *x_hpf.coefficients = *x_coefficients;
 }
@@ -122,7 +119,7 @@ void BorealisOverdrive::updateLowFilter()
     float current_bass_frequency =
         std::max(bass_frequency.getNextValue(), 1.0f);
     auto bass_coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(
-        processSpec.sampleRate, current_bass_frequency
+        process_spec.sampleRate, current_bass_frequency
     );
     *bass_lpf.coefficients = *bass_coefficients;
 }
@@ -138,17 +135,21 @@ float BorealisOverdrive::driveToGain(float d)
     return gain;
 }
 
-void BorealisOverdrive::process(juce::AudioBuffer<float>& buffer)
+void BorealisOverdrive::process(
+    const juce::dsp::ProcessContextReplacing<float>& context
+)
 {
+    auto& block = context.getOutputBlock();
+
     if (bypass)
     {
         return;
     }
-    juce::dsp::AudioBlock<float> block(buffer);
-    auto oversampledBlock = oversampler2x.processSamplesUp(block);
 
-    auto* channelData = oversampledBlock.getChannelPointer(0);
-    for (size_t i = 0; i < oversampledBlock.getNumSamples(); ++i)
+    auto oversampled_block = oversampler2x.processSamplesUp(block);
+
+    auto* ch = oversampled_block.getChannelPointer(0);
+    for (size_t i = 0; i < oversampled_block.getNumSamples(); ++i)
     {
         if (cross_frequency.isSmoothing())
             updateXFilter();
@@ -156,12 +157,12 @@ void BorealisOverdrive::process(juce::AudioBuffer<float>& buffer)
         if (bass_frequency.isSmoothing())
             updateLowFilter();
 
-        float dry = channelData[i];
-        float wet = channelData[i];
+        float dry = ch[i];
+        float wet = ch[i];
         applyOverdrive(wet);
 
         float current_mix = mix.getNextValue();
-        channelData[i] = wet * current_mix + dry * (1.0f - current_mix);
+        ch[i] = wet * current_mix + dry * (1.0f - current_mix);
     }
     oversampler2x.processSamplesDown(block);
 }
