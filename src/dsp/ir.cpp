@@ -50,7 +50,7 @@ void IRConvolver::process(
     {
         auto* dry = dry_block.getChannelPointer(ch);
         auto* wet = block.getChannelPointer(ch);
-        level.applyGain(wet, num_samples);
+        level.applyGain(wet, (int)num_samples);
 
         for (size_t i = 0; i < num_samples; ++i)
         {

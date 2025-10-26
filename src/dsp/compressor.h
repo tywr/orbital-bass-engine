@@ -3,27 +3,24 @@
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_dsp/juce_dsp.h>
 
-class Compressor
+class Compressor : juce::dsp::ProcessorBase
 {
   public:
-    // Prepares compressor with a ProcessSpec-Object containing samplerate,
-    void applyLevel(juce::AudioBuffer<float>& buffer);
-    void prepare(const juce::dsp::ProcessSpec& spec);
-    void process(juce::AudioBuffer<float>& buffer);
+    void prepare(const juce::dsp::ProcessSpec& spec) override;
+    void process(
+        const juce::dsp::ProcessContextReplacing<float>& context
+    ) override;
+    void reset() override;
     void computeGainReductionOptometric(float& sample, float sampleRate);
     void computeGainReductionFet(float& sample, float sampleRate);
     void computeGainReductionVca(float& sample, float sampleRate);
-    void resetSmoothedValues();
+    void applyLevel(juce::AudioBuffer<float>& buffer);
 
     void setRatio(float newRatio)
     {
         float v = juce::jlimit(0.0f, 20.0f, newRatio);
         ratio.setTargetValue(v);
         raw_ratio = v;
-    }
-    void setBypass(bool newBypass)
-    {
-        bypass = newBypass;
     }
     void setMix(float newMix)
     {
@@ -60,9 +57,11 @@ class Compressor
     juce::dsp::ProcessSpec processSpec{-1, 0, 0};
     int debugCounter = 0;
 
+    void (Compressor::*gainFunction)(float&, float) = nullptr;
+
     // gui parameters
     int type;
-    bool bypass;
+    int lastType = -1;
 
     float smoothing_time = 0.05f;
     float raw_mix, raw_level, raw_threshold_db, raw_ratio;
