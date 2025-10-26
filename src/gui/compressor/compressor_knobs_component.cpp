@@ -1,5 +1,6 @@
 #include "compressor_knobs_component.h"
 #include "../colours.h"
+#include "../components/solid_tooltip.h"
 #include "../looks/compressor_look_and_feel.h"
 #include "../looks/compressor_selector_look_and_feel.h"
 #include "compressor_dimensions.h"
@@ -9,7 +10,15 @@ CompressorKnobsComponent::CompressorKnobsComponent(
 )
     : parameters(params)
 {
-    // setLookAndFeel(new CompressorLookAndFeel());
+    drag_tooltip.setJustificationType(juce::Justification::centred);
+    drag_tooltip.setAlwaysOnTop(true);
+    drag_tooltip.setColour(
+        juce::Label::backgroundColourId, GuiColours::AMP_BG_COLOUR
+    );
+    addAndMakeVisible(drag_tooltip);
+    slider_being_dragged = false;
+    drag_tooltip.setVisible(false);
+
     type_slider.setLookAndFeel(&selector_look_and_feel);
     ratio_slider.setLookAndFeel(&selector_look_and_feel);
 
@@ -35,6 +44,46 @@ CompressorKnobsComponent::CompressorKnobsComponent(
                 parameters, knob.parameter_id, *knob.slider
             )
         );
+        knob.slider->onDragStart =
+            [this, slider = knob.slider, label = knob.label]()
+        {
+            slider_being_dragged = true;
+            drag_tooltip.setVisible(false);
+            // delay using a Timer
+            juce::Timer::callAfterDelay(
+                300,
+                [this, slider, label]()
+                {
+                    if (slider->isMouseButtonDown())
+                    {
+                        drag_tooltip.setText(
+                            juce::String(slider->getValue(), 2),
+                            juce::dontSendNotification
+                        );
+                        drag_tooltip.setBounds(
+                            label->getX(), label->getY(), label->getWidth(),
+                            label->getHeight()
+                        );
+                        drag_tooltip.toFront(true);
+                        drag_tooltip.setVisible(true);
+                        drag_tooltip.repaint();
+                    }
+                }
+            );
+        };
+        knob.slider->onDragEnd = [this]()
+        {
+            slider_being_dragged = false;
+            drag_tooltip.setVisible(false);
+        };
+        knob.slider->onValueChange = [this, slider = knob.slider]()
+        {
+            if (slider_being_dragged && drag_tooltip.isVisible())
+                drag_tooltip.setText(
+                    juce::String(slider->getValue(), 2),
+                    juce::dontSendNotification
+                );
+        };
     }
     type_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, 20);
     ratio_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, 20);
@@ -66,7 +115,7 @@ void CompressorKnobsComponent::resized()
         knob.label->setBounds(label_bounds.removeFromLeft(knob_box_size)
                                   .withSizeKeepingCentre(
                                       CompressorDimensions::KNOB_SIZE,
-                                      CompressorDimensions::KNOB_SIZE
+                                      CompressorDimensions::LABEL_HEIGHT
                                   ));
         knob.slider->setBounds(top_bounds.removeFromLeft(knob_box_size)
                                    .withSizeKeepingCentre(
@@ -88,7 +137,7 @@ void CompressorKnobsComponent::resized()
                                   .removeFromLeft(bottom_knob_box_size)
                                   .withSizeKeepingCentre(
                                       CompressorDimensions::KNOB_SIZE,
-                                      CompressorDimensions::KNOB_SIZE
+                                      CompressorDimensions::LABEL_HEIGHT
                                   ));
         knob.slider->setBounds(bottom_bounds
                                    .removeFromLeft(bottom_knob_box_size)

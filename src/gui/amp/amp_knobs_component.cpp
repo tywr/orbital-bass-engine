@@ -86,7 +86,6 @@ void AmpKnobsComponent::switchType(AmpType new_type)
         addAndMakeVisible(knob.label);
         knob.label->setText(knob.label_text, juce::dontSendNotification);
         knob.label->setJustificationType(juce::Justification::centred);
-        // knob.label->attachToComponent(knob.slider, false);
         knob.slider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
         knob.slider->setTextBoxStyle(juce::Slider::NoTextBox, false, 70, 20);
         slider_attachments.push_back(

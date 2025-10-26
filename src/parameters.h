@@ -1,6 +1,7 @@
 #include <juce_dsp/juce_dsp.h>
 
-inline juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
+inline juce::AudioProcessorValueTreeState::ParameterLayout
+createParameterLayout()
 {
     return {
         std::make_unique<juce::AudioParameterFloat>(
@@ -22,7 +23,7 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "compressor_threshold", "Compressor Treshold",
-            juce::NormalisableRange<float>(-60.0f, 0.0f, 0.1f, 3.0f), -12.0f
+            juce::NormalisableRange<float>(-48.0f, 0.0f, 0.1f), -24.0f
         ),
         std::make_unique<juce::AudioParameterChoice>(
             "compressor_ratio", "Ratio",
@@ -56,7 +57,7 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "overdrive_drive", "Overdrive Drive",
-            juce::NormalisableRange<float>(0.0, 10.0f, 0.1f, 1.0f), 0.0f
+            juce::NormalisableRange<float>(0.0, 10.0f, 0.1f, 1.0f), 5.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "overdrive_attack", "Overdrive Attack",
