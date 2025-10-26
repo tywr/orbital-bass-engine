@@ -203,7 +203,6 @@ void HeliosOverdrive::updateAttackFilter()
 
 void HeliosOverdrive::updateDriveFilter()
 {
-    // float current_grunt = grunt.getCurrentValue();
     float current_drive = drive.getCurrentValue();
     float drive_filter_q = 0.7f;
 
@@ -233,7 +232,6 @@ void HeliosOverdrive::process(
     auto& block = context.getOutputBlock();
     auto oversampled_block = oversampler2x.processSamplesUp(block);
 
-    const size_t num_channels = oversampled_block.getNumChannels();
     const size_t num_samples = oversampled_block.getNumSamples();
 
     if (attack.isSmoothing())
@@ -247,10 +245,6 @@ void HeliosOverdrive::process(
         updateDriveFilter();
     }
 
-    // vmt_buffer.setSize((int)num_channels, (int)num_samples, false, false,
-    // true);
-    // b3k_buffer.setSize((int)num_channels, (int)num_samples, false,
-    // false, true);
     juce::dsp::AudioBlock<float> vmt_block(vmt_buffer);
     juce::dsp::AudioBlock<float> b3k_block(b3k_buffer);
     auto vmt_sub = vmt_block.getSubBlock(0, num_samples);
