@@ -101,50 +101,46 @@ void CompressorKnobsComponent::paint(juce::Graphics& g)
 void CompressorKnobsComponent::resized()
 {
 
-    int const limit = 3;
     auto bounds = getLocalBounds();
-    auto top_bounds =
-        bounds.removeFromTop(CompressorDimensions::KNOBS_TOP_BOX_HEIGHT);
-    auto label_bounds =
-        top_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT);
-    const int knob_box_size = bounds.getWidth() / limit;
+    int left_size = (int)(0.75f * bounds.getWidth());
+    auto left_bounds = bounds.removeFromLeft(left_size).withSizeKeepingCentre(
+        left_size, CompressorDimensions::KNOBS_INNER_BOX_HEIGHT
+    );
+    auto left_label_bounds =
+        left_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT);
+    const int knob_box_size = left_bounds.getWidth() / 3;
 
-    for (size_t i = 0; i < limit; ++i)
+    for (size_t i = 0; i < 3; ++i)
     {
         CompressorKnob knob = knobs[i];
-        knob.label->setBounds(label_bounds.removeFromLeft(knob_box_size)
+        knob.label->setBounds(left_label_bounds.removeFromLeft(knob_box_size)
                                   .withSizeKeepingCentre(
                                       CompressorDimensions::KNOB_SIZE,
                                       CompressorDimensions::LABEL_HEIGHT
                                   ));
-        knob.slider->setBounds(top_bounds.removeFromLeft(knob_box_size)
+        knob.slider->setBounds(left_bounds.removeFromLeft(knob_box_size)
                                    .withSizeKeepingCentre(
                                        CompressorDimensions::KNOB_SIZE,
                                        CompressorDimensions::KNOB_SIZE
                                    ));
     }
 
-    auto bottom_knob_box_size = bounds.getWidth() / ((int)knobs.size() - limit);
-    auto bottom_bounds =
-        bounds.removeFromBottom(CompressorDimensions::KNOBS_BOTTOM_BOX_HEIGHT);
-    auto label_bottom_bounds =
-        bottom_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT);
-
-    for (size_t i = limit; i < knobs.size(); ++i)
+    const int knob_box_height = bounds.getHeight() / 2;
+    for (size_t i = 3; i < 5; ++i)
     {
+        auto knob_bounds = bounds.removeFromTop(knob_box_height);
         CompressorKnob knob = knobs[i];
-        knob.label->setBounds(label_bottom_bounds
-                                  .removeFromLeft(bottom_knob_box_size)
-                                  .withSizeKeepingCentre(
-                                      CompressorDimensions::KNOB_SIZE,
-                                      CompressorDimensions::LABEL_HEIGHT
-                                  ));
-        knob.slider->setBounds(bottom_bounds
-                                   .removeFromLeft(bottom_knob_box_size)
-                                   .withSizeKeepingCentre(
-                                       CompressorDimensions::SMALL_KNOB_SIZE,
-                                       CompressorDimensions::SMALL_KNOB_SIZE
-                                   ));
+        knob.label->setBounds(
+            knob_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT)
+                .withSizeKeepingCentre(
+                    CompressorDimensions::KNOB_SIZE,
+                    CompressorDimensions::LABEL_HEIGHT
+                )
+        );
+        knob.slider->setBounds(knob_bounds.withSizeKeepingCentre(
+            CompressorDimensions::SMALL_KNOB_SIZE,
+            CompressorDimensions::SMALL_KNOB_SIZE
+        ));
     }
 }
 

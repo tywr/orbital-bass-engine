@@ -50,6 +50,7 @@ void CompressorComponent::paint(juce::Graphics& g)
         colour2 = GuiColours::DEFAULT_INACTIVE_COLOUR;
     }
     float border_thickness = CompressorDimensions::BORDER_THICKNESS;
+    float meter_border_thickness = CompressorDimensions::METER_BORDER_THICKNESS;
     float border_radius = CompressorDimensions::BORDER_RADIUS;
 
     auto outer_bounds =
@@ -83,15 +84,31 @@ void CompressorComponent::paint(juce::Graphics& g)
     auto bounds = getLocalBounds().withSizeKeepingCentre(
         CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
     );
-    bounds.removeFromBottom(CompressorDimensions::FOOTER_HEIGHT);
+    bounds.removeFromRight(CompressorDimensions::SIDE_WIDTH / 2);
     auto meter_bounds =
-        bounds.removeFromBottom(CompressorDimensions::GAIN_REDUCTION_HEIGHT)
+        bounds.removeFromRight(CompressorDimensions::GAIN_REDUCTION_WIDTH)
             .withSizeKeepingCentre(
                 CompressorDimensions::GAIN_REDUCTION_WIDTH,
                 CompressorDimensions::GAIN_REDUCTION_HEIGHT
-            );
-    g.setColour(ColourCodes::bg1);
-    g.fillRect(meter_bounds);
+            )
+            .expanded((int)meter_border_thickness, (int)meter_border_thickness)
+            .toFloat();
+    juce::Path meter_border_path;
+    meter_border_path.addRoundedRectangle(
+        meter_bounds, border_radius + meter_border_thickness
+    );
+    meter_border_path.addRoundedRectangle(
+        meter_bounds.reduced(meter_border_thickness, meter_border_thickness),
+        border_radius
+    );
+    meter_border_path.setUsingNonZeroWinding(false);
+
+    juce::ColourGradient meter_border_gradient(
+        colour1, meter_bounds.getTopLeft(), colour2,
+        meter_bounds.getBottomLeft(), false
+    );
+    g.setGradientFill(meter_border_gradient);
+    g.fillPath(meter_border_path);
 }
 
 void CompressorComponent::resized()
@@ -99,23 +116,27 @@ void CompressorComponent::resized()
     auto bounds = getLocalBounds().withSizeKeepingCentre(
         CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
     );
+    bounds.removeFromRight(CompressorDimensions::SIDE_WIDTH / 2);
     bypass_button.setBounds(
-        bounds.removeFromBottom(CompressorDimensions::FOOTER_HEIGHT)
+        bounds.removeFromLeft(CompressorDimensions::SIDE_WIDTH)
             .withSizeKeepingCentre(
-                CompressorDimensions::BYPASS_BUTTON_WIDTH,
-                CompressorDimensions::BYPASS_BUTTON_HEIGHT
+                CompressorDimensions::BYPASS_SIZE,
+                CompressorDimensions::BYPASS_SIZE
             )
     );
     meter_component.setBounds(
-        bounds.removeFromBottom(CompressorDimensions::GAIN_REDUCTION_HEIGHT)
+        bounds.removeFromRight(CompressorDimensions::GAIN_REDUCTION_WIDTH)
+            .withSizeKeepingCentre(
+                CompressorDimensions::GAIN_REDUCTION_WIDTH,
+                CompressorDimensions::GAIN_REDUCTION_HEIGHT
+
+            )
     );
-    title_label.setBounds(
-        bounds.removeFromBottom(CompressorDimensions::TITLE_LABEL_HEIGHT)
+    knobs_component.setBounds(
+        bounds.removeFromLeft(CompressorDimensions::KNOBS_BOX_WIDTH)
+            .withSizeKeepingCentre(
+                CompressorDimensions::KNOBS_BOX_WIDTH,
+                CompressorDimensions::KNOBS_BOX_HEIGHT
+            )
     );
-    bounds.removeFromTop(CompressorDimensions::INNER_Y_TOP_PADDING);
-    knobs_component.setBounds(bounds.removeFromTop(
-        CompressorDimensions::KNOBS_TOP_BOX_HEIGHT +
-        CompressorDimensions::KNOBS_BOTTOM_BOX_HEIGHT +
-        CompressorDimensions::KNOBS_ROW_PADDING
-    ));
 }

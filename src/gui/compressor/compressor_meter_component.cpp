@@ -6,7 +6,7 @@ CompressorMeterComponent::CompressorMeterComponent(juce::Value& v)
     : gain_reduction_value(v)
 {
     setLookAndFeel(new CompressorLookAndFeel());
-    startTimerHz(60);
+    startTimerHz(120);
     addAndMakeVisible(gain_reduction_slider);
 
     gain_reduction_slider.setRange(0, 20.0f, 0.5f);
@@ -24,7 +24,7 @@ CompressorMeterComponent::~CompressorMeterComponent()
 
 void CompressorMeterComponent::timerCallback()
 {
-    float smoothing_factor = 0.3f;
+    float smoothing_factor = 0.05f;
     smoothed_meter_value +=
         (target_meter_value - smoothed_meter_value) * smoothing_factor;
     if (std::abs(target_meter_value - smoothed_meter_value) < 0.1f)

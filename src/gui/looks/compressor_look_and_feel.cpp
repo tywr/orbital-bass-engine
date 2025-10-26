@@ -1,4 +1,6 @@
 #include "compressor_look_and_feel.h"
+#include "../compressor/compressor_dimensions.h"
+#include <cmath>
 
 #include "../colours.h"
 #include <juce_gui_basics/juce_gui_basics.h>
@@ -78,7 +80,19 @@ void CompressorLookAndFeel::drawLinearSlider(
 )
 {
     juce::ignoreUnused(width, minSliderPos, maxSliderPos, style, slider);
-    int pos = static_cast<int>(sliderPos);
-    g.setColour(GuiColours::COMPRESSOR_ACTIVE_COLOUR_1);
-    g.fillRect(x, y, pos-x, height);
+    float offset = CompressorDimensions::METER_OFFSET_Y * (float)height;
+    float ratio = sliderPos / (float)width;
+    float alpha_degrees = CompressorDimensions::METER_START_ANGLE +
+                          CompressorDimensions::METER_ANGLE_RANGE * ratio;
+    float alpha = alpha_degrees * juce::MathConstants<float>::pi / 180.0f;
+
+    float length =
+        CompressorDimensions::METER_POINTER_LENGTH * (float)height + offset;
+    float x_anchor = (float)x + (float)width * 0.5f;
+    float y_anchor = (float)(y + height + offset);
+    float x_end = x_anchor + length * std::cos(alpha);
+    float y_end = y_anchor + length * std::sin(alpha);
+
+    g.setColour(slider.findColour(juce::Slider::rotarySliderFillColourId));
+    g.drawLine(x_anchor, y_anchor, x_end, y_end, 2.0f);
 }
