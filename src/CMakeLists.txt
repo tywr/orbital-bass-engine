@@ -24,7 +24,6 @@ juce_add_plugin(${PROJECT_NAME}
 
 target_sources(${PROJECT_NAME}
     PRIVATE
-        ../modules/rubberband/single/RubberBandSingle.cpp
         plugin_editor.cpp
         plugin_audio_processor.cpp
         plugin_audio_process_parameters.cpp
@@ -51,6 +50,8 @@ target_sources(${PROJECT_NAME}
         dsp/overdrives/helios.cpp
         dsp/overdrives/borealis.cpp
         dsp/amp_eq.cpp
+        dsp/chorus.cpp
+        # dsp/pitch_shifter.cpp
         )
 
 if(JUCE_BUILD_STANDALONE)

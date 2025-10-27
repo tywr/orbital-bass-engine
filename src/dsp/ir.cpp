@@ -26,6 +26,9 @@ void IRConvolver::resetSmoothedValues()
 void IRConvolver::prepare(const juce::dsp::ProcessSpec& spec)
 {
     processSpec = spec;
+    const size_t num_channels = spec.numChannels;
+    const size_t num_samples = spec.maximumBlockSize;
+    dry_buffer.setSize((int)num_channels, (int)num_samples, false, false, true);
     reset();
 }
 
@@ -42,7 +45,6 @@ void IRConvolver::process(
     auto& block = context.getOutputBlock();
     const size_t num_channels = block.getNumChannels();
     const size_t num_samples = block.getNumSamples();
-    dry_buffer.setSize((int)num_channels, (int)num_samples, false, false, true);
     juce::dsp::AudioBlock<float> dry_block(dry_buffer);
     dry_block.copyFrom(block);
     convolution.process(context);

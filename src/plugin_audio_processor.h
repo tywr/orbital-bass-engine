@@ -69,6 +69,8 @@ class PluginAudioProcessor final
     std::unordered_map<std::string, ParamHandler> parameterHandlers;
 
     Compressor compressor;
+    AmpEQ amp_eq;
+    IRConvolver irConvolver;
 
     std::atomic<Overdrive*> current_overdrive = nullptr;
     HeliosOverdrive helios_overdrive;
@@ -76,10 +78,6 @@ class PluginAudioProcessor final
     std::vector<Overdrive*> overdrives = {
         &helios_overdrive, &borealis_overdrive
     };
-
-    AmpEQ amp_eq;
-
-    IRConvolver irConvolver;
 
     float smoothing_time = 0.05f;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>
