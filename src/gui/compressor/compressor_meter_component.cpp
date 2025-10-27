@@ -6,7 +6,7 @@ CompressorMeterComponent::CompressorMeterComponent(juce::Value& v)
     : gain_reduction_value(v)
 {
     setLookAndFeel(new CompressorLookAndFeel());
-    startTimerHz(120);
+    startTimerHz(refresh_rate);
     addAndMakeVisible(gain_reduction_slider);
 
     gain_reduction_slider.setRange(0, 20.0f, 0.5f);
@@ -15,7 +15,7 @@ CompressorMeterComponent::CompressorMeterComponent(juce::Value& v)
     gain_reduction_slider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
 
     gain_reduction_value.addListener(this);
-    gain_reduction_value.setValue(0);
+    smoothed_value.reset(refresh_rate, smoothing_time);
 }
 
 CompressorMeterComponent::~CompressorMeterComponent()
@@ -24,15 +24,17 @@ CompressorMeterComponent::~CompressorMeterComponent()
 
 void CompressorMeterComponent::timerCallback()
 {
-    float smoothing_factor = 0.05f;
-    smoothed_meter_value +=
-        (target_meter_value - smoothed_meter_value) * smoothing_factor;
-    if (std::abs(target_meter_value - smoothed_meter_value) < 0.1f)
+    if (raw_value > smoothed_value.getCurrentValue())
     {
-        smoothed_meter_value = target_meter_value;
+        smoothed_value.setCurrentAndTargetValue(raw_value);
+    }
+    else
+    {
+        smoothed_value.setTargetValue(raw_value);
+        smoothed_value.getNextValue();
     }
     gain_reduction_slider.setValue(
-        smoothed_meter_value, juce::dontSendNotification
+        smoothed_value.getCurrentValue(), juce::dontSendNotification
     );
     // repaint();
 }
@@ -43,17 +45,18 @@ void CompressorMeterComponent::visibilityChanged()
         [this]
         {
             if (isShowing())
-                startTimerHz(60);
+                startTimerHz(refresh_rate);
             else
+            {
                 stopTimer();
+            }
         }
     );
 }
 
 void CompressorMeterComponent::valueChanged(juce::Value& v)
 {
-    float value = -1 * static_cast<float>(v.getValue());
-    target_meter_value = value;
+    raw_value = -1.0f * static_cast<float>(v.getValue());
 }
 
 void CompressorMeterComponent::paint(juce::Graphics& g)

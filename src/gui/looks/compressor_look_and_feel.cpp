@@ -81,7 +81,7 @@ void CompressorLookAndFeel::drawLinearSlider(
 {
     juce::ignoreUnused(width, minSliderPos, maxSliderPos, style, slider);
     float offset = CompressorDimensions::METER_OFFSET_Y * (float)height;
-    float ratio = sliderPos / (float)width;
+    float ratio = (float)(sliderPos - x) / width;
     float alpha_degrees = CompressorDimensions::METER_START_ANGLE +
                           CompressorDimensions::METER_ANGLE_RANGE * ratio;
     float alpha = alpha_degrees * juce::MathConstants<float>::pi / 180.0f;
@@ -94,5 +94,13 @@ void CompressorLookAndFeel::drawLinearSlider(
     float y_end = y_anchor + length * std::sin(alpha);
 
     g.setColour(slider.findColour(juce::Slider::rotarySliderFillColourId));
-    g.drawLine(x_anchor, y_anchor, x_end, y_end, 2.0f);
+    juce::Path p;
+    p.startNewSubPath(x_anchor, y_anchor);
+    p.lineTo(x_end, y_end);
+    g.strokePath(
+        p, juce::PathStrokeType(
+               2.0f, juce::PathStrokeType::JointStyle::curved,
+               juce::PathStrokeType::EndCapStyle::rounded
+           )
+    );
 }

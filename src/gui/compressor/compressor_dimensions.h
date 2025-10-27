@@ -14,6 +14,7 @@ constexpr float METER_OFFSET_Y = 0.5f;
 constexpr float METER_POINTER_LENGTH = 0.9f;
 constexpr int METER_START_ANGLE = 225;
 constexpr int METER_ANGLE_RANGE = 90;
+constexpr int METER_MARKER_LENGTH = 20;
 
 constexpr int KNOBS_BOX_WIDTH = 450;
 constexpr int KNOBS_BOX_HEIGHT = 200;

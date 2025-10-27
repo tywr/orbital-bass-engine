@@ -24,6 +24,7 @@ juce_add_plugin(${PROJECT_NAME}
 
 target_sources(${PROJECT_NAME}
     PRIVATE
+        ../modules/rubberband/single/RubberBandSingle.cpp
         plugin_editor.cpp
         plugin_audio_processor.cpp
         plugin_audio_process_parameters.cpp

@@ -14,6 +14,7 @@ class CompressorComponent : public juce::Component
 
     void resized() override;
     void paint(juce::Graphics&) override;
+    void paintMeter(juce::Graphics&, juce::Colour, juce::Colour);
     void visibilityChanged() override
     {
         meter_component.setVisible(isVisible());
