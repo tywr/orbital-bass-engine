@@ -44,13 +44,18 @@ class Chorus : juce::dsp::ProcessorBase
 
     size_t write_position;
     juce::dsp::Oscillator<float> lfo_left, lfo_right;
-    juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd> delay_line;
+    juce::dsp::DelayLine<
+        float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd>
+        delay_line;
 
     juce::dsp::IIR::Filter<float> pre_hpf;
     float pre_hpf_cutoff = 200.0f;
 
     juce::dsp::IIR::Filter<float> pre_lpf;
     float pre_lpf_cutoff = 3000.0f;
+
+    juce::dsp::IIR::Filter<float> bass_lpf;
+    float bass_lpf_cutoff = 200.0f;
 
     float base_delay_time = 0.007f;
     float max_delay_time = 0.05f;

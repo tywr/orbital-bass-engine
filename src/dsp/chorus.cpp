@@ -32,6 +32,13 @@ void Chorus::prepare(const juce::dsp::ProcessSpec& spec)
     );
     *pre_lpf.coefficients = *lpf_coefficients;
 
+    bass_lpf.prepare(spec);
+    auto bass_lpf_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeLowPass(
+            spec.sampleRate, bass_lpf_cutoff, 0.707f
+        );
+    *bass_lpf.coefficients = *bass_lpf_coefficients;
+
     lfo_right.prepare(spec);
     lfo_right.initialise([](float x) { return std::sin(x); });
     lfo_right.setFrequency(raw_rate);
@@ -62,22 +69,28 @@ void Chorus::process(const juce::dsp::ProcessContextReplacing<float>& context)
         float current_mix = mix.getNextValue();
         float current_depth = depth.getNextValue();
 
-        float input_sample =
-            pre_lpf.processSample(pre_hpf.processSample(left[i]));
+        float input_sample = left[i];
+        float filtered =
+            pre_lpf.processSample(pre_hpf.processSample(input_sample));
+        float bass = bass_lpf.processSample(input_sample);
 
         float lval = lfo_left.processSample(0.0f);
         float rval = lfo_right.processSample(0.0f);
 
-        float ldelay = base_delay_time + current_depth * sample_rate * lval;
-        float rdelay = base_delay_time + current_depth * sample_rate * rval;
+        float ldelay = base_delay_time + current_depth * lval;
+        float rdelay = base_delay_time + current_depth * rval;
 
         float lvalue = delay_line.popSample(0, rdelay * sample_rate, true);
         float rvalue = delay_line.popSample(1, ldelay * sample_rate, true);
 
-        delay_line.pushSample(0, input_sample);
-        delay_line.pushSample(1, input_sample);
+        delay_line.pushSample(0, filtered);
+        delay_line.pushSample(1, filtered);
 
-        left[i] = (input_sample * (1.0f - current_mix) + lvalue * current_mix);
-        right[i] = (input_sample * (1.0f - current_mix) + rvalue * current_mix);
+        left[i] =
+            (input_sample * (1.0f - current_mix) +
+             (bass + lvalue) * current_mix);
+        right[i] =
+            (input_sample * (1.0f - current_mix) +
+             (bass + rvalue) * current_mix);
     }
 }
