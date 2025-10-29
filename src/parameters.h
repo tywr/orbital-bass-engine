@@ -105,11 +105,11 @@ createParameterLayout()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "chorus_rate", "Chorus Rate",
-            juce::NormalisableRange<float>(0.0f, 10.0f, 0.1f), 5.0f
+            juce::NormalisableRange<float>(0.5f, 2.5f, 0.01f), 1.5f
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "chorus_depth", "Chorus Depth",
-            juce::NormalisableRange<float>(0.0f, 10.0f, 0.1f), 5.0f
+            juce::NormalisableRange<float>(0.0001f, 0.003f, 0.0001f), 0.0015f
         ),
         std::make_unique<juce::AudioParameterBool>(
             "ir_bypass", "Impulse Response Bypass", false

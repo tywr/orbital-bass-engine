@@ -110,18 +110,18 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     // Chorus
     else if (parameterID == "chorus_mix")
     {
-        // float bv = juce::jlimit(0.0f, 1.0f, v);
-        // chorus.setMix(v);
+        float bv = juce::jlimit(0.0f, 1.0f, v);
+        chorus.setMix(bv);
     }
     else if (parameterID == "chorus_rate")
     {
-        // float bv = juce::jlimit(0.1f, 10.0f, v);
-        // chorus.setRate(bv);
+        float bv = juce::jlimit(0.0f, 5.0f, v);
+        chorus.setRate(bv);
     }
     else if (parameterID == "chorus_depth")
     {
-        // float bv = juce::jlimit(0.0f, 1.0f, v);
-        // chorus.setDepth(bv);
+        float bv = juce::jlimit(0.0f, 1.0f, v);
+        chorus.setDepth(bv);
     }
     // Impulse Response Convolver
     else if (parameterID == "ir_mix")

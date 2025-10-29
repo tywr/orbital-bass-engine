@@ -13,21 +13,38 @@ void Chorus::reset()
     rate.setCurrentAndTargetValue(raw_rate);
     depth.reset(processSpec.sampleRate, smoothing_time);
     depth.setCurrentAndTargetValue(raw_depth);
+    write_position = 0;
 }
 
 void Chorus::prepare(const juce::dsp::ProcessSpec& spec)
 {
     processSpec = spec;
-    delay_buffer.setSize(2, (int)(max_delay_time * 2), false, false, true);
+
+    pre_hpf.prepare(spec);
+    auto hpf_coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(
+        spec.sampleRate, pre_hpf_cutoff, 0.707f
+    );
+    *pre_hpf.coefficients = *hpf_coefficients;
+
+    pre_lpf.prepare(spec);
+    auto lpf_coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(
+        spec.sampleRate, pre_lpf_cutoff, 0.707f
+    );
+    *pre_lpf.coefficients = *lpf_coefficients;
 
     lfo_right.prepare(spec);
     lfo_right.initialise([](float x) { return std::sin(x); });
     lfo_right.setFrequency(raw_rate);
 
     lfo_left.prepare(spec);
-    lfo_left.initialise([](float x) { return std::cos(x); });
+    lfo_left.initialise(
+        [](float x) { return std::sin(x + juce::MathConstants<float>::pi); }
+    );
     lfo_left.setFrequency(raw_rate);
 
+    delay_line.prepare(spec);
+    delay_line.setMaximumDelayInSamples((int)(max_delay_time *
+                                              spec.sampleRate));
     reset();
 }
 
@@ -40,57 +57,27 @@ void Chorus::process(const juce::dsp::ProcessContextReplacing<float>& context)
     auto* left = block.getChannelPointer(0);
     auto* right = block.getChannelPointer(1);
 
-    auto* delay_left = delay_buffer.getWritePointer(0);
-    auto* delay_right = delay_buffer.getWritePointer(1);
-
-    size_t delay_buf_size = (size_t)delay_buffer.getNumSamples();
-    size_t& wl = write_position_left;
-    size_t& wr = write_position_right;
-
     for (size_t i = 0; i < num_samples; ++i)
     {
         float current_mix = mix.getNextValue();
         float current_depth = depth.getNextValue();
 
-        float rval = lfo_right.processSample(0.0f);
+        float input_sample =
+            pre_lpf.processSample(pre_hpf.processSample(left[i]));
+
         float lval = lfo_left.processSample(0.0f);
+        float rval = lfo_right.processSample(0.0f);
 
-        float rdelay =
-            ((current_depth / 1000.0f) * sample_rate) * (rval + 1.0f) * 0.5f;
-        float ldelay =
-            ((current_depth / 1000.0f) * sample_rate) * (lval + 1.0f) * 0.5f;
+        float ldelay = base_delay_time + current_depth * sample_rate * lval;
+        float rdelay = base_delay_time + current_depth * sample_rate * rval;
 
-        float read_pos_left = (float)wl - ldelay;
-        float read_pos_right = (float)wr - rdelay;
+        float lvalue = delay_line.popSample(0, rdelay * sample_rate, true);
+        float rvalue = delay_line.popSample(1, ldelay * sample_rate, true);
 
-        if (read_pos_left < 0)
-            read_pos_left += (float)delay_buf_size;
-        if (read_pos_right < 0)
-            read_pos_right += (float)delay_buf_size;
+        delay_line.pushSample(0, input_sample);
+        delay_line.pushSample(1, input_sample);
 
-        size_t index_left_1 = (size_t)read_pos_left;
-        size_t index_left_2 = (index_left_1 + 1) % delay_buf_size;
-        size_t index_right_1 = (size_t)read_pos_right;
-        size_t index_right_2 = (index_right_1 + 1) % delay_buf_size;
-
-        float frac_left = read_pos_left - (float)index_left_1;
-        float frac_right = read_pos_right - (float)index_right_1;
-
-        float delayed_left = delay_left[index_left_1] * (1.0f - frac_left) +
-                             delay_left[index_left_2] * frac_left;
-        float delayed_right = delay_right[index_right_1] * (1.0f - frac_right) +
-                              delay_right[index_right_2] * frac_right;
-
-        delay_left[wl] = left[i];
-        delay_right[wr] = right[i];
-
-        // Careful, we handle mono as input, so we copy left to right !
-        left[i] =
-            (left[i] * current_mix) + (delayed_left * (1.0f - current_mix));
-        right[i] =
-            (left[i] * current_mix) + (delayed_right * (1.0f - current_mix));
-
-        wl = (wl + 1) % delay_buf_size;
-        wr = (wr + 1) % delay_buf_size;
+        left[i] = (input_sample * (1.0f - current_mix) + lvalue * current_mix);
+        right[i] = (input_sample * (1.0f - current_mix) + rvalue * current_mix);
     }
 }

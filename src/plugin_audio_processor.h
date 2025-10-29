@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dsp/amp_eq.h"
+#include "dsp/chorus.h"
 #include "dsp/compressor.h"
 #include "dsp/ir.h"
 #include "dsp/overdrives/borealis.h"
@@ -71,6 +72,7 @@ class PluginAudioProcessor final
     Compressor compressor;
     AmpEQ amp_eq;
     IRConvolver irConvolver;
+    Chorus chorus;
 
     std::atomic<Overdrive*> current_overdrive = nullptr;
     HeliosOverdrive helios_overdrive;

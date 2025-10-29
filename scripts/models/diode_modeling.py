@@ -109,16 +109,21 @@ if __name__ == "__main__":
     duration = 5 / frequency
     n_samples = int(duration * sample_rate)
 
-    t = np.linspace(0, duration, n_samples, endpoint=False)
-    y = 1 * np.sin(2 * np.pi * frequency * t)
-
     diode_pair = DiodeClipper(sample_rate)
-    hard_clipped = diode_pair.process(y)
+    t = np.linspace(0, duration, n_samples, endpoint=False)
+    y = 15 * np.sin(2 * np.pi * frequency * t)
+    yc = diode_pair.process(y)
+    ytan = np.tanh(y)
 
     plt.plot(
-        t,
-        hard_clipped,
+        y,
+        yc,
         label="output",
+    )
+    plt.plot(
+        y,
+        ytan,
+        label="tanh",
     )
     plt.legend()
     plt.show()

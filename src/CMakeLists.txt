@@ -51,7 +51,7 @@ target_sources(${PROJECT_NAME}
         dsp/overdrives/borealis.cpp
         dsp/amp_eq.cpp
         dsp/chorus.cpp
-        # dsp/pitch_shifter.cpp
+        dsp/pitch_shifter.cpp
         )
 
 if(JUCE_BUILD_STANDALONE)

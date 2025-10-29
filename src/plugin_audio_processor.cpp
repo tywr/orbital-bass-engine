@@ -166,6 +166,7 @@ void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     compressor.prepare(spec);
     amp_eq.prepare(spec);
     irConvolver.prepare(spec);
+    chorus.prepare(spec);
     for (auto& overdrive : overdrives)
     {
         overdrive->prepare(spec);
@@ -224,18 +225,15 @@ void PluginAudioProcessor::processBlock(
         buffer.clear(i, 0, num_samples);
 
     // Overwrite left channel of buffer with mono signal
-    if (totalNumInputChannels >= 2)
-    {
-        auto* left = buffer.getReadPointer(0);
-        auto* right = buffer.getReadPointer(1);
-        auto* mono_left = buffer.getWritePointer(0);
-        auto* mono_right = buffer.getWritePointer(1);
+    auto* left = buffer.getReadPointer(0);
+    auto* right = buffer.getReadPointer(1);
+    auto* mono_left = buffer.getWritePointer(0);
+    auto* mono_right = buffer.getWritePointer(1);
 
-        for (int i = 0; i < num_samples; ++i)
-        {
-            mono_left[i] = left[i] + right[i];
-            mono_right[i] = 0.0f;
-        }
+    for (int i = 0; i < num_samples; ++i)
+    {
+        mono_left[i] = left[i] + right[i];
+        mono_right[i] = 0.0f;
     }
 
     juce::dsp::AudioBlock<float> block(buffer);
@@ -266,6 +264,11 @@ void PluginAudioProcessor::processBlock(
         current_amp_master_gain.applyGain(buffer, num_samples);
     }
 
+    // Copy mono signal back to both left and right channels
+    buffer.copyFrom(1, 0, buffer, 0, 0, buffer.getNumSamples());
+
+    if (chorus_bypass_parameter->load() < 0.5f)
+        chorus.process(context);
     if (ir_bypass_parameter->load() < 0.5f)
         irConvolver.process(context);
 
@@ -274,8 +277,6 @@ void PluginAudioProcessor::processBlock(
     );
     current_output_gain.applyGain(buffer, num_samples);
     updateOutputLevel(buffer);
-
-    buffer.copyFrom(1, 0, buffer, 0, 0, buffer.getNumSamples());
 }
 
 //==============================================================================
