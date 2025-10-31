@@ -7,8 +7,12 @@
 class JFET
 {
   public:
-    JFET()
+    JFET(float v, float g, float as)
     {
+        vp = v;
+        gamma = g;
+        asym = as;
+        a = gamma * (1.0f - vp);
     }
     void reset()
     {
@@ -20,22 +24,29 @@ class JFET
     void process(const juce::dsp::ProcessContextReplacing<float>& context);
 
   private:
-    static constexpr float vp = 0.5f;
-    static constexpr float gamma = 0.3f;
-    static constexpr float a = gamma * (1.0 - vp);
+    float vp;
+    float gamma;
+    float a;
+    float asym;
 };
 
 inline float JFET::processSample(float x)
 {
-    const float xsat = vp + 1.0 / (2.0 * a);
-    const float fsat = -1.0 / (4.0 * a) + 1.0 / (2.0 * a) + vp;
+    const float c = (x < 0.0f) ? asym : 1.0f;
+    const float xsat = vp + 1.0f / (2.0f * a);
+    const float fsat = -1.0f / (4.0f * a) + 1.0f / (2.0f * a) + vp;
+    const float sgnx = (x < 0.0f) ? -1.0f : 1.0f;
+    const float absx = (x < 0.0f) ? -x : x;
 
-    float x_abs = std::abs(x);
-    float fx = -a * std::pow(std::max(x_abs - vp, 0.0f), 2) +
-               std::max(x_abs - vp, 0.0f) + vp;
-    fx /= fsat;
+    // Cutoff zone
+    const float xc = (absx >= xsat) ? xsat : absx;
+    const float fc =
+        sgnx * (-a * c * (xc - vp) * (xc - vp) + c * (xc - vp) + vp) / fsat;
 
-    return std::copysign(std::min(fx, 1.0f), x);
+    // Linear zone
+    const float fl = x / fsat;
+
+    return (absx < vp) ? fl : fc;
 }
 
 inline void JFET::process(

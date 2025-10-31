@@ -21,23 +21,14 @@ void Chorus::prepare(const juce::dsp::ProcessSpec& spec)
     processSpec = spec;
 
     pre_hpf.prepare(spec);
-    auto hpf_coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(
-        spec.sampleRate, pre_hpf_cutoff, 0.707f
-    );
-    *pre_hpf.coefficients = *hpf_coefficients;
+    bass_lpf.prepare(spec);
+    updateFilters();
 
     pre_lpf.prepare(spec);
     auto lpf_coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(
         spec.sampleRate, pre_lpf_cutoff, 0.707f
     );
     *pre_lpf.coefficients = *lpf_coefficients;
-
-    bass_lpf.prepare(spec);
-    auto bass_lpf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            spec.sampleRate, bass_lpf_cutoff, 0.707f
-        );
-    *bass_lpf.coefficients = *bass_lpf_coefficients;
 
     lfo_right.prepare(spec);
     lfo_right.initialise([](float x) { return std::sin(x); });
@@ -55,6 +46,21 @@ void Chorus::prepare(const juce::dsp::ProcessSpec& spec)
     reset();
 }
 
+void Chorus::updateFilters()
+{
+    float current_crossover = crossover.getCurrentValue();
+    auto hpf_coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(
+        processSpec.sampleRate, current_crossover, 0.707f
+    );
+    *pre_hpf.coefficients = *hpf_coefficients;
+
+    auto bass_lpf_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeLowPass(
+            processSpec.sampleRate, current_crossover, 0.707f
+        );
+    *bass_lpf.coefficients = *bass_lpf_coefficients;
+}
+
 void Chorus::process(const juce::dsp::ProcessContextReplacing<float>& context)
 {
     auto& block = context.getOutputBlock();
@@ -64,10 +70,16 @@ void Chorus::process(const juce::dsp::ProcessContextReplacing<float>& context)
     auto* left = block.getChannelPointer(0);
     auto* right = block.getChannelPointer(1);
 
+    if (crossover.isSmoothing())
+    {
+        updateFilters();
+        crossover.skip((int)num_samples);
+    }
+
     for (size_t i = 0; i < num_samples; ++i)
     {
         float current_mix = mix.getNextValue();
-        float current_depth = depth.getNextValue();
+        float current_depth = depth.getNextValue() / 1000.0f;
 
         float input_sample = left[i];
         float filtered =

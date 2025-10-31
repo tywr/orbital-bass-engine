@@ -89,7 +89,7 @@ class ModelLlama:
         vin = x + self.bias
         vout = self.bias
 
-        for i in range(10):
+        for i in range(3):
             # NMOS:
             vgs_n = vin
             vds_n = vout
@@ -115,18 +115,15 @@ class ModelLlama:
             # Clamp vout to the supply rails for stability during iteration
             vout = np.clip(vout, 0, self.V_dd)
 
-        return 1 - 2 * vout / self.V_dd
+        # return 1 - 2 * vout / self.V_dd
+        return vout
 
 
 if __name__ == "__main__":
     model = ModelLlama()
-    vin = np.linspace(-10, 10, 1000)
+    vin = np.linspace(-2.5, 10, 10000)
     vout = np.array([model.solve(v) for v in vin])
-
-    vg = np.linspace(-1, 1, 100)
-    guess = -10 * vg + 4.5
 
     plt.figure(figsize=(10, 6))
     plt.plot(vin, vout)
-    plt.plot(vg, guess)
     plt.show()

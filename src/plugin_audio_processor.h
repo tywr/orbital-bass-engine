@@ -3,6 +3,7 @@
 #include "dsp/amp_eq.h"
 #include "dsp/chorus.h"
 #include "dsp/compressor.h"
+#include "dsp/fuzz.h"
 #include "dsp/ir.h"
 #include "dsp/overdrives/borealis.h"
 #include "dsp/overdrives/helios.h"
@@ -69,6 +70,7 @@ class PluginAudioProcessor final
     using ParamHandler = std::function<void(float)>;
     std::unordered_map<std::string, ParamHandler> parameterHandlers;
 
+    Fuzz fuzz;
     Compressor compressor;
     AmpEQ amp_eq;
     IRConvolver irConvolver;
@@ -91,6 +93,7 @@ class PluginAudioProcessor final
     std::atomic<float>* ir_bypass_parameter = nullptr;
     std::atomic<float>* compressor_bypass_parameter = nullptr;
     std::atomic<float>* chorus_bypass_parameter = nullptr;
+    std::atomic<float>* fuzz_bypass_parameter = nullptr;
     bool isAmpBypassed = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginAudioProcessor)

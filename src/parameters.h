@@ -38,6 +38,25 @@ createParameterLayout()
             "compressor_mix", "Compressor Mix",
             juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f
         ),
+        std::make_unique<juce::AudioParameterBool>(
+            "fuzz_bypass", "Fuzz Bypass", false
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "fuzz_tone", "Fuzz Tone",
+            juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f), 5.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "fuzz_sustain", "Fuzz Sustain",
+            juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f), 5.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "fuzz_mix", "Fuzz Mix",
+            juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "fuzz_level", "Fuzz Level",
+            juce::NormalisableRange<float>(-24.0f, 12.0f, 0.01f), 5.0f
+        ),
         std::make_unique<juce::AudioParameterChoice>(
             "amp_type",                              // Parameter ID
             "Amp Type",                              // Display name
@@ -109,7 +128,12 @@ createParameterLayout()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "chorus_depth", "Chorus Depth",
-            juce::NormalisableRange<float>(1e-4f, 1e-3f, 1e-5f), 5e-4f
+            juce::NormalisableRange<float>(0.0f, 6.0f, 0.01f), 3.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "chorus_crossover", "Chorus Crossover",
+            juce::NormalisableRange<float>(50.0f, 1000.0f, 0.1f, 0.3755212f),
+            200.0f
         ),
         std::make_unique<juce::AudioParameterBool>(
             "ir_bypass", "Impulse Response Bypass", false

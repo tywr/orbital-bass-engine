@@ -1,5 +1,6 @@
 #pragma once
 
+#include "circuits/jfet.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_dsp/juce_dsp.h>
 
@@ -73,6 +74,9 @@ class Compressor : juce::dsp::ProcessorBase
     float current_level_db = 1.0f;
     float gain_smooth_db = 0.0f;
     float gain_smooth = 1.0f;
+
+    // circuits
+    JFET jfet = JFET(0.5f, 0.15f, 0.9f);
 
     // hardcoded parameters for optometric compressor
     struct

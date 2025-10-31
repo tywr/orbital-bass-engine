@@ -7,7 +7,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <unordered_map>
 
-struct ChorusKnob
+struct FuzzKnob
 {
     juce::Slider* slider;
     juce::Label* label;
@@ -15,11 +15,11 @@ struct ChorusKnob
     juce::String label_text;
 };
 
-class ChorusKnobsComponent : public juce::Component
+class FuzzKnobsComponent : public juce::Component
 {
   public:
-    ChorusKnobsComponent(juce::AudioProcessorValueTreeState&);
-    ~ChorusKnobsComponent() override;
+    FuzzKnobsComponent(juce::AudioProcessorValueTreeState&);
+    ~FuzzKnobsComponent() override;
 
     void paint(juce::Graphics&) override;
     void resized() override;
@@ -33,36 +33,36 @@ class ChorusKnobsComponent : public juce::Component
 
     juce::Colour const default_type_colour = ColourCodes::grey3;
 
-    juce::Slider rate_slider;
-    juce::Label rate_label;
+    juce::Slider tone_slider;
+    juce::Label tone_label;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        rate_slider_attachment;
+        tone_slider_attachment;
 
-    juce::Slider depth_slider;
-    juce::Label depth_label;
+    juce::Slider sustain_slider;
+    juce::Label sustain_label;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        depth_slider_attachment;
+        sustain_slider_attachment;
 
     juce::Slider mix_slider;
     juce::Label mix_label;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         mix_slider_attachment;
 
-    juce::Slider crossover_slider;
-    juce::Label crossover_label;
+    juce::Slider level_slider;
+    juce::Label level_label;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        crossover_slider_attachment;
+        level_slider_attachment;
 
     std::vector<
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>>
         slider_attachments;
 
-    std::vector<ChorusKnob> knobs = {
-        {&rate_slider,      &rate_label,      "chorus_rate",      "rate"     },
-        {&depth_slider,     &depth_label,     "chorus_depth",     "depth"    },
-        {&crossover_slider, &crossover_label, "chorus_crossover", "crossover"},
-        {&mix_slider,       &mix_label,       "chorus_mix",       "mix"      }
+    std::vector<FuzzKnob> knobs = {
+        {&tone_slider,    &tone_label,    "fuzz_tone",    "tone"   },
+        {&sustain_slider, &sustain_label, "fuzz_sustain", "sustain"},
+        {&mix_slider,     &mix_label,     "fuzz_mix",     "mix"    },
+        {&level_slider,   &level_label,   "fuzz_level",   "level"  }
     };
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChorusKnobsComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FuzzKnobsComponent)
 };

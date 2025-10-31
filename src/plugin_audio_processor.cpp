@@ -27,6 +27,7 @@ PluginAudioProcessor::PluginAudioProcessor()
     chorus_bypass_parameter = parameters.getRawParameterValue("chorus_bypass");
     compressor_bypass_parameter =
         parameters.getRawParameterValue("compressor_bypass");
+    fuzz_bypass_parameter = parameters.getRawParameterValue("fuzz_bypass");
 
     for (auto* p : getParameters())
     {
@@ -164,6 +165,7 @@ void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     spec.numChannels = (juce::uint32)getTotalNumOutputChannels();
 
     compressor.prepare(spec);
+    fuzz.prepare(spec);
     amp_eq.prepare(spec);
     irConvolver.prepare(spec);
     chorus.prepare(spec);
@@ -249,6 +251,11 @@ void PluginAudioProcessor::processBlock(
     {
         compressor.process(context);
         compressorGainReductionDb.setValue(compressor.getGainReductionDb());
+    }
+
+    if (fuzz_bypass_parameter->load() < 0.5f)
+    {
+        fuzz.process(context);
     }
 
     if (amp_bypass_parameter->load() < 0.5f)

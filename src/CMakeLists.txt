@@ -40,6 +40,8 @@ target_sources(${PROJECT_NAME}
         gui/amp/amp_knobs_component.cpp
         gui/chorus/chorus_component.cpp
         gui/chorus/chorus_knobs_component.cpp
+        gui/fuzz/fuzz_component.cpp
+        gui/fuzz/fuzz_knobs_component.cpp
         gui/ir/ir_component.cpp
         gui/meter.cpp
         gui/header.cpp
@@ -51,6 +53,7 @@ target_sources(${PROJECT_NAME}
         dsp/overdrives/borealis.cpp
         dsp/amp_eq.cpp
         dsp/chorus.cpp
+        dsp/fuzz.cpp
         dsp/pitch_shifter.cpp
         )
 

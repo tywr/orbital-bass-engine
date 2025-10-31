@@ -1,6 +1,7 @@
 #include "compressor.h"
 
 #include <algorithm>
+#include <cmath>
 #include <juce_dsp/juce_dsp.h>
 
 void Compressor::reset()
@@ -71,6 +72,7 @@ void Compressor::computeGainReductionOptometric(float& sample, float sampleRate)
 
     gain_smooth_db = (coef * gain_smooth_db) + ((1.0f - coef) * target_gain_db);
     gain_smooth = juce::Decibels::decibelsToGain(gain_smooth_db);
+
     sample = sample * gain_smooth;
 }
 

@@ -3,6 +3,7 @@
 #include "amp/amp_component.h"
 #include "chorus/chorus_component.h"
 #include "compressor/compressor_component.h"
+#include "fuzz/fuzz_component.h"
 #include "ir/ir_component.h"
 #include "post_rack.h"
 #include "tabs.h"
@@ -18,6 +19,7 @@ class Tabs : public juce::TabbedComponent
 
   private:
     CompressorComponent compressor_component;
+    FuzzComponent fuzz_component;
     AmpComponent amp_component;
     ChorusComponent chorus_component;
     IRComponent ir_component;

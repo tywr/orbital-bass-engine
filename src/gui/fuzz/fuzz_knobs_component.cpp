@@ -1,11 +1,11 @@
-#include "chorus_knobs_component.h"
+#include "fuzz_knobs_component.h"
 #include "../colours.h"
 #include "../components/solid_tooltip.h"
 #include "../looks/compressor_look_and_feel.h"
 #include "../looks/compressor_selector_look_and_feel.h"
-#include "chorus_dimensions.h"
+#include "fuzz_dimensions.h"
 
-ChorusKnobsComponent::ChorusKnobsComponent(
+FuzzKnobsComponent::FuzzKnobsComponent(
     juce::AudioProcessorValueTreeState& params
 )
     : parameters(params)
@@ -83,42 +83,42 @@ ChorusKnobsComponent::ChorusKnobsComponent(
     }
 }
 
-ChorusKnobsComponent::~ChorusKnobsComponent()
+FuzzKnobsComponent::~FuzzKnobsComponent()
 {
 }
 
-void ChorusKnobsComponent::paint(juce::Graphics& g)
+void FuzzKnobsComponent::paint(juce::Graphics& g)
 {
     juce::ignoreUnused(g);
 }
 
-void ChorusKnobsComponent::resized()
+void FuzzKnobsComponent::resized()
 {
 
     auto bounds = getLocalBounds();
-    auto label_bounds = bounds.removeFromTop(ChorusDimensions::LABEL_HEIGHT);
+    auto label_bounds = bounds.removeFromTop(FuzzDimensions::LABEL_HEIGHT);
     const int knob_box_size = bounds.getWidth() / (int)knobs.size();
     for (auto knob : knobs)
     {
         knob.label->setBounds(label_bounds.removeFromLeft(knob_box_size)
                                   .withSizeKeepingCentre(
-                                      ChorusDimensions::KNOB_SIZE,
-                                      ChorusDimensions::LABEL_HEIGHT
+                                      FuzzDimensions::KNOB_SIZE,
+                                      FuzzDimensions::LABEL_HEIGHT
                                   ));
         knob.slider->setBounds(bounds.removeFromLeft(knob_box_size)
                                    .withSizeKeepingCentre(
-                                       ChorusDimensions::KNOB_SIZE,
-                                       ChorusDimensions::KNOB_SIZE
+                                       FuzzDimensions::KNOB_SIZE,
+                                       FuzzDimensions::KNOB_SIZE
                                    ));
     }
 }
 
-void ChorusKnobsComponent::switchColour(
+void FuzzKnobsComponent::switchColour(
     juce::Colour colour1, juce::Colour colour2
 )
 {
     juce::ignoreUnused(colour2);
-    for (ChorusKnob knob : knobs)
+    for (FuzzKnob knob : knobs)
     {
         knob.slider->setColour(juce::Slider::rotarySliderFillColourId, colour1);
     }

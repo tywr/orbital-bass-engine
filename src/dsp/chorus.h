@@ -11,9 +11,7 @@ class Chorus : juce::dsp::ProcessorBase
         const juce::dsp::ProcessContextReplacing<float>& context
     ) override;
     void reset() override;
-    // float interpolateDelayBuffer(
-    //     float* buf, size_t buf_size, float pos
-    // );
+    void updateFilters();
 
     void setMix(float newMix)
     {
@@ -40,7 +38,7 @@ class Chorus : juce::dsp::ProcessorBase
     juce::dsp::ProcessSpec processSpec{44100.0, 0, 0};
     float smoothing_time = 0.05f;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> mix, rate,
-        depth;
+        depth, crossover;
 
     size_t write_position;
     juce::dsp::Oscillator<float> lfo_left, lfo_right;
@@ -49,16 +47,12 @@ class Chorus : juce::dsp::ProcessorBase
         delay_line;
 
     juce::dsp::IIR::Filter<float> pre_hpf;
-    float pre_hpf_cutoff = 200.0f;
-
-    juce::dsp::IIR::Filter<float> pre_lpf;
-    float pre_lpf_cutoff = 3000.0f;
-
     juce::dsp::IIR::Filter<float> bass_lpf;
-    float bass_lpf_cutoff = 200.0f;
+    juce::dsp::IIR::Filter<float> pre_lpf;
+    float pre_lpf_cutoff = 5000.0f;
 
-    float base_delay_time = 0.007f;
-    float max_delay_time = 0.05f;
+    float base_delay_time = 7e-3f;
+    float max_delay_time = 5e-2f;
     float raw_mix = 1.0f;
     float raw_rate = 1.0f;
     float raw_depth = 1.0f;

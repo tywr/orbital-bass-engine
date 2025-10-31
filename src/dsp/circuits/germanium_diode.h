@@ -1,6 +1,7 @@
 #pragma once
 #include "../maths/omega.h"
 #include <cmath>
+#include <juce_dsp/juce_dsp.h>
 
 class GermaniumDiode
 // Simulates a germanium diode clipper pair using the Shockley diode equation
@@ -15,19 +16,22 @@ class GermaniumDiode
   public:
     GermaniumDiode(float fs);
     float processSample(float);
+    void process(const juce::dsp::ProcessContextReplacing<float>& context);
     float omega(float);
-    void reset()
+    void reset(float t_fs)
     {
+        fs = t_fs;
         prev_v = 0.0f;
         prev_p = k6 * prev_v;
     }
 
   private:
     // Fixed variables
-    float c = 5e-8f;
-    float r = 500.0f;
-    float i_s = 5e-6f;
+    float c = 1e-8f;
+    float r = 30.0f;
+    float i_s = 5e-4f;
     float v_t = 0.02585f;
+    float v0 = 0.36694194229685273f;
 
     // State variables
     float prev_v;
@@ -106,5 +110,19 @@ inline float GermaniumDiode::processSample(float vin)
     float p = k6 * vout - a1 * prev_p;
     prev_p = p;
     prev_v = vout;
-    return vout;
+    return vout / v0;
+}
+
+inline void GermaniumDiode::process(
+    const juce::dsp::ProcessContextReplacing<float>& context
+)
+{
+    auto& block = context.getOutputBlock();
+    const size_t num_samples = block.getNumSamples();
+
+    auto* ch = block.getChannelPointer(0);
+    for (size_t i = 0; i < num_samples; ++i)
+    {
+        ch[i] = processSample(ch[i]);
+    }
 }
