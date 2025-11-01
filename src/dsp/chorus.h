@@ -33,6 +33,12 @@ class Chorus : juce::dsp::ProcessorBase
         depth.setTargetValue(v);
         raw_depth = v;
     }
+    void setCrossover(float new_crossover)
+    {
+        float v = juce::jlimit(50.0f, 10000.0f, new_crossover);
+        crossover.setTargetValue(v);
+        raw_crossover = v;
+    }
 
   private:
     juce::dsp::ProcessSpec processSpec{44100.0, 0, 0};
@@ -56,4 +62,5 @@ class Chorus : juce::dsp::ProcessorBase
     float raw_mix = 1.0f;
     float raw_rate = 1.0f;
     float raw_depth = 1.0f;
+    float raw_crossover = 50.0f;
 };

@@ -54,7 +54,7 @@ target_sources(${PROJECT_NAME}
         dsp/amp_eq.cpp
         dsp/chorus.cpp
         dsp/fuzz.cpp
-        dsp/pitch_shifter.cpp
+        dsp/synth_voices/square_voice.cpp
         )
 
 if(JUCE_BUILD_STANDALONE)

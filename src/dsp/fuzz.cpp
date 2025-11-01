@@ -126,11 +126,11 @@ void Fuzz::updateDriveFilters()
         min_gain + (max_gain - min_gain) * (0.1f * current_sustain);
 
     auto drive_coefficients_1 =
-        makeDriveFilter(process_spec.sampleRate, 25.0f, 3000.0f, drive_gain);
+        makeDriveFilter((float)process_spec.sampleRate, 25.0f, 3000.0f, drive_gain);
     *drive_filter_1.coefficients = *drive_coefficients_1;
 
     auto drive_coefficients_2 =
-        makeDriveFilter(process_spec.sampleRate, 25.0f, 3000.0f, min_gain);
+        makeDriveFilter((float)process_spec.sampleRate, 25.0f, 3000.0f, min_gain);
     *drive_filter_2.coefficients = *drive_coefficients_2;
 }
 
@@ -189,7 +189,7 @@ void Fuzz::processSquare(
     diode_pair.process(context);
     drive_filter_2.process(context);
     diode_pair.process(context);
-    block.multiplyBy(juce::Decibels::decibelsToGain(-16.0f));
+    block.multiplyBy(juce::Decibels::decibelsToGain(-32.0f));
 
     tone_filter.process(context);
 

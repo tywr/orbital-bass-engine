@@ -128,7 +128,7 @@ createParameterLayout()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "chorus_depth", "Chorus Depth",
-            juce::NormalisableRange<float>(0.0f, 6.0f, 0.01f), 3.0f
+            juce::NormalisableRange<float>(0.0f, 1.5f, 0.01f), 0.75f
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "chorus_crossover", "Chorus Crossover",

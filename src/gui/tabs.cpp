@@ -26,10 +26,10 @@ Tabs::Tabs(
         juce::TabbedComponent::outlineColourId, juce::Colours::transparentBlack
     );
 
-    // addTab("comp", ColourCodes::bg, &compressor_component, true);
-    addTab("fuzz", ColourCodes::bg, &fuzz_component, true);
+    addTab("comp", ColourCodes::bg, &compressor_component, true);
+    // addTab("fuzz", ColourCodes::bg, &fuzz_component, true);
     addTab("amp", ColourCodes::bg, &amp_component, true);
-    // addTab("post", ColourCodes::bg, &post_rack_component, true);
+    addTab("post", ColourCodes::bg, &post_rack_component, true);
     setTabBarDepth(60);
 }
 

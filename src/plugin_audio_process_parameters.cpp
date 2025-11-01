@@ -138,9 +138,14 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
         float bv = juce::jlimit(0.0f, 5.0f, v);
         chorus.setRate(bv);
     }
+    else if (parameterID == "chorus_crossover")
+    {
+        float bv = juce::jlimit(50.0f, 10000.0f, v);
+        chorus.setCrossover(bv);
+    }
     else if (parameterID == "chorus_depth")
     {
-        float bv = juce::jlimit(0.0f, 1.0f, v);
+        float bv = juce::jlimit(0.0f, 6.0f, v);
         chorus.setDepth(bv);
     }
     // Impulse Response Convolver

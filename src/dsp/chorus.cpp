@@ -13,6 +13,8 @@ void Chorus::reset()
     rate.setCurrentAndTargetValue(raw_rate);
     depth.reset(processSpec.sampleRate, smoothing_time);
     depth.setCurrentAndTargetValue(raw_depth);
+    crossover.reset(processSpec.sampleRate, smoothing_time);
+    crossover.setCurrentAndTargetValue(raw_crossover);
     write_position = 0;
 }
 

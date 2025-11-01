@@ -82,10 +82,6 @@ class Fuzz : juce::dsp::ProcessorBase
     float square_post_lpf_cutoff_3 = 3000.0f;
     float square_post_lpf_q_3 = 0.67f;
 
-    // GermaniumDiode diode_pair_1 = GermaniumDiode(44100.0f);
-    // GermaniumDiode diode_pair_2 = GermaniumDiode(44100.0f);
-    //
-
     juce::dsp::WaveShaper<float> diode_pair{[](float x)
                                             { return std::tanh(3 * x); }};
     juce::dsp::NoiseGate<float> noise_gate = juce::dsp::NoiseGate<float>();

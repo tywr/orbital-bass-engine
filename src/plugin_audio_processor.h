@@ -8,6 +8,7 @@
 #include "dsp/overdrives/borealis.h"
 #include "dsp/overdrives/helios.h"
 #include "dsp/overdrives/overdrive.h"
+#include "dsp/synth_voices/square_voice.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
@@ -75,6 +76,7 @@ class PluginAudioProcessor final
     AmpEQ amp_eq;
     IRConvolver irConvolver;
     Chorus chorus;
+    SquareVoice voice;
 
     std::atomic<Overdrive*> current_overdrive = nullptr;
     HeliosOverdrive helios_overdrive;

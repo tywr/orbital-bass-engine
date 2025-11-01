@@ -165,7 +165,7 @@ void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     spec.numChannels = (juce::uint32)getTotalNumOutputChannels();
 
     compressor.prepare(spec);
-    fuzz.prepare(spec);
+    voice.prepare(spec);
     amp_eq.prepare(spec);
     irConvolver.prepare(spec);
     chorus.prepare(spec);
@@ -247,15 +247,12 @@ void PluginAudioProcessor::processBlock(
     current_input_gain.applyGain(buffer, num_samples);
     updateInputLevel(buffer);
 
+    voice.process(context);
+
     if (compressor_bypass_parameter->load() < 0.5f)
     {
         compressor.process(context);
         compressorGainReductionDb.setValue(compressor.getGainReductionDb());
-    }
-
-    if (fuzz_bypass_parameter->load() < 0.5f)
-    {
-        fuzz.process(context);
     }
 
     if (amp_bypass_parameter->load() < 0.5f)
