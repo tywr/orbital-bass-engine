@@ -247,7 +247,7 @@ void PluginAudioProcessor::processBlock(
     current_input_gain.applyGain(buffer, num_samples);
     updateInputLevel(buffer);
 
-    voice.process(context);
+    // voice.process(context);
 
     if (compressor_bypass_parameter->load() < 0.5f)
     {
