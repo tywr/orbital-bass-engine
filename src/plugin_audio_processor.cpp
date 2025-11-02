@@ -164,8 +164,11 @@ void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     spec.maximumBlockSize = (juce::uint32)samplesPerBlock;
     spec.numChannels = (juce::uint32)getTotalNumOutputChannels();
 
+    square_voice.prepare(spec);
+    octave_voice.prepare(spec);
+    triangle_voice.prepare(spec);
+
     compressor.prepare(spec);
-    voice.prepare(spec);
     amp_eq.prepare(spec);
     irConvolver.prepare(spec);
     chorus.prepare(spec);
@@ -247,7 +250,9 @@ void PluginAudioProcessor::processBlock(
     current_input_gain.applyGain(buffer, num_samples);
     updateInputLevel(buffer);
 
-    // voice.process(context);
+    // octave_voice.process(context);
+    // square_voice.process(context);
+    triangle_voice.process(context);
 
     if (compressor_bypass_parameter->load() < 0.5f)
     {
