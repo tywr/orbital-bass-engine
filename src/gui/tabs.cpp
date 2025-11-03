@@ -1,10 +1,4 @@
 #include "tabs.h"
-#include "amp/amp_component.h"
-#include "chorus/chorus_component.h"
-#include "colours.h"
-#include "compressor/compressor_component.h"
-#include "fuzz/fuzz_component.h"
-#include "ir/ir_component.h"
 
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_gui_basics/juce_gui_basics.h>
@@ -16,7 +10,7 @@ Tabs::Tabs(
     : juce::TabbedComponent(juce::TabbedButtonBar::TabsAtTop),
       compressor_component(params, compressorGainReductionDb),
       fuzz_component(params), amp_component(params), chorus_component(params),
-      ir_component(params), post_rack_component(params)
+      ir_component(params), post_rack_component(params), synth_component(params)
 {
     setColour(
         juce::TabbedComponent::backgroundColourId,
@@ -26,6 +20,7 @@ Tabs::Tabs(
         juce::TabbedComponent::outlineColourId, juce::Colours::transparentBlack
     );
 
+    addTab("synth", ColourCodes::bg, &synth_component, true);
     addTab("comp", ColourCodes::bg, &compressor_component, true);
     // addTab("fuzz", ColourCodes::bg, &fuzz_component, true);
     addTab("amp", ColourCodes::bg, &amp_component, true);

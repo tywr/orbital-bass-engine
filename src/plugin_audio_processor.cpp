@@ -28,6 +28,7 @@ PluginAudioProcessor::PluginAudioProcessor()
     compressor_bypass_parameter =
         parameters.getRawParameterValue("compressor_bypass");
     fuzz_bypass_parameter = parameters.getRawParameterValue("fuzz_bypass");
+    synth_bypass_parameter = parameters.getRawParameterValue("synth_bypass");
 
     for (auto* p : getParameters())
     {
@@ -164,9 +165,7 @@ void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     spec.maximumBlockSize = (juce::uint32)samplesPerBlock;
     spec.numChannels = (juce::uint32)getTotalNumOutputChannels();
 
-    square_voice.prepare(spec);
-    octave_voice.prepare(spec);
-    triangle_voice.prepare(spec);
+    synth_voices.prepare(spec);
 
     compressor.prepare(spec);
     amp_eq.prepare(spec);
@@ -250,9 +249,8 @@ void PluginAudioProcessor::processBlock(
     current_input_gain.applyGain(buffer, num_samples);
     updateInputLevel(buffer);
 
-    // octave_voice.process(context);
-    // square_voice.process(context);
-    triangle_voice.process(context);
+    if (synth_bypass_parameter->load() < 0.5f)
+        synth_voices.process(context);
 
     if (compressor_bypass_parameter->load() < 0.5f)
     {

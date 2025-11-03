@@ -73,7 +73,12 @@ void Compressor::computeGainReductionOptometric(float& sample, float sampleRate)
     gain_smooth_db = (coef * gain_smooth_db) + ((1.0f - coef) * target_gain_db);
     gain_smooth = juce::Decibels::decibelsToGain(gain_smooth_db);
 
-    sample = sample * gain_smooth;
+    float drive = gain_smooth_db * optoParams.gr_to_sat;
+    float k = (sample >= 0.0f) ? 0.8f : 1.2f;
+    float sat_sample = std::tanh(k * drive * sample);
+    sample = ((1 - optoParams.saturation) * sample +
+              optoParams.saturation * sat_sample) *
+             gain_smooth;
 }
 
 void Compressor::computeGainReductionFet(float& sample, float sampleRate)
@@ -106,7 +111,14 @@ void Compressor::computeGainReductionFet(float& sample, float sampleRate)
     gain_smooth_db = (coef * gain_smooth_db) + ((1.0f - coef) * target_gain_db);
     gain_smooth = juce::Decibels::decibelsToGain(gain_smooth_db);
 
-    sample = sample * gain_smooth;
+    float drive = gain_smooth_db * fetParams.gr_to_sat;
+    float k = (sample >= 0.0f) ? 0.8f : 1.2f;
+    float s = (sample >= 0.0f) ? 1.0f : -1.0f;
+    float t = s * std::tanh(k * drive * sample);
+    float sat_sample = s * (1.0f - (1.0f - t) * (1.0f - t));
+    sample = ((1 - fetParams.saturation) * sample +
+              fetParams.saturation * sat_sample) *
+             gain_smooth;
     current_level = sample;
     current_level_db =
         juce::Decibels::gainToDecibels(std::abs(current_level) + 1e-10f);

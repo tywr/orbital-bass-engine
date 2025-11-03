@@ -8,9 +8,7 @@
 #include "dsp/overdrives/borealis.h"
 #include "dsp/overdrives/helios.h"
 #include "dsp/overdrives/overdrive.h"
-#include "dsp/synth_voices/octave_voice.h"
-#include "dsp/synth_voices/square_voice.h"
-#include "dsp/synth_voices/triangle_voice.h"
+#include "dsp/synth_voices.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
@@ -78,9 +76,7 @@ class PluginAudioProcessor final
     AmpEQ amp_eq;
     IRConvolver irConvolver;
     Chorus chorus;
-    SquareVoice square_voice;
-    OctaveVoice octave_voice;
-    TriangleVoice triangle_voice;
+    SynthVoices synth_voices;
 
     std::atomic<Overdrive*> current_overdrive = nullptr;
     HeliosOverdrive helios_overdrive;
@@ -100,6 +96,7 @@ class PluginAudioProcessor final
     std::atomic<float>* compressor_bypass_parameter = nullptr;
     std::atomic<float>* chorus_bypass_parameter = nullptr;
     std::atomic<float>* fuzz_bypass_parameter = nullptr;
+    std::atomic<float>* synth_bypass_parameter = nullptr;
     bool isAmpBypassed = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginAudioProcessor)

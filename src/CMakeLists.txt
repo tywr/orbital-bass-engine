@@ -36,6 +36,8 @@ target_sources(${PROJECT_NAME}
         gui/compressor/compressor_knobs_component.cpp
         gui/compressor/compressor_meter_component.cpp
         gui/compressor/compressor_component.cpp
+        gui/synth/synth_component.cpp
+        gui/synth/synth_voice_knobs_component.cpp
         gui/amp/amp_component.cpp
         gui/amp/amp_knobs_component.cpp
         gui/chorus/chorus_component.cpp
@@ -57,6 +59,7 @@ target_sources(${PROJECT_NAME}
         dsp/synth_voices/square_voice.cpp
         dsp/synth_voices/octave_voice.cpp
         dsp/synth_voices/triangle_voice.cpp
+        dsp/synth_voices.cpp
         )
 
 if(JUCE_BUILD_STANDALONE)

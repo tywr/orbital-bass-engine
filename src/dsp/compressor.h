@@ -85,12 +85,16 @@ class Compressor : juce::dsp::ProcessorBase
         float release1 = 0.06f;
         float release2 = 0.5f;
         float gainSmoothingTime = 0.05f;
+        float gr_to_sat = 0.1f;
+        float saturation = 0.1f;
     } optoParams;
 
     struct
     {
         float attack = 0.0003f;
         float release = 0.1f;
+        float gr_to_sat = 0.1f;
+        float saturation = 0.15f;
     } fetParams;
 
     struct

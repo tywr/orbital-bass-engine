@@ -94,7 +94,7 @@ void OctaveVoice::process(
                 cross_count = 0;
             }
         }
-        ch[i] = 4.0f * envelope * post_lpf.processSample(sub_state);
+        ch[i] = 16.0f * envelope * post_lpf.processSample(sub_state);
         prev_state = state;
     }
     oversampler.processSamplesDown(block);

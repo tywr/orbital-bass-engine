@@ -149,6 +149,29 @@ createParameterLayout()
         std::make_unique<juce::AudioParameterFloat>(
             "ir_level", "Impulse Response Level",
             juce::NormalisableRange<float>(-36.0f, 12.0f, 0.1f, 1.0f), -12.0f
-        )
+        ),
+        std::make_unique<juce::AudioParameterBool>(
+            "synth_bypass", "Synth Bypass", true
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "synth_octave_level", "Synth Voice Octave Level",
+            juce::NormalisableRange<float>(-48.0f, 6.0f, 0.1f, 1.0f), -12.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "synth_square_level", "Synth Voice Square Level",
+            juce::NormalisableRange<float>(-48.0f, 6.0f, 0.1f, 1.0f), -12.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "synth_triangle_level", "Synth Voice Triangle Level",
+            juce::NormalisableRange<float>(-48.0f, 6.0f, 0.1f, 1.0f), -12.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "synth_raw_level", "Synth Voice Raw Level",
+            juce::NormalisableRange<float>(-48.0f, 6.0f, 0.1f, 1.0f), -12.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "synth_master_level", "Synth Voice Master Level",
+            juce::NormalisableRange<float>(-48.0f, 6.0f, 0.1f, 1.0f), -12.0f
+        ),
     };
 }

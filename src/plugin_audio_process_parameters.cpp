@@ -162,4 +162,29 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     {
         irConvolver.setTypeFromIndex(static_cast<int>(v));
     }
+    else if (parameterID == "synth_octave_level")
+    {
+        float dbv = juce::Decibels::decibelsToGain(juce::jlimit(-100.0f, 6.0f, v));
+        synth_voices.setOctaveLevel(dbv);
+    }
+    else if (parameterID == "synth_square_level")
+    {
+        float dbv = juce::Decibels::decibelsToGain(juce::jlimit(-100.0f, 6.0f, v));
+        synth_voices.setSquareLevel(dbv);
+    }
+    else if (parameterID == "synth_triangle_level")
+    {
+        float dbv = juce::Decibels::decibelsToGain(juce::jlimit(-100.0f, 6.0f, v));
+        synth_voices.setTriangleLevel(dbv);
+    }
+    else if (parameterID == "synth_raw_level")
+    {
+        float dbv = juce::Decibels::decibelsToGain(juce::jlimit(-100.0f, 6.0f, v));
+        synth_voices.setRawLevel(dbv);
+    }
+    else if (parameterID == "synth_master_level")
+    {
+        float dbv = juce::Decibels::decibelsToGain(juce::jlimit(-100.0f, 6.0f, v));
+        synth_voices.setMasterLevel(dbv);
+    }
 }
