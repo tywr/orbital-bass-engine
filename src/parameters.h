@@ -13,9 +13,9 @@ createParameterLayout()
             juce::NormalisableRange<float>(-48.0f, 6.0f, 0.1f, 0.9f), 0.0f
         ),
         std::make_unique<juce::AudioParameterChoice>(
-            "compressor_type",                       // Parameter ID
-            "Compressor Type",                       // Display name
-            juce::StringArray{"OPTO", "FET", "VCA"}, // Choice options
+            "compressor_type",                // Parameter ID
+            "Compressor Type",                // Display name
+            juce::StringArray{"OPTO", "FET"}, // Choice options
             0
         ),
         std::make_unique<juce::AudioParameterBool>(

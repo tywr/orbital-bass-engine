@@ -14,7 +14,6 @@ class Compressor : juce::dsp::ProcessorBase
     void reset() override;
     void computeGainReductionOptometric(float& sample, float sampleRate);
     void computeGainReductionFet(float& sample, float sampleRate);
-    void computeGainReductionVca(float& sample, float sampleRate);
     void applyLevel(juce::AudioBuffer<float>& buffer);
 
     void setRatio(float newRatio)
@@ -51,7 +50,7 @@ class Compressor : juce::dsp::ProcessorBase
 
     float getGainReductionDb()
     {
-        return gain_smooth_db;
+        return gr_db;
     }
 
   private:
@@ -72,8 +71,8 @@ class Compressor : juce::dsp::ProcessorBase
     // internal state of compressor
     float current_level = 1.0f;
     float current_level_db = 1.0f;
-    float gain_smooth_db = 0.0f;
-    float gain_smooth = 1.0f;
+    float gr_db = 0.0f;
+    float gr = 1.0f;
 
     // circuits
     JFET jfet = JFET(0.5f, 0.15f, 0.9f);
@@ -84,24 +83,14 @@ class Compressor : juce::dsp::ProcessorBase
         float attack = 0.01f;
         float release1 = 0.06f;
         float release2 = 0.5f;
-        float gainSmoothingTime = 0.05f;
-        float gr_to_sat = 0.1f;
-        float saturation = 0.1f;
+        float w = 5.0f;
+        float mu = 1.9f;
     } optoParams;
 
     struct
     {
         float attack = 0.0003f;
         float release = 0.1f;
-        float gr_to_sat = 0.1f;
-        float saturation = 0.15f;
+        float w = 6.0f;
     } fetParams;
-
-    struct
-    {
-        float attack = 0.005f;
-        float release = 0.4f;
-        float gainSmoothingTime = 0.01f;
-        float kneeWidth = 2.0f;
-    } vcaParams;
 };
