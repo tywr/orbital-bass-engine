@@ -71,7 +71,7 @@ void Compressor::computeGainReductionOptometric(float& sample, float sampleRate)
 
     gr_db = output_level_db - current_level_db;
     gr = juce::Decibels::decibelsToGain(gr_db);
-    sample = juce::Decibels::decibelsToGain(output_level_db);
+    sample *= gr;
 }
 
 void Compressor::computeGainReductionFet(float& sample, float sampleRate)
@@ -82,7 +82,7 @@ void Compressor::computeGainReductionFet(float& sample, float sampleRate)
     float current_ratio = static_cast<float>(ratio.getNextValue());
 
     float coef;
-    if (input_level_db < current_level_db)
+    if (input_level_db > current_level_db)
     {
         coef = std::exp(-1.0f / (sampleRate * fetParams.attack));
     }
@@ -114,7 +114,7 @@ void Compressor::computeGainReductionFet(float& sample, float sampleRate)
 
     gr_db = output_level_db - current_level_db;
     gr = juce::Decibels::decibelsToGain(gr_db);
-    sample = juce::Decibels::decibelsToGain(output_level_db);
+    sample *= gr;
 }
 
 void Compressor::process(

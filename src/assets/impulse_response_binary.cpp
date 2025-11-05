@@ -207,6 +207,7 @@ static const unsigned char temp1[] = {
     48,  0,   252, 46,  0,   236, 47,  0,   248, 49,  0,   89,  52,  0,   56,
     54,  0,   222, 54,  0,   170, 54,  0,   25,  53,  0,   173, 46,  0,   0,
     0
+
 };
 const char* ImpulseResponseBinary::modern_410_wav = (const char*)temp1;
 
