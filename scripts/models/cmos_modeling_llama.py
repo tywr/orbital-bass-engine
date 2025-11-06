@@ -1,14 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy.polynomial.polynomial import Polynomial
-from scipy.optimize import curve_fit
-from sklearn.neural_network import MLPRegressor
-from sklearn.preprocessing import StandardScaler
-import onnxruntime as rt
-import skl2onnx
-from skl2onnx import convert_sklearn
-from skl2onnx.common.data_types import FloatTensorType
-from scipy.optimize import curve_fit
+from scipy.interpolate import interp1d
+from scipy.interpolate import CubicSpline
 
 
 class ModelLlama:
@@ -89,7 +82,7 @@ class ModelLlama:
         vin = x + self.bias
         vout = self.bias
 
-        for i in range(3):
+        for i in range(5):
             # NMOS:
             vgs_n = vin
             vds_n = vout
@@ -115,15 +108,42 @@ class ModelLlama:
             # Clamp vout to the supply rails for stability during iteration
             vout = np.clip(vout, 0, self.V_dd)
 
-        # return 1 - 2 * vout / self.V_dd
-        return vout
+        return 1 - 2 * vout / self.V_dd
+        # return vout
+
+
+def lut_model():
+    model = ModelLlama()
+    vmin = -1.8
+    tn = np.linspace(0, 1, 2048)
+    vn = vmin * (1 - tn) * (1 - tn)
+
+    vmax = 5.1
+    tp = np.linspace(0, 1, 4096)
+    vp = vmax * tp * tp
+
+    vin = np.concatenate([vn, vp[1:]])
+    vout = np.array([model.solve(v) for v in vin])
+    return vin, vout
 
 
 if __name__ == "__main__":
     model = ModelLlama()
-    vin = np.linspace(-2.5, 10, 10000)
-    vout = np.array([model.solve(v) for v in vin])
+    vin, vout = lut_model()
+
+    lut_interp = interp1d(vin, vout, kind="linear", fill_value="extrapolate")
+    # lut_interp = CubicSpline(vin, vout)
+    vout_lut = lut_interp(vin)
+
+    vin_t = np.linspace(-1.8, 5.1, 10000)
+    vout_t_interp = lut_interp(vin_t)
+    vout_t_model = np.array([model.solve(v) for v in vin_t])
+
+    diff = np.abs((vout_t_interp - vout_t_model) / vout_t_model)
+    print("max error:", max(diff))
+    print("avg error:", np.average(diff))
 
     plt.figure(figsize=(10, 6))
     plt.plot(vin, vout)
+    plt.plot(vin_t, diff)
     plt.show()

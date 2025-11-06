@@ -57,6 +57,7 @@ void BorealisOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
         false, false, true
     );
 
+    cmos.prepare();
     resetSmoothedValues();
     prepareFilters();
 }

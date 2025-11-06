@@ -23,6 +23,7 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
         false, false, true
     );
 
+    cmos.prepare();
     resetSmoothedValues();
     prepareFilters();
 }
@@ -31,7 +32,6 @@ void HeliosOverdrive::reset()
 {
     oversampler2x.reset();
     cmos.reset();
-    cmos2.reset();
     resetSmoothedValues();
     resetFilters();
     prepareFilters();
@@ -300,7 +300,7 @@ void HeliosOverdrive::processB3K(
     b3k_pre_filter_2.process(context);
     b3k_attack_shelf.process(context);
     b3k_drive_filter.process(context);
-    cmos2.process(context);
+    cmos.process(context);
     b3k_post_filter_1.process(context);
     b3k_post_filter_2.process(context);
     b3k_post_filter_3.process(context);
