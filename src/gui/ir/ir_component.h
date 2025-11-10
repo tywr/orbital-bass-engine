@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../../assets/impulse_response_binary.h"
 #include "../colours.h"
 #include "../components/solid_tooltip.h"
 #include <juce_audio_basics/juce_audio_basics.h>

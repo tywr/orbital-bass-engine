@@ -1,7 +1,7 @@
 #include "ir.h"
 #include <algorithm>
 
-#include "../assets/impulse_response_binary.h"
+#include "../assets/ImpulseResponseBinaryMapping.h"
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <juce_dsp/juce_dsp.h>
 
@@ -64,25 +64,9 @@ void IRConvolver::process(
 
 void IRConvolver::loadIR()
 {
-    char* data;
-    const int size = 3044;
-
     DBG("Loading IR type: " + juce::String(type));
-    switch (type)
-    {
-    case 0:
-        data = (char*)ImpulseResponseBinary::modern_410_wav;
-        break;
-    case 1:
-        data = (char*)ImpulseResponseBinary::crunchy_212_wav;
-        break;
-    case 2:
-        data = (char*)ImpulseResponseBinary::vintage_B15_wav;
-        break;
-    case 3:
-        data = (char*)ImpulseResponseBinary::classic_810_wav;
-        break;
-    }
+    const int size = impulseResponseBinaryWavSizes[type];
+    char* data = (char*)impulseResponseBinaryWavFiles[type];
 
     convolution.loadImpulseResponse(
         data, size, juce::dsp::Convolution::Stereo::no,

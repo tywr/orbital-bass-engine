@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 from scipy.interpolate import CubicSpline
+from scipy.interpolate import PchipInterpolator
 
 
 class ModelLlama:
@@ -116,11 +117,11 @@ def lut_model():
     model = ModelLlama()
     vmin = -1.8
     tn = np.linspace(0, 1, 2048)
-    vn = vmin * (1 - tn) * (1 - tn)
+    vn = vmin * (1 - tn)
 
     vmax = 5.1
-    tp = np.linspace(0, 1, 4096)
-    vp = vmax * tp * tp
+    tp = np.linspace(0, 1, 4192)
+    vp = vmax * tp
 
     vin = np.concatenate([vn, vp[1:]])
     vout = np.array([model.solve(v) for v in vin])
@@ -131,11 +132,11 @@ if __name__ == "__main__":
     model = ModelLlama()
     vin, vout = lut_model()
 
-    lut_interp = interp1d(vin, vout, kind="linear", fill_value="extrapolate")
-    # lut_interp = CubicSpline(vin, vout)
+    # lut_interp = interp1d(vin, vout, kind="linear", fill_value="extrapolate")
+    lut_interp = PchipInterpolator(vin, vout)
     vout_lut = lut_interp(vin)
 
-    vin_t = np.linspace(-1.8, 5.1, 10000)
+    vin_t = np.linspace(-1.8, 5.1, 100000)
     vout_t_interp = lut_interp(vin_t)
     vout_t_model = np.array([model.solve(v) for v in vin_t])
 
@@ -144,6 +145,7 @@ if __name__ == "__main__":
     print("avg error:", np.average(diff))
 
     plt.figure(figsize=(10, 6))
-    plt.plot(vin, vout)
-    plt.plot(vin_t, diff)
+    # plt.plot(vin, vout)
+    plt.plot(vin_t, vout_t_interp, color="orange")
+    plt.plot(vin_t, vout_t_model, color="red")
     plt.show()

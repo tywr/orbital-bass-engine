@@ -20,6 +20,7 @@ class CMOS
     std::pair<float, float> nmos(float, float);
 
     float waveshaper_cmos(float);
+    float hermite(float y0, float y1, float d0, float d1, float t);
 
     void prepare();
     float processSample(float);
@@ -28,11 +29,10 @@ class CMOS
     void process(const juce::dsp::ProcessContextReplacing<float>& context);
 
   private:
-    static constexpr size_t lut_plus_size = 8192;
-    static constexpr size_t lut_minus_size = 4096;
-    static constexpr float lut_min_input = -1.8f;
-    static constexpr float lut_max_input = 5.1f;
-    std::array<float, lut_minus_size + lut_plus_size - 1> waveshaper_lut;
+    juce::dsp::LookupTableTransform<float> lut;
+    static constexpr int lut_size = 8192;
+    static constexpr float lut_min = -1.8f;
+    static constexpr float lut_max = 5.1f;
 
     static constexpr float n_vtc1 = 1.208306917691355f;
     static constexpr float n_vtc2 = 0.3139084341943607f;
@@ -111,30 +111,6 @@ inline std::pair<float, float> CMOS::pmos(float vgs, float vds)
     return {ids, gds};
 }
 
-inline void CMOS::prepare()
-{
-    float h_minus = -lut_min_input / (lut_minus_size - 1);
-    for (size_t i = 0; i < lut_minus_size; i++)
-    {
-        float t = 1.0f - float(i) / (lut_minus_size - 1);
-        float mapped_t = t * t;
-        float x = mapped_t * h_minus;
-        waveshaper_lut[i] = waveshaper_cmos(x);
-    }
-
-    float h_plus = lut_max_input / (lut_plus_size - 1);
-    for (size_t i = 0; i < lut_plus_size - 1; i++)
-    {
-        float t = float(i) / (lut_plus_size - 1);
-        float mapped_t = t * t;
-        float x = mapped_t * h_plus;
-        waveshaper_lut[lut_minus_size + i - 1] = waveshaper_cmos(x);
-    }
-
-    // Ensure exact value at x = 0
-    waveshaper_lut[lut_minus_size - 1] = 0.0f;
-}
-
 inline float CMOS::waveshaper_cmos(float x)
 {
     float vin = x + bias;
@@ -162,31 +138,18 @@ inline float CMOS::waveshaper_cmos(float x)
     return 1.0f - 2.0f * vout / v_dd;
 }
 
-// inline float CMOS::processSample(float x)
-// {
-//     return waveshaper_cmos(x);
-// }
+inline void CMOS::prepare()
+{
+    lut.initialise(
+        [this](float x) { return waveshaper_cmos(x); }, lut_min, lut_max,
+        lut_size
+    );
+}
 
 inline float CMOS::processSample(float x)
 {
-    const size_t lut_size = lut_minus_size + lut_plus_size - 1;
-
-    float tn = (x - lut_min_input) / (-lut_min_input);
-    float idxn = (lut_minus_size - 1) * tn * tn;
-
-    float tp = x / lut_max_input;
-    float idxp = (lut_plus_size - 1) * tp * tp;
-
-    float idx = (x < 0.0f) ? idxn : lut_minus_size - 1 + idxp;
-
-    size_t i0 = size_t(idx);
-    size_t i1 = std::min(i0 + 1, lut_size - 1);
-    float t = idx - float(i0);
-
-    float y0 = waveshaper_lut[i0];
-    float y1 = waveshaper_lut[i1];
-
-    return y0 + (y1 - y0) * t;
+    return lut.processSample(x);
+    // return waveshaper_cmos(x);
 }
 
 inline void CMOS::process(

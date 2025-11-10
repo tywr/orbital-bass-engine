@@ -1,3 +1,4 @@
+#include "assets/ImpulseResponseBinaryMapping.h"
 #include <juce_dsp/juce_dsp.h>
 
 inline juce::AudioProcessorValueTreeState::ParameterLayout
@@ -143,8 +144,7 @@ createParameterLayout()
             juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f
         ),
         std::make_unique<juce::AudioParameterChoice>(
-            "ir_type", "IR Type",
-            juce::StringArray{"4x10", "2x12", "B15", "8x10"}, 0
+            "ir_type", "IR Type", impulseResponseBinaryNames, 0
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "ir_level", "Impulse Response Level",

@@ -1,7 +1,6 @@
 #include "synth_voices.h"
 #include <algorithm>
 
-#include "../assets/impulse_response_binary.h"
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <juce_dsp/juce_dsp.h>
 
