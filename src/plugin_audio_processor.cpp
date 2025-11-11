@@ -113,10 +113,9 @@ void PluginAudioProcessor::parameterChanged(
 
 void PluginAudioProcessor::prepareParameters()
 {
-    size_t amp_index = static_cast<size_t>(
-        parameters.getRawParameterValue("amp_type")->load()
-    );
-    current_overdrive.store(overdrives[amp_index]);
+    // size_t amp_index = static_cast<size_t>(
+    //     parameters.getRawParameterValue("amp_type")->load()
+    // );
 
     // iterate over all parameters to set their initial values
     for (auto* p : getParameters())
@@ -171,10 +170,7 @@ void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     amp_eq.prepare(spec);
     irConvolver.prepare(spec);
     chorus.prepare(spec);
-    for (auto& overdrive : overdrives)
-    {
-        overdrive->prepare(spec);
-    }
+    overdrive.prepare(spec);
     prepareParameters();
 }
 
@@ -260,11 +256,7 @@ void PluginAudioProcessor::processBlock(
 
     if (amp_bypass_parameter->load() < 0.5f)
     {
-        if (auto* od = current_overdrive.load())
-            od->process(context);
-
-        amp_eq.process(buffer);
-
+        overdrive.process(context);
         current_amp_master_gain.setTargetValue(
             juce::Decibels::decibelsToGain(amp_master_gain_parameter->load())
         );

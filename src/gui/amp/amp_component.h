@@ -43,23 +43,22 @@ class AmpComponent : public juce::Component
     juce::Colour current_colour2;
 
     AmpType helios_type = {
-        &helios_button, "helios", ColourCodes::helios_yellow,
+        "helios", ColourCodes::helios_yellow,
         ColourCodes::helios_orange
     };
-    AmpType borealis_type = {
-        &borealis_button, "borealis", ColourCodes::blue1, ColourCodes::blue2
-    };
+    // AmpType borealis_type = {
+    //     &borealis_button, "borealis", ColourCodes::blue1, ColourCodes::blue2
+    // };
+    // std::vector<AmpType> types = {helios_type, borealis_type};
+    // HeliosToggleButton helios_button = HeliosToggleButton(helios_type);
+    // BorealisToggleButton borealis_button = BorealisToggleButton(borealis_type);
 
-    std::vector<AmpType> types = {helios_type, borealis_type};
-
-    HeliosToggleButton helios_button = HeliosToggleButton(helios_type);
-    BorealisToggleButton borealis_button = BorealisToggleButton(borealis_type);
-
-    AmpType selected_type = types[0];
+    // AmpType selected_type = types[0];
+    AmpType selected_type = helios_type;
 
     // cache for paint
-    std::vector<juce::Point<float>> voronoi_sites;
-    std::vector<juce::Path> voronoi_cells;
+    // std::vector<juce::Point<float>> voronoi_sites;
+    // std::vector<juce::Path> voronoi_cells;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AmpComponent)
 };

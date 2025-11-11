@@ -13,7 +13,7 @@ constexpr int IR_LABEL_HEIGHT = 50;
 
 constexpr int BYPASS_SIZE = 20;
 
-constexpr int BOX_HEIGHT = 100;
+constexpr int BOX_HEIGHT = 80;
 constexpr int LABEL_HEIGHT = 20;
-constexpr int KNOB_SIZE = 60;
+constexpr int KNOB_SIZE = 40;
 } // namespace IRDimensions

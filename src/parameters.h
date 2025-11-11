@@ -58,12 +58,6 @@ createParameterLayout()
             "fuzz_level", "Fuzz Level",
             juce::NormalisableRange<float>(-24.0f, 12.0f, 0.01f), 5.0f
         ),
-        std::make_unique<juce::AudioParameterChoice>(
-            "amp_type",                              // Parameter ID
-            "Amp Type",                              // Display name
-            juce::StringArray{"helios", "borealis"}, // Choice options
-            0
-        ),
         std::make_unique<juce::AudioParameterFloat>(
             "amp_master", "Amp Master Level",
             juce::NormalisableRange<float>(-24.0f, 12.0f, 0.1f, 1.0f), 0.0f
@@ -88,33 +82,8 @@ createParameterLayout()
             juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f), 5.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "overdrive_x_frequency", "Overdrive Crossover",
-            juce::NormalisableRange<float>(250.0f, 1000.0f, 1.0f, 0.6309f),
-            500.0f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "overdrive_bass_frequency", "Overdrive Bass Crossover Level",
-            juce::NormalisableRange<float>(50.0f, 500.0f, 1.0f), 275.0f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
             "overdrive_mix", "Overdrive Mix",
             juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "amp_eq_bass", "Amp EQ Bass",
-            juce::NormalisableRange<float>(-12.0f, 12.0f, 0.1f, 1.0f), 0.0f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "amp_eq_low_mid", "Amp EQ Lo-Mids",
-            juce::NormalisableRange<float>(-12.0f, 12.0f, 0.1f, 1.0f), 0.0f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "amp_eq_hi_mid", "Amp EQ Hi-Mids",
-            juce::NormalisableRange<float>(-12.0f, 12.0f, 0.1f, 1.0f), 0.0f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "amp_eq_treble", "Amp EQ Treble",
-            juce::NormalisableRange<float>(-12.0f, 12.0f, 0.1f, 1.0f), 0.0f
         ),
         std::make_unique<juce::AudioParameterBool>(
             "chorus_bypass", "Chorus Mix", false
@@ -148,7 +117,7 @@ createParameterLayout()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "ir_level", "Impulse Response Level",
-            juce::NormalisableRange<float>(-36.0f, 12.0f, 0.1f, 1.0f), -12.0f
+            juce::NormalisableRange<float>(-36.0f, 12.0f, 0.1f, 1.0f), -18.0f
         ),
         std::make_unique<juce::AudioParameterBool>(
             "synth_bypass", "Synth Bypass", true

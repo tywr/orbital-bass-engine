@@ -6,7 +6,7 @@
 
 struct AmpType
 {
-    juce::ToggleButton* button;
+    // juce::ToggleButton* button;
     juce::String id;
     juce::Colour colour1;
     juce::Colour colour2;

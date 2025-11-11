@@ -60,7 +60,7 @@ class ChorusKnobsComponent : public juce::Component
     std::vector<ChorusKnob> knobs = {
         {&rate_slider,      &rate_label,      "chorus_rate",      "rate"     },
         {&depth_slider,     &depth_label,     "chorus_depth",     "depth"    },
-        {&crossover_slider, &crossover_label, "chorus_crossover", "crossover"},
+        {&crossover_slider, &crossover_label, "chorus_crossover", "freq"},
         {&mix_slider,       &mix_label,       "chorus_mix",       "mix"      }
     };
 

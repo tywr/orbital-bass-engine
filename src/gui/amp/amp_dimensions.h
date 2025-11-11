@@ -9,7 +9,7 @@ constexpr int AMP_FRAME_PADDING = 15;
 constexpr int AMP_TYPE_BUTTONS_HEIGHT = 100;
 constexpr int AMP_TYPE_BUTTON_SIZE = 50;
 
-constexpr int AMP_SIDE_WIDTH = 90;
+constexpr int AMP_SIDE_WIDTH = 200;
 constexpr int AMP_INNER_TOP_PADDING = 30;
 constexpr int AMP_INNER_BOTTOM_PADDING = 25;
 

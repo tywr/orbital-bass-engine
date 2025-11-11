@@ -5,7 +5,6 @@
 #include "dsp/compressor.h"
 #include "dsp/fuzz.h"
 #include "dsp/ir.h"
-#include "dsp/overdrives/borealis.h"
 #include "dsp/overdrives/helios.h"
 #include "dsp/overdrives/overdrive.h"
 #include "dsp/synth_voices.h"
@@ -78,12 +77,13 @@ class PluginAudioProcessor final
     Chorus chorus;
     SynthVoices synth_voices;
 
-    std::atomic<Overdrive*> current_overdrive = nullptr;
-    HeliosOverdrive helios_overdrive;
-    BorealisOverdrive borealis_overdrive;
-    std::vector<Overdrive*> overdrives = {
-        &helios_overdrive, &borealis_overdrive
-    };
+    HeliosOverdrive overdrive;
+    // std::atomic<Overdrive*> current_overdrive = nullptr;
+    // HeliosOverdrive helios_overdrive;
+    // BorealisOverdrive borealis_overdrive;
+    // std::vector<Overdrive*> overdrives = {
+    //     &helios_overdrive, &borealis_overdrive
+    // };
 
     float smoothing_time = 0.05f;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>

@@ -45,87 +45,28 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
         float bv = juce::jlimit(-48.0f, 6.0f, v);
         fuzz.setLevel(juce::Decibels::decibelsToGain(bv));
     }
-    else if (parameterID == "amp_type")
-    {
-        int index = juce::jlimit(0, (int)overdrives.size() - 1, (int)v);
-        Overdrive* next = overdrives[(size_t)index];
-
-        if (next != current_overdrive.load())
-        {
-            next->reset(); // reset buffers/envelopes
-            current_overdrive.store(next);
-        }
-    }
     // Overdrive
     else if (parameterID == "overdrive_mix")
     {
         float bv = juce::jlimit(0.0f, 1.0f, v);
-        for (auto& overdrive : overdrives)
-        {
-            overdrive->setMix(bv);
-        }
+        overdrive.setMix(bv);
     }
     else if (parameterID == "overdrive_level_db")
     {
-        for (auto& overdrive : overdrives)
-        {
-            overdrive->setLevel(juce::Decibels::decibelsToGain(v));
-        }
+        overdrive.setLevel(juce::Decibels::decibelsToGain(v));
     }
     else if (parameterID == "overdrive_drive")
     {
-        for (auto& overdrive : overdrives)
-        {
-            float bv = juce::jlimit(0.0f, 10.0f, v);
-            overdrive->setDrive(bv);
-        }
+        float bv = juce::jlimit(0.0f, 10.0f, v);
+        overdrive.setDrive(bv);
     }
     else if (parameterID == "overdrive_attack")
     {
-        for (auto& overdrive : overdrives)
-        {
-            overdrive->setAttack(v);
-        }
+        overdrive.setAttack(v);
     }
     else if (parameterID == "overdrive_era")
     {
-        for (auto& overdrive : overdrives)
-        {
-            overdrive->setEra(v);
-        }
-    }
-    else if (parameterID == "overdrive_x_frequency")
-    {
-        float bv = juce::jlimit(20.0f, 20000.0f, v);
-        for (auto& overdrive : overdrives)
-        {
-            overdrive->setCrossFrequency(bv);
-        }
-    }
-    else if (parameterID == "overdrive_bass_frequency")
-    {
-        float bv = juce::jlimit(20.0f, 20000.0f, v);
-        for (auto& overdrive : overdrives)
-        {
-            overdrive->setBassFrequency(bv);
-        }
-    }
-    // Amp EQ
-    else if (parameterID == "amp_eq_bass")
-    {
-        amp_eq.setBassGain(juce::Decibels::decibelsToGain(v));
-    }
-    else if (parameterID == "amp_eq_low_mid")
-    {
-        amp_eq.setLowMidGain(juce::Decibels::decibelsToGain(v));
-    }
-    else if (parameterID == "amp_eq_hi_mid")
-    {
-        amp_eq.setHighMidGain(juce::Decibels::decibelsToGain(v));
-    }
-    else if (parameterID == "amp_eq_treble")
-    {
-        amp_eq.setTrebleGain(juce::Decibels::decibelsToGain(v));
+        overdrive.setEra(v);
     }
     // Chorus
     else if (parameterID == "chorus_mix")
