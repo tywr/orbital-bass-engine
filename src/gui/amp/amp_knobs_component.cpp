@@ -55,26 +55,8 @@ void AmpKnobsComponent::switchColour(juce::Colour colour1, juce::Colour colour2)
     repaint();
 }
 
-void AmpKnobsComponent::switchType(AmpType new_type)
+void AmpKnobsComponent::switchType()
 {
-    if (new_type.id == "helios")
-    {
-        current_knobs[1] = {&era_slider, &era_label, "overdrive_era", "era"};
-        current_knobs[2] = {
-            &attack_slider, &attack_label, "overdrive_attack", "attack"
-        };
-    }
-    if (new_type.id == "borealis")
-    {
-        current_knobs[1] = {
-            &bass_frequency_slider, &bass_frequency_label,
-            "overdrive_bass_frequency", "low pass"
-        };
-        current_knobs[2] = {
-            &cross_frequency_slider, &cross_frequency_label,
-            "overdrive_x_frequency", "hi pass"
-        };
-    }
     resized();
     removeAllChildren();
     addAndMakeVisible(drag_tooltip);

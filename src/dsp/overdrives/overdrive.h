@@ -10,6 +10,12 @@ class Overdrive : public juce::dsp::ProcessorBase
         attack.setTargetValue(v);
         raw_attack = v;
     }
+    void virtual setGrunt(float newGrunt)
+    {
+        float v = juce::jlimit(0.0f, 10.0f, newGrunt);
+        grunt.setTargetValue(v);
+        raw_grunt = v;
+    }
     void virtual setEra(float newEra)
     {
         float v = juce::jlimit(0.0f, 10.0f, newEra);
@@ -75,8 +81,8 @@ class Overdrive : public juce::dsp::ProcessorBase
     // gui parameters
     int type;
     bool bypass;
-    float raw_level, raw_drive, raw_mix, raw_attack, raw_era,
+    float raw_level, raw_drive, raw_mix, raw_attack, raw_grunt, raw_era,
         raw_cross_frequency, raw_bass_frequency, raw_mod, raw_aggro;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> level, drive,
-        mix, attack, era, cross_frequency, bass_frequency, mod, aggro;
+        mix, attack, grunt, era, cross_frequency, bass_frequency, mod, aggro;
 };

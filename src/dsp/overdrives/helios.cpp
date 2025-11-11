@@ -70,6 +70,8 @@ void HeliosOverdrive::resetSmoothedValues()
     mix.setCurrentAndTargetValue(raw_mix);
     attack.reset(process_spec.sampleRate, smoothing_time);
     attack.setCurrentAndTargetValue(raw_attack);
+    grunt.reset(process_spec.sampleRate, smoothing_time);
+    grunt.setCurrentAndTargetValue(raw_grunt);
     era.reset(process_spec.sampleRate, smoothing_time);
     era.setCurrentAndTargetValue(raw_era);
 }
@@ -179,6 +181,28 @@ void HeliosOverdrive::prepareFilters()
     *vmt_post_filter_3.coefficients = *vmt_post_coefficients_3;
 }
 
+void HeliosOverdrive::updateGruntFilter()
+{
+    float current_grunt = grunt.getCurrentValue();
+    float grunt_shelf_q = 0.7f;
+    float min_frequency = 300.0f;
+    float max_frequency = 300.0f;
+    float min_gain_db = -12.0f;
+    float max_gain_db = 12.0f;
+    float shelf_frequency =
+        min_frequency + (max_frequency - min_frequency) * current_grunt * 0.1f;
+    float shelf_gain = juce::Decibels::decibelsToGain(
+        min_gain_db + (max_gain_db - min_gain_db) * current_grunt * 0.1f
+    );
+
+    auto grunt_shelf_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeLowShelf(
+            process_spec.sampleRate, shelf_frequency, grunt_shelf_q, shelf_gain
+        );
+    *vmt_grunt_shelf.coefficients = *grunt_shelf_coefficients;
+    *b3k_grunt_shelf.coefficients = *grunt_shelf_coefficients;
+}
+
 void HeliosOverdrive::updateAttackFilter()
 {
     float current_attack = attack.getCurrentValue();
@@ -238,6 +262,11 @@ void HeliosOverdrive::process(
         attack.skip((int)num_samples);
         updateAttackFilter();
     }
+    if (grunt.isSmoothing())
+    {
+        grunt.skip((int)num_samples);
+        updateGruntFilter();
+    }
     if (drive.isSmoothing())
     {
         drive.skip((int)num_samples);
@@ -284,6 +313,7 @@ void HeliosOverdrive::processVMT(
     vmt_pre_filter.process(context);
     vmt_attack_shelf.process(context);
     vmt_drive_filter.process(context);
+    vmt_grunt_shelf.process(context);
     cmos.process(context);
     vmt_post_filter_1.process(context);
     vmt_post_filter_2.process(context);
@@ -300,6 +330,7 @@ void HeliosOverdrive::processB3K(
     b3k_pre_filter_2.process(context);
     b3k_attack_shelf.process(context);
     b3k_drive_filter.process(context);
+    b3k_grunt_shelf.process(context);
     cmos.process(context);
     b3k_post_filter_1.process(context);
     b3k_post_filter_2.process(context);

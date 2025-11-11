@@ -20,6 +20,7 @@ class HeliosOverdrive : public Overdrive
     void resetFilters();
     float driveToGain(float);
     void updateAttackFilter();
+    void updateGruntFilter();
     void updateEraFilter();
     void updateMidScoop();
     void updateDriveFilter();
@@ -43,6 +44,8 @@ class HeliosOverdrive : public Overdrive
     juce::dsp::IIR::Filter<float> b3k_drive_filter;
     juce::dsp::IIR::Filter<float> vmt_attack_shelf;
     juce::dsp::IIR::Filter<float> b3k_attack_shelf;
+    juce::dsp::IIR::Filter<float> vmt_grunt_shelf;
+    juce::dsp::IIR::Filter<float> b3k_grunt_shelf;
 
     juce::dsp::IIR::Filter<float> b3k_pre_filter_1;
     juce::dsp::IIR::Filter<float> b3k_pre_filter_2;

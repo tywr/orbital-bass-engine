@@ -23,7 +23,7 @@ AmpComponent::AmpComponent(juce::AudioProcessorValueTreeState& params)
         is_cache_dirty = true;
         repaint();
     };
-    knobs_component.switchType(selected_type);
+    knobs_component.switchType();
 }
 
 AmpComponent::~AmpComponent()

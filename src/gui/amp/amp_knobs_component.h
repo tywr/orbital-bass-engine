@@ -23,7 +23,7 @@ class AmpKnobsComponent : public juce::Component
 
     void paint(juce::Graphics&) override;
     void resized() override;
-    void switchType(AmpType new_type);
+    void switchType();
     void switchColour(juce::Colour, juce::Colour);
 
   private:
@@ -84,6 +84,7 @@ class AmpKnobsComponent : public juce::Component
         {&drive_slider,           &drive_label,           "overdrive_drive",    "drive"   },
         {&era_slider,             &era_label,             "overdrive_era",      "era"     },
         {&attack_slider,          &attack_label,          "overdrive_attack",   "attack"  },
+        {&grunt_slider,           &grunt_label,           "overdrive_grunt",    "grunt"   },
         {&bass_frequency_slider,  &bass_frequency_label,
          "overdrive_bass_frequency",                                            "low pass"},
         {&cross_frequency_slider, &cross_frequency_label,
@@ -95,6 +96,7 @@ class AmpKnobsComponent : public juce::Component
     std::vector<AmpKnob> current_knobs = {
         {&drive_slider,  &drive_label,  "overdrive_drive",    "drive" },
         {&era_slider,    &era_label,    "overdrive_era",      "era"   },
+        {&grunt_slider,  &grunt_label,  "overdrive_grunt",    "grunt" },
         {&attack_slider, &attack_label, "overdrive_attack",   "attack"},
         {&level_slider,  &level_label,  "overdrive_level_db", "level" },
         {&mix_slider,    &mix_label,    "overdrive_mix",      "mix"   },
