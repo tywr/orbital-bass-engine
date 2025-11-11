@@ -20,7 +20,7 @@ Tabs::Tabs(
         juce::TabbedComponent::outlineColourId, juce::Colours::transparentBlack
     );
 
-    addTab("synth", ColourCodes::bg, &synth_component, true);
+    // addTab("synth", ColourCodes::bg, &synth_component, true);
     addTab("comp", ColourCodes::bg, &compressor_component, true);
     // addTab("fuzz", ColourCodes::bg, &fuzz_component, true);
     addTab("amp", ColourCodes::bg, &amp_component, true);

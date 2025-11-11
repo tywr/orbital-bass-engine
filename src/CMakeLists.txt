@@ -32,6 +32,7 @@ target_sources(${PROJECT_NAME}
         gui/looks/base_look_and_feel.cpp
         gui/looks/compressor_look_and_feel.cpp
         gui/looks/header_look_and_feel.cpp
+        gui/looks/eq_look_and_feel.cpp
         gui/looks/compressor_selector_look_and_feel.cpp
         gui/compressor/compressor_knobs_component.cpp
         gui/compressor/compressor_meter_component.cpp
@@ -42,6 +43,8 @@ target_sources(${PROJECT_NAME}
         gui/amp/amp_knobs_component.cpp
         gui/chorus/chorus_component.cpp
         gui/chorus/chorus_knobs_component.cpp
+        gui/eq/eq_component.cpp
+        gui/eq/eq_sliders_component.cpp
         gui/fuzz/fuzz_component.cpp
         gui/fuzz/fuzz_knobs_component.cpp
         gui/ir/ir_component.cpp

@@ -126,6 +126,37 @@ createParameterLayout()
         std::make_unique<juce::AudioParameterBool>(
             "synth_bypass", "Synth Bypass", true
         ),
+        std::make_unique<juce::AudioParameterBool>(
+            "eq_bypass", "EQ Bypass", true
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_lows", "EQ Low-band",
+            juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_b250", "EQ 250 Hz-Band",
+            juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_b500", "EQ 500 Hz-Band",
+            juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_b1500", "EQ 1.5 kHz-Band",
+            juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_b3000", "EQ 3 kHz-Band",
+            juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_highs", "EQ High-band",
+            juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_lpf", "EQ LPF",
+            juce::NormalisableRange<float>(1000.0f, 10000.0f, 1.0f), 3000.0f
+        ),
         std::make_unique<juce::AudioParameterFloat>(
             "synth_octave_level", "Synth Voice Octave Level",
             juce::NormalisableRange<float>(-48.0f, 6.0f, 0.1f, 1.0f), -12.0f
