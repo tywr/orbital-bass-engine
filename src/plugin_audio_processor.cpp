@@ -25,6 +25,7 @@ PluginAudioProcessor::PluginAudioProcessor()
     amp_bypass_parameter = parameters.getRawParameterValue("amp_bypass");
     ir_bypass_parameter = parameters.getRawParameterValue("ir_bypass");
     chorus_bypass_parameter = parameters.getRawParameterValue("chorus_bypass");
+    eq_bypass_parameter = parameters.getRawParameterValue("eq_bypass");
     compressor_bypass_parameter =
         parameters.getRawParameterValue("compressor_bypass");
     fuzz_bypass_parameter = parameters.getRawParameterValue("fuzz_bypass");
@@ -167,7 +168,7 @@ void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     synth_voices.prepare(spec);
 
     compressor.prepare(spec);
-    amp_eq.prepare(spec);
+    eq.prepare(spec);
     irConvolver.prepare(spec);
     chorus.prepare(spec);
     overdrive.prepare(spec);
@@ -266,6 +267,8 @@ void PluginAudioProcessor::processBlock(
     // Copy mono signal back to both left and right channels
     buffer.copyFrom(1, 0, buffer, 0, 0, buffer.getNumSamples());
 
+    if (eq_bypass_parameter->load() < 0.5f)
+        eq.process(context);
     if (chorus_bypass_parameter->load() < 0.5f)
         chorus.process(context);
     if (ir_bypass_parameter->load() < 0.5f)

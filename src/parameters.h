@@ -130,7 +130,7 @@ createParameterLayout()
             "eq_bypass", "EQ Bypass", true
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "eq_lows", "EQ Low-band",
+            "eq_b80", "EQ Low-band",
             juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
@@ -150,7 +150,7 @@ createParameterLayout()
             juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "eq_highs", "EQ High-band",
+            "eq_b5000", "EQ High-band",
             juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(

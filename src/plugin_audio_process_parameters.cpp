@@ -72,6 +72,48 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     {
         overdrive.setGrunt(v);
     }
+    // EQ
+    else if (parameterID == "eq_b80")
+    {
+        float bv = juce::jlimit(-20.0f, 20.0f, v);
+        float dbv = juce::Decibels::decibelsToGain(bv);
+        eq.set80Gain(dbv);
+    }
+    else if (parameterID == "eq_b250")
+    {
+        float bv = juce::jlimit(-20.0f, 20.0f, v);
+        float dbv = juce::Decibels::decibelsToGain(bv);
+        eq.set250Gain(dbv);
+    }
+    else if (parameterID == "eq_b500")
+    {
+        float bv = juce::jlimit(-20.0f, 20.0f, v);
+        float dbv = juce::Decibels::decibelsToGain(bv);
+        eq.set500Gain(dbv);
+    }
+    else if (parameterID == "eq_b1500")
+    {
+        float bv = juce::jlimit(-20.0f, 20.0f, v);
+        float dbv = juce::Decibels::decibelsToGain(bv);
+        eq.set1500Gain(dbv);
+    }
+    else if (parameterID == "eq_b3000")
+    {
+        float bv = juce::jlimit(-20.0f, 20.0f, v);
+        float dbv = juce::Decibels::decibelsToGain(bv);
+        eq.set3000Gain(dbv);
+    }
+    else if (parameterID == "eq_b5000")
+    {
+        float bv = juce::jlimit(-20.0f, 20.0f, v);
+        float dbv = juce::Decibels::decibelsToGain(bv);
+        eq.set5000Gain(dbv);
+    }
+    else if (parameterID == "eq_lpf")
+    {
+        float bv = juce::jlimit(1000.0f, 10000.0f, v);
+        eq.setLpfFrequency(bv);
+    }
     // Chorus
     else if (parameterID == "chorus_mix")
     {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dsp/amp_eq.h"
+#include "dsp/eq.h"
 #include "dsp/chorus.h"
 #include "dsp/compressor.h"
 #include "dsp/fuzz.h"
@@ -72,7 +72,7 @@ class PluginAudioProcessor final
 
     Fuzz fuzz;
     Compressor compressor;
-    AmpEQ amp_eq;
+    EQ eq;
     IRConvolver irConvolver;
     Chorus chorus;
     SynthVoices synth_voices;
@@ -95,6 +95,7 @@ class PluginAudioProcessor final
     std::atomic<float>* ir_bypass_parameter = nullptr;
     std::atomic<float>* compressor_bypass_parameter = nullptr;
     std::atomic<float>* chorus_bypass_parameter = nullptr;
+    std::atomic<float>* eq_bypass_parameter = nullptr;
     std::atomic<float>* fuzz_bypass_parameter = nullptr;
     std::atomic<float>* synth_bypass_parameter = nullptr;
     bool isAmpBypassed = false;

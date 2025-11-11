@@ -56,7 +56,7 @@ target_sources(${PROJECT_NAME}
         dsp/ir.cpp
         dsp/overdrives/helios.cpp
         dsp/overdrives/borealis.cpp
-        dsp/amp_eq.cpp
+        dsp/eq.cpp
         dsp/chorus.cpp
         dsp/fuzz.cpp
         dsp/synth_voices/square_voice.cpp

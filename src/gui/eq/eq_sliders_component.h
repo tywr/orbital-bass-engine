@@ -29,10 +29,10 @@ class EqSlidersComponent : public juce::Component
 
     juce::Colour const default_type_colour = ColourCodes::grey3;
 
-    juce::Slider lows_slider;
-    juce::Label lows_label;
+    juce::Slider b80_slider;
+    juce::Label b80_label;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        lows_slider_attachment;
+        b80_slider_attachment;
 
     juce::Slider b250_slider;
     juce::Label b250_label;
@@ -54,22 +54,22 @@ class EqSlidersComponent : public juce::Component
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         b3000_slider_attachment;
 
-    juce::Slider highs_slider;
-    juce::Label highs_label;
+    juce::Slider b5000_slider;
+    juce::Label b5000_label;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        highs_slider_attachment;
+        b5000_slider_attachment;
 
     std::vector<
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>>
         slider_attachments;
 
     std::vector<EqSlider> sliders = {
-        {&lows_slider,  &lows_label,  "eq_lows",  ">" },
-        {&b250_slider,  &b250_label,  "eq_b250",  "250"  },
-        {&b500_slider,  &b500_label,  "eq_b500",  "500"  },
-        {&b1500_slider, &b1500_label, "eq_b1500", "1.5k" },
-        {&b3000_slider, &b3000_label, "eq_b3000", "3k"   },
-        {&highs_slider, &highs_label, "eq_highs", "<"},
+        {&b80_slider,   &b80_label,   "eq_b80",   "80"  },
+        {&b250_slider,  &b250_label,  "eq_b250",  "250" },
+        {&b500_slider,  &b500_label,  "eq_b500",  "500" },
+        {&b1500_slider, &b1500_label, "eq_b1500", "1.5k"},
+        {&b3000_slider, &b3000_label, "eq_b3000", "3k"  },
+        {&b5000_slider, &b5000_label, "eq_b5000", "5k"  },
     };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EqSlidersComponent)
