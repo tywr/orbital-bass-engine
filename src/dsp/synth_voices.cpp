@@ -55,9 +55,9 @@ void SynthVoices::process(
     juce::dsp::AudioBlock<float> square_block(square_buffer);
     juce::dsp::AudioBlock<float> triangle_block(triangle_buffer);
     juce::dsp::AudioBlock<float> octave_block(octave_buffer);
-    auto square_sub = square_block.getSubBlock(0, num_samples);
-    auto triangle_sub = triangle_block.getSubBlock(0, num_samples);
-    auto octave_sub = octave_block.getSubBlock(0, num_samples);
+    auto square_sub = square_block.getSubBlock(0, (size_t)num_samples);
+    auto triangle_sub = triangle_block.getSubBlock(0, (size_t)num_samples);
+    auto octave_sub = octave_block.getSubBlock(0, (size_t)num_samples);
     square_sub.copyFrom(block);
     triangle_sub.copyFrom(block);
     octave_sub.copyFrom(block);

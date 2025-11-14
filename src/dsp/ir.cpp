@@ -69,7 +69,7 @@ void IRConvolver::loadIR()
     char* data = (char*)impulseResponseBinaryWavFiles[type];
 
     convolution.loadImpulseResponse(
-        data, size, juce::dsp::Convolution::Stereo::no,
+        data, (size_t)size, juce::dsp::Convolution::Stereo::no,
         juce::dsp::Convolution::Trim::no, 0,
         juce::dsp::Convolution::Normalise::no
     );
