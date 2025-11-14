@@ -1,6 +1,6 @@
 BUILD_DEBUG_DIR = builds/debug
 BUILD_RELEASE_DIR = builds/release
-PROJECT_NAME = AuroraDrive
+PROJECT_NAME = orbital-bass-engine
 
 init-debug:
 	cmake -S . -B builds/debug -D CMAKE_BUILD_TYPE=Debug
