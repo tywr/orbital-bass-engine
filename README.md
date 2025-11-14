@@ -1,5 +1,3 @@
-# AuroraDrive
+# Orbital Bass Engine
 
-## Open Source DSP for Bass !
-
-![screenshot](assets/screenshot.png)
+"Bass tone open-source optimization protocol: launch sequence initiated."
