@@ -28,7 +28,6 @@ PluginAudioProcessor::PluginAudioProcessor()
     eq_bypass_parameter = parameters.getRawParameterValue("eq_bypass");
     compressor_bypass_parameter =
         parameters.getRawParameterValue("compressor_bypass");
-    fuzz_bypass_parameter = parameters.getRawParameterValue("fuzz_bypass");
     synth_bypass_parameter = parameters.getRawParameterValue("synth_bypass");
 
     for (auto* p : getParameters())
@@ -264,11 +263,12 @@ void PluginAudioProcessor::processBlock(
         current_amp_master_gain.applyGain(buffer, num_samples);
     }
 
+    if (eq_bypass_parameter->load() < 0.5f)
+        eq.process(context);
+
     // Copy mono signal back to both left and right channels
     buffer.copyFrom(1, 0, buffer, 0, 0, buffer.getNumSamples());
 
-    if (eq_bypass_parameter->load() < 0.5f)
-        eq.process(context);
     if (chorus_bypass_parameter->load() < 0.5f)
         chorus.process(context);
     if (ir_bypass_parameter->load() < 0.5f)

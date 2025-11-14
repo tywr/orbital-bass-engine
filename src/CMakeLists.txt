@@ -45,8 +45,6 @@ target_sources(${PROJECT_NAME}
         gui/chorus/chorus_knobs_component.cpp
         gui/eq/eq_component.cpp
         gui/eq/eq_sliders_component.cpp
-        gui/fuzz/fuzz_component.cpp
-        gui/fuzz/fuzz_knobs_component.cpp
         gui/ir/ir_component.cpp
         gui/meter.cpp
         gui/header.cpp
@@ -58,7 +56,6 @@ target_sources(${PROJECT_NAME}
         dsp/overdrives/borealis.cpp
         dsp/eq.cpp
         dsp/chorus.cpp
-        dsp/fuzz.cpp
         dsp/synth_voices/square_voice.cpp
         dsp/synth_voices/octave_voice.cpp
         dsp/synth_voices/triangle_voice.cpp

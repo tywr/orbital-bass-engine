@@ -25,26 +25,6 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
         float bv = juce::jlimit(0.0f, 1.0f, v);
         compressor.setMix(bv);
     }
-    else if (parameterID == "fuzz_tone")
-    {
-        float bv = juce::jlimit(0.0f, 10.0f, v);
-        fuzz.setTone(bv);
-    }
-    else if (parameterID == "fuzz_sustain")
-    {
-        float bv = juce::jlimit(0.0f, 10.0f, v);
-        fuzz.setSustain(bv);
-    }
-    else if (parameterID == "fuzz_mix")
-    {
-        float bv = juce::jlimit(0.0f, 1.0f, v);
-        fuzz.setMix(bv);
-    }
-    else if (parameterID == "fuzz_level")
-    {
-        float bv = juce::jlimit(-48.0f, 6.0f, v);
-        fuzz.setLevel(juce::Decibels::decibelsToGain(bv));
-    }
     // Overdrive
     else if (parameterID == "overdrive_mix")
     {

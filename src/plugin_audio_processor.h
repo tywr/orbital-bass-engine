@@ -3,7 +3,6 @@
 #include "dsp/eq.h"
 #include "dsp/chorus.h"
 #include "dsp/compressor.h"
-#include "dsp/fuzz.h"
 #include "dsp/ir.h"
 #include "dsp/overdrives/helios.h"
 #include "dsp/overdrives/overdrive.h"
@@ -70,7 +69,6 @@ class PluginAudioProcessor final
     using ParamHandler = std::function<void(float)>;
     std::unordered_map<std::string, ParamHandler> parameterHandlers;
 
-    Fuzz fuzz;
     Compressor compressor;
     EQ eq;
     IRConvolver irConvolver;
@@ -96,7 +94,6 @@ class PluginAudioProcessor final
     std::atomic<float>* compressor_bypass_parameter = nullptr;
     std::atomic<float>* chorus_bypass_parameter = nullptr;
     std::atomic<float>* eq_bypass_parameter = nullptr;
-    std::atomic<float>* fuzz_bypass_parameter = nullptr;
     std::atomic<float>* synth_bypass_parameter = nullptr;
     bool isAmpBypassed = false;
 

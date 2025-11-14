@@ -33,7 +33,7 @@ EqComponent::EqComponent(juce::AudioProcessorValueTreeState& params)
     );
     bypass_button.setColour(
         juce::ToggleButton::tickDisabledColourId,
-        GuiColours::CHORUS_ACTIVE_COLOUR_1
+        GuiColours::EQ_ACTIVE_COLOUR_1
     );
     bypass_button.onClick = [this]() { repaint(); };
 }
@@ -49,8 +49,8 @@ void EqComponent::paint(juce::Graphics& g)
     juce::Colour colour2;
     if (!bypass)
     {
-        colour1 = GuiColours::CHORUS_ACTIVE_COLOUR_1;
-        colour2 = GuiColours::CHORUS_ACTIVE_COLOUR_2;
+        colour1 = GuiColours::EQ_ACTIVE_COLOUR_1;
+        colour2 = GuiColours::EQ_ACTIVE_COLOUR_2;
     }
     else
     {
@@ -66,7 +66,7 @@ void EqComponent::paint(juce::Graphics& g)
             .toFloat();
     auto inner_bounds = outer_bounds.reduced(border_thickness).toFloat();
 
-    g.setColour(GuiColours::CHORUS_BG_COLOUR);
+    g.setColour(GuiColours::EQ_BG_COLOUR);
     g.fillRoundedRectangle(inner_bounds, border_radius);
 
     juce::Path border_path;

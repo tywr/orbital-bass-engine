@@ -9,8 +9,8 @@ Tabs::Tabs(
 )
     : juce::TabbedComponent(juce::TabbedButtonBar::TabsAtTop),
       compressor_component(params, compressorGainReductionDb),
-      fuzz_component(params), amp_component(params), chorus_component(params),
-      ir_component(params), post_rack_component(params), synth_component(params)
+      amp_component(params), chorus_component(params), ir_component(params),
+      post_rack_component(params), synth_component(params)
 {
     setColour(
         juce::TabbedComponent::backgroundColourId,
@@ -22,7 +22,6 @@ Tabs::Tabs(
 
     // addTab("synth", ColourCodes::bg, &synth_component, true);
     addTab("comp", ColourCodes::bg, &compressor_component, true);
-    // addTab("fuzz", ColourCodes::bg, &fuzz_component, true);
     addTab("amp", ColourCodes::bg, &amp_component, true);
     addTab("post", ColourCodes::bg, &post_rack_component, true);
     setTabBarDepth(60);

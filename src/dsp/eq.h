@@ -6,12 +6,12 @@
 class EQ : juce::dsp::ProcessorBase
 {
   public:
-    void prepare(const juce::dsp::ProcessSpec& spec);
+    void prepare(const juce::dsp::ProcessSpec& spec) override;
     void process(
         const juce::dsp::ProcessContextReplacing<float>& context
     ) override;
     void resetSmoothedValues();
-    void reset();
+    void reset() override;
 
     void set80Gain(float g)
     {
@@ -67,7 +67,8 @@ class EQ : juce::dsp::ProcessorBase
   private:
     juce::dsp::ProcessSpec processSpec{-1, 0, 0};
 
-    juce::dsp::IIR::Filter<float> lpf_filter;
+    juce::dsp::IIR::Filter<float> lpf_filter_1;
+    juce::dsp::IIR::Filter<float> lpf_filter_2;
 
     juce::dsp::IIR::Filter<float> b80_filter;
     float b80_freq = 80.0f;
