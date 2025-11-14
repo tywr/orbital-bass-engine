@@ -181,28 +181,6 @@ void HeliosOverdrive::prepareFilters()
     *vmt_post_filter_3.coefficients = *vmt_post_coefficients_3;
 }
 
-void HeliosOverdrive::updateGruntFilter()
-{
-    float current_grunt = grunt.getCurrentValue();
-    float grunt_shelf_q = 0.7f;
-    float min_frequency = 300.0f;
-    float max_frequency = 300.0f;
-    float min_gain_db = -12.0f;
-    float max_gain_db = 12.0f;
-    float shelf_frequency =
-        min_frequency + (max_frequency - min_frequency) * current_grunt * 0.1f;
-    float shelf_gain = juce::Decibels::decibelsToGain(
-        min_gain_db + (max_gain_db - min_gain_db) * current_grunt * 0.1f
-    );
-
-    auto grunt_shelf_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makeLowShelf(
-            process_spec.sampleRate, shelf_frequency, grunt_shelf_q, shelf_gain
-        );
-    *vmt_grunt_shelf.coefficients = *grunt_shelf_coefficients;
-    *b3k_grunt_shelf.coefficients = *grunt_shelf_coefficients;
-}
-
 void HeliosOverdrive::updateAttackFilter()
 {
     float current_attack = attack.getCurrentValue();
@@ -228,10 +206,13 @@ void HeliosOverdrive::updateAttackFilter()
 void HeliosOverdrive::updateDriveFilter()
 {
     float current_drive = drive.getCurrentValue();
+    float current_grunt = grunt.getCurrentValue();
 
-    // Set the frequency based on the grunt parameter
     float rolloff_frequency = 3200.0f;
-    float drive_frequency = 209.0f;
+    float min_frequency = 109.0f;
+    float max_frequency = 309.f;
+    float drive_frequency =
+        min_frequency + (max_frequency - min_frequency) * current_grunt * 0.1f;
 
     // Set the gain based on the drive parameter
     float min_gain_db = 0.0f;
@@ -265,7 +246,7 @@ void HeliosOverdrive::process(
     if (grunt.isSmoothing())
     {
         grunt.skip((int)num_samples);
-        updateGruntFilter();
+        updateAttackFilter();
     }
     if (drive.isSmoothing())
     {
