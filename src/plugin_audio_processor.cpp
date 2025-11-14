@@ -22,7 +22,13 @@ PluginAudioProcessor::PluginAudioProcessor()
     input_gain_parameter = parameters.getRawParameterValue("input_gain_db");
     output_gain_parameter = parameters.getRawParameterValue("output_gain_db");
     amp_master_gain_parameter = parameters.getRawParameterValue("amp_master");
-    isAmpBypassed = false;
+    amp_bypass_parameter = parameters.getRawParameterValue("amp_bypass");
+    ir_bypass_parameter = parameters.getRawParameterValue("ir_bypass");
+    chorus_bypass_parameter = parameters.getRawParameterValue("chorus_bypass");
+    eq_bypass_parameter = parameters.getRawParameterValue("eq_bypass");
+    compressor_bypass_parameter =
+        parameters.getRawParameterValue("compressor_bypass");
+    synth_bypass_parameter = parameters.getRawParameterValue("synth_bypass");
 
     for (auto* p : getParameters())
     {
@@ -107,29 +113,29 @@ void PluginAudioProcessor::parameterChanged(
 
 void PluginAudioProcessor::prepareParameters()
 {
-    int amp_index =
-        static_cast<int>(parameters.getRawParameterValue("amp_type")->load());
-    current_overdrive.store(overdrives[amp_index]);
+    // size_t amp_index = static_cast<size_t>(
+    //     parameters.getRawParameterValue("amp_type")->load()
+    // );
 
     // iterate over all parameters to set their initial values
     for (auto* p : getParameters())
     {
-        if (auto* param = dynamic_cast<juce::AudioParameterFloat*>(p))
+        if (auto* fparam = dynamic_cast<juce::AudioParameterFloat*>(p))
         {
-            juce::String paramID = param->getParameterID();
-            float v = param->get();
+            juce::String paramID = fparam->getParameterID();
+            float v = fparam->get();
             setParameterValue(paramID, v);
         }
-        else if (auto* param = dynamic_cast<juce::AudioParameterChoice*>(p))
+        else if (auto* cparam = dynamic_cast<juce::AudioParameterChoice*>(p))
         {
-            juce::String paramID = param->getParameterID();
-            float v = param->getIndex();
+            juce::String paramID = cparam->getParameterID();
+            float v = cparam->getIndex();
             setParameterValue(paramID, v);
         }
-        else if (auto* param = dynamic_cast<juce::RangedAudioParameter*>(p))
+        else if (auto* rparam = dynamic_cast<juce::RangedAudioParameter*>(p))
         {
-            juce::String paramID = param->getParameterID();
-            float v = param->getValue();
+            juce::String paramID = rparam->getParameterID();
+            float v = rparam->getValue();
             setParameterValue(paramID, v);
         }
     }
@@ -158,13 +164,13 @@ void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     spec.maximumBlockSize = (juce::uint32)samplesPerBlock;
     spec.numChannels = (juce::uint32)getTotalNumOutputChannels();
 
+    synth_voices.prepare(spec);
+
     compressor.prepare(spec);
-    amp_eq.prepare(spec);
+    eq.prepare(spec);
     irConvolver.prepare(spec);
-    for (auto& overdrive : overdrives)
-    {
-        overdrive->prepare(spec);
-    }
+    chorus.prepare(spec);
+    overdrive.prepare(spec);
     prepareParameters();
 }
 
@@ -209,6 +215,7 @@ void PluginAudioProcessor::processBlock(
 )
 {
     juce::ignoreUnused(midiMessages);
+
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -217,54 +224,61 @@ void PluginAudioProcessor::processBlock(
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, num_samples);
 
-    juce::AudioBuffer<float> mono_buffer(1, num_samples);
-    mono_buffer.clear();
+    // Overwrite left channel of buffer with mono signal
+    auto* left = buffer.getReadPointer(0);
+    auto* right = buffer.getReadPointer(1);
+    auto* mono_left = buffer.getWritePointer(0);
+    auto* mono_right = buffer.getWritePointer(1);
 
-    if (totalNumInputChannels == 1)
+    for (int i = 0; i < num_samples; ++i)
     {
-        mono_buffer.copyFrom(0, 0, buffer, 0, 0, num_samples);
+        mono_left[i] = left[i] + right[i];
+        mono_right[i] = 0.0f;
     }
-    else if (totalNumInputChannels >= 2)
-    {
-        // Stereo input → average the two channels
-        auto* left = buffer.getReadPointer(0);
-        auto* right = buffer.getReadPointer(1);
-        auto* mono = mono_buffer.getWritePointer(0);
 
-        for (int i = 0; i < num_samples; ++i)
-            mono[i] = 0.5f * (left[i] + right[i]);
-    }
+    juce::dsp::AudioBlock<float> block(buffer);
+    juce::dsp::ProcessContextReplacing<float> context(block);
 
     current_input_gain.setTargetValue(
         juce::Decibels::decibelsToGain(input_gain_parameter->load())
     );
-    current_input_gain.applyGain(mono_buffer, num_samples);
-    updateInputLevel(mono_buffer);
+    current_input_gain.applyGain(buffer, num_samples);
+    updateInputLevel(buffer);
 
-    compressor.process(mono_buffer);
-    compressorGainReductionDb.setValue(compressor.getGainReductionDb());
+    if (synth_bypass_parameter->load() < 0.5f)
+        synth_voices.process(context);
 
-    if (auto* od = current_overdrive.load())
-        od->process(mono_buffer);
+    if (compressor_bypass_parameter->load() < 0.5f)
+    {
+        compressor.process(context);
+        compressorGainReductionDb.setValue(compressor.getGainReductionDb());
+    }
 
-    amp_eq.process(mono_buffer);
+    if (amp_bypass_parameter->load() < 0.5f)
+    {
+        overdrive.process(context);
+        current_amp_master_gain.setTargetValue(
+            juce::Decibels::decibelsToGain(amp_master_gain_parameter->load())
+        );
+        current_amp_master_gain.applyGain(buffer, num_samples);
+    }
 
-    current_amp_master_gain.setTargetValue(
-        juce::Decibels::decibelsToGain(amp_master_gain_parameter->load())
-    );
-    if (!isAmpBypassed)
-        current_amp_master_gain.applyGain(mono_buffer, num_samples);
+    if (eq_bypass_parameter->load() < 0.5f)
+        eq.process(context);
 
-    irConvolver.process(mono_buffer);
+    // Copy mono signal back to both left and right channels
+    buffer.copyFrom(1, 0, buffer, 0, 0, buffer.getNumSamples());
+
+    if (chorus_bypass_parameter->load() < 0.5f)
+        chorus.process(context);
+    if (ir_bypass_parameter->load() < 0.5f)
+        irConvolver.process(context);
 
     current_output_gain.setTargetValue(
         juce::Decibels::decibelsToGain(output_gain_parameter->load())
     );
-    current_output_gain.applyGain(mono_buffer, num_samples);
-    updateOutputLevel(mono_buffer);
-
-    for (int channel = 0; channel < totalNumOutputChannels; ++channel)
-        buffer.copyFrom(channel, 0, mono_buffer, 0, 0, num_samples);
+    current_output_gain.applyGain(buffer, num_samples);
+    updateOutputLevel(buffer);
 }
 
 //==============================================================================

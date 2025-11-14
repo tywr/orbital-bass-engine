@@ -4,7 +4,6 @@
 #include "amp_knobs_component.h"
 #include "designs/borealis.h"
 #include "designs/helios.h"
-#include "designs/nebula.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -24,86 +23,16 @@ AmpComponent::AmpComponent(juce::AudioProcessorValueTreeState& params)
         is_cache_dirty = true;
         repaint();
     };
-
-    type_slider_attachment =
-        std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-            parameters, "amp_type", type_slider
-        );
-
-    for (auto type : types)
-    {
-        addAndMakeVisible(type.button);
-        type.button->onClick = [this, type]() { switchType(type); };
-    }
-    initType();
-    knobs_component.switchType(selected_type);
+    knobs_component.switchType();
 }
 
 AmpComponent::~AmpComponent()
 {
 }
 
-void AmpComponent::initType()
-{
-    size_t current_index = static_cast<size_t>(type_slider.getValue());
-    auto current_type = types[current_index];
-    for (auto type : types)
-    {
-        if (type.id == current_type.id)
-        {
-            selected_type = current_type;
-            type.button->setToggleState(true, juce::dontSendNotification);
-        }
-        else
-        {
-            type.button->setToggleState(false, juce::dontSendNotification);
-        }
-    }
-}
-
-void AmpComponent::switchType(AmpType new_type)
-{
-    is_cache_dirty = true;
-    selected_type = new_type;
-    knobs_component.switchType(new_type);
-    double index = 0;
-    for (auto type : types)
-    {
-        if (type.id == new_type.id)
-        {
-            type_slider.setValue(index);
-            type.button->setToggleState(true, juce::dontSendNotification);
-            type.button->setEnabled(false);
-        }
-        else
-        {
-            type.button->setToggleState(false, juce::dontSendNotification);
-            type.button->setEnabled(true);
-        }
-        index += 1;
-    }
-    repaint();
-}
-
-void AmpComponent::paintTypeButtons(juce::Graphics& g)
-{
-    juce::ignoreUnused(g);
-}
-
 void AmpComponent::paintDesign(juce::Graphics& g, juce::Rectangle<float> bounds)
 {
-    if (selected_type.id == "helios")
-    {
-        paintDesignHelios(g, bounds, current_colour1, current_colour2);
-    }
-    else if (selected_type.id == "borealis")
-    {
-        paintDesignBorealis(g, bounds, current_colour1, current_colour2);
-    }
-    else if (selected_type.id == "nebula")
-    {
-        paintDesignNebula(g, bounds, current_colour1, current_colour2);
-    }
+    paintDesignHelios(g, bounds, current_colour1, current_colour2);
 }
 
 void AmpComponent::paintBorder(
@@ -158,19 +87,19 @@ void AmpComponent::resized()
     auto bounds = getLocalBounds();
 
     // Type buttons at the top
-    auto type_bounds =
-        bounds.removeFromTop(AmpDimensions::AMP_TYPE_BUTTONS_HEIGHT);
-    int const type_size =
-        type_bounds.getWidth() / static_cast<int>(types.size());
-    for (auto type : types)
-    {
-        type.button->setBounds(
-            type_bounds.removeFromLeft(type_size).withSizeKeepingCentre(
-                AmpDimensions::AMP_TYPE_BUTTON_SIZE,
-                AmpDimensions::AMP_TYPE_BUTTON_SIZE
-            )
-        );
-    }
+    bounds.removeFromTop(AmpDimensions::AMP_TYPE_BUTTONS_HEIGHT);
+
+    // int const type_size =
+    //     type_bounds.getWidth() / static_cast<int>(types.size());
+    // for (auto type : types)
+    // {
+    //     type.button->setBounds(
+    //         type_bounds.removeFromLeft(type_size).withSizeKeepingCentre(
+    //             AmpDimensions::AMP_TYPE_BUTTON_SIZE,
+    //             AmpDimensions::AMP_TYPE_BUTTON_SIZE
+    //         )
+    //     );
+    // }
 
     // Amp body
     auto amp_bounds = bounds.withSizeKeepingCentre(
@@ -196,15 +125,14 @@ void AmpComponent::resized()
 
 void AmpComponent::buildCache(float scale)
 {
-    background_cache = juce::Image(
-        juce::Image::ARGB, scale * getWidth(), scale * getHeight(), true
-    );
+    int width = static_cast<int>(scale * getWidth());
+    int height = static_cast<int>(scale * getHeight());
+    background_cache = juce::Image(juce::Image::ARGB, width, height, true);
 
     juce::Graphics g(background_cache);
     juce::Graphics cache(background_cache);
 
     cache.addTransform(juce::AffineTransform::scale(scale));
-    paintTypeButtons(g);
 
     bool bypass = bypass_button.getToggleState();
     juce::Colour colour1, colour2; // Use local colours

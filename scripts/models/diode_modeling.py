@@ -45,10 +45,11 @@ class DiodeClipper:
     # v_t = 0.02585
 
     # Germanium diode
-    c = 5e-8
-    re = 500
-    i_s = 5e-6
+    c = 1e-8
+    re = 30
+    i_s = 0.5e-3
     v_t = 0.02585
+    v0 = 0.36694194229685273
 
     # Discretization coefficients
 
@@ -98,7 +99,7 @@ class DiodeClipper:
             vout = w - self.v_t * r * omega(self.k4 * r * w + self.k5)
             p = self.k6 * vout - self.a1 * self.prev_p
             self.prev_p = p
-            return vout
+            return vout / self.v0
 
 
 if __name__ == "__main__":
@@ -109,19 +110,20 @@ if __name__ == "__main__":
     duration = 5 / frequency
     n_samples = int(duration * sample_rate)
 
-    t = np.linspace(0, duration, n_samples, endpoint=False)
-    y = 1 * np.sin(2 * np.pi * frequency * t)
-
     diode_pair = DiodeClipper(sample_rate)
-    hard_clipped = diode_pair.process(y)
+    t = np.linspace(0, duration, n_samples, endpoint=False)
+    y = 15 * np.sin(2 * np.pi * frequency * t)
+    yc = diode_pair.process(y)
+    ytan = np.tanh(y)
 
     plt.plot(
         t,
-        hard_clipped,
+        yc,
         label="output",
     )
     plt.legend()
     plt.show()
+    print(max(yc))
 
     # Y = np.fft.fft(y)
     # Y_clipped = np.fft.fft(y_clipped)

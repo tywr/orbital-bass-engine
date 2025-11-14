@@ -1,14 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy.polynomial.polynomial import Polynomial
-from scipy.optimize import curve_fit
-from sklearn.neural_network import MLPRegressor
-from sklearn.preprocessing import StandardScaler
-import onnxruntime as rt
-import skl2onnx
-from skl2onnx import convert_sklearn
-from skl2onnx.common.data_types import FloatTensorType
-from scipy.optimize import curve_fit
+from scipy.interpolate import interp1d
+from scipy.interpolate import CubicSpline
+from scipy.interpolate import PchipInterpolator
 
 
 class ModelLlama:
@@ -89,7 +83,7 @@ class ModelLlama:
         vin = x + self.bias
         vout = self.bias
 
-        for i in range(10):
+        for i in range(5):
             # NMOS:
             vgs_n = vin
             vds_n = vout
@@ -116,17 +110,42 @@ class ModelLlama:
             vout = np.clip(vout, 0, self.V_dd)
 
         return 1 - 2 * vout / self.V_dd
+        # return vout
+
+
+def lut_model():
+    model = ModelLlama()
+    vmin = -1.8
+    tn = np.linspace(0, 1, 2048)
+    vn = vmin * (1 - tn)
+
+    vmax = 5.1
+    tp = np.linspace(0, 1, 4192)
+    vp = vmax * tp
+
+    vin = np.concatenate([vn, vp[1:]])
+    vout = np.array([model.solve(v) for v in vin])
+    return vin, vout
 
 
 if __name__ == "__main__":
     model = ModelLlama()
-    vin = np.linspace(-10, 10, 1000)
-    vout = np.array([model.solve(v) for v in vin])
+    vin, vout = lut_model()
 
-    vg = np.linspace(-1, 1, 100)
-    guess = -10 * vg + 4.5
+    # lut_interp = interp1d(vin, vout, kind="linear", fill_value="extrapolate")
+    lut_interp = PchipInterpolator(vin, vout)
+    vout_lut = lut_interp(vin)
+
+    vin_t = np.linspace(-1.8, 5.1, 100000)
+    vout_t_interp = lut_interp(vin_t)
+    vout_t_model = np.array([model.solve(v) for v in vin_t])
+
+    diff = np.abs((vout_t_interp - vout_t_model) / vout_t_model)
+    print("max error:", max(diff))
+    print("avg error:", np.average(diff))
 
     plt.figure(figsize=(10, 6))
-    plt.plot(vin, vout)
-    plt.plot(vg, guess)
+    # plt.plot(vin, vout)
+    plt.plot(vin_t, vout_t_interp, color="orange")
+    plt.plot(vin_t, vout_t_model, color="red")
     plt.show()

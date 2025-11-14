@@ -17,3 +17,8 @@ run: build-release
 
 debug: build-debug
 	lldb ${BUILD_DEBUG_DIR}/src/${PROJECT_NAME}_artefacts/Debug/Standalone/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}
+
+
+build-impulses:
+	bin/BinaryBuilder impulses src/assets/ ImpulseResponseBinary
+	python3 bin/extract_impulses.py src/include/ImpulseResponses.h

@@ -13,9 +13,7 @@ class CompressorMeterComponent : public juce::Component,
                                  public juce::Timer
 {
   public:
-    CompressorMeterComponent(
-        juce::AudioProcessorValueTreeState& g, juce::Value& v
-    );
+    CompressorMeterComponent(juce::Value& v);
     ~CompressorMeterComponent() override;
 
     void resized() override;
@@ -26,12 +24,14 @@ class CompressorMeterComponent : public juce::Component,
 
   private:
     void timerCallback() override;
-    juce::AudioProcessorValueTreeState& parameters;
     juce::Value gain_reduction_value;
-    juce::Slider gain_reduction_slider;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>
+        smoothed_value;
+    float raw_value = 0.0f;
+    float smoothing_time = 0.2f;
+    int refresh_rate = 60;
 
-    float target_meter_value = 0.0f;
-    float smoothed_meter_value = 0.0f;
+    juce::Slider gain_reduction_slider;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CompressorMeterComponent)
 };

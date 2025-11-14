@@ -55,33 +55,8 @@ void AmpKnobsComponent::switchColour(juce::Colour colour1, juce::Colour colour2)
     repaint();
 }
 
-void AmpKnobsComponent::switchType(AmpType new_type)
+void AmpKnobsComponent::switchType()
 {
-    if (new_type.id == "helios")
-    {
-        current_knobs[1] = {&era_slider, &era_label, "overdrive_era", "era"};
-        current_knobs[2] = {
-            &attack_slider, &attack_label, "overdrive_attack", "attack"
-        };
-    }
-    if (new_type.id == "borealis")
-    {
-        current_knobs[1] = {
-            &bass_frequency_slider, &bass_frequency_label,
-            "overdrive_bass_frequency", "low pass"
-        };
-        current_knobs[2] = {
-            &cross_frequency_slider, &cross_frequency_label,
-            "overdrive_x_frequency", "hi pass"
-        };
-    }
-    if (new_type.id == "nebula")
-    {
-        current_knobs[1] = {&mod_slider, &mod_label, "overdrive_mod", "mod"};
-        current_knobs[2] = {
-            &aggro_slider, &aggro_label, "overdrive_aggro", "aggro"
-        };
-    }
     resized();
     removeAllChildren();
     addAndMakeVisible(drag_tooltip);
@@ -93,7 +68,6 @@ void AmpKnobsComponent::switchType(AmpType new_type)
         addAndMakeVisible(knob.label);
         knob.label->setText(knob.label_text, juce::dontSendNotification);
         knob.label->setJustificationType(juce::Justification::centred);
-        // knob.label->attachToComponent(knob.slider, false);
         knob.slider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
         knob.slider->setTextBoxStyle(juce::Slider::NoTextBox, false, 70, 20);
         slider_attachments.push_back(

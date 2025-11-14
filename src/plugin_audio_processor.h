@@ -1,12 +1,12 @@
 #pragma once
 
-#include "dsp/amp_eq.h"
+#include "dsp/eq.h"
+#include "dsp/chorus.h"
 #include "dsp/compressor.h"
 #include "dsp/ir.h"
-#include "dsp/overdrives/borealis.h"
 #include "dsp/overdrives/helios.h"
-#include "dsp/overdrives/nebula.h"
 #include "dsp/overdrives/overdrive.h"
+#include "dsp/synth_voices.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
@@ -70,18 +70,18 @@ class PluginAudioProcessor final
     std::unordered_map<std::string, ParamHandler> parameterHandlers;
 
     Compressor compressor;
-
-    std::atomic<Overdrive*> current_overdrive = nullptr;
-    HeliosOverdrive helios_overdrive;
-    BorealisOverdrive borealis_overdrive;
-    NebulaOverdrive nebula_overdrive;
-    std::vector<Overdrive*> overdrives = {
-        &helios_overdrive, &borealis_overdrive, &nebula_overdrive
-    };
-
-    AmpEQ amp_eq;
-
+    EQ eq;
     IRConvolver irConvolver;
+    Chorus chorus;
+    SynthVoices synth_voices;
+
+    HeliosOverdrive overdrive;
+    // std::atomic<Overdrive*> current_overdrive = nullptr;
+    // HeliosOverdrive helios_overdrive;
+    // BorealisOverdrive borealis_overdrive;
+    // std::vector<Overdrive*> overdrives = {
+    //     &helios_overdrive, &borealis_overdrive
+    // };
 
     float smoothing_time = 0.05f;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>
@@ -89,6 +89,12 @@ class PluginAudioProcessor final
     std::atomic<float>* input_gain_parameter = nullptr;
     std::atomic<float>* output_gain_parameter = nullptr;
     std::atomic<float>* amp_master_gain_parameter = nullptr;
+    std::atomic<float>* amp_bypass_parameter = nullptr;
+    std::atomic<float>* ir_bypass_parameter = nullptr;
+    std::atomic<float>* compressor_bypass_parameter = nullptr;
+    std::atomic<float>* chorus_bypass_parameter = nullptr;
+    std::atomic<float>* eq_bypass_parameter = nullptr;
+    std::atomic<float>* synth_bypass_parameter = nullptr;
     bool isAmpBypassed = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginAudioProcessor)

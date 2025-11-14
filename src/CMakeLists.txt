@@ -24,31 +24,42 @@ juce_add_plugin(${PROJECT_NAME}
 
 target_sources(${PROJECT_NAME}
     PRIVATE
+        assets/ImpulseResponseBinary.cpp
         plugin_editor.cpp
         plugin_audio_processor.cpp
         plugin_audio_process_parameters.cpp
-        assets/impulse_response_binary.cpp
         gui/looks/amp_small_look_and_feel.cpp
         gui/looks/base_look_and_feel.cpp
         gui/looks/compressor_look_and_feel.cpp
         gui/looks/header_look_and_feel.cpp
+        gui/looks/eq_look_and_feel.cpp
         gui/looks/compressor_selector_look_and_feel.cpp
         gui/compressor/compressor_knobs_component.cpp
         gui/compressor/compressor_meter_component.cpp
         gui/compressor/compressor_component.cpp
+        gui/synth/synth_component.cpp
+        gui/synth/synth_voice_knobs_component.cpp
         gui/amp/amp_component.cpp
         gui/amp/amp_knobs_component.cpp
+        gui/chorus/chorus_component.cpp
+        gui/chorus/chorus_knobs_component.cpp
+        gui/eq/eq_component.cpp
+        gui/eq/eq_sliders_component.cpp
         gui/ir/ir_component.cpp
         gui/meter.cpp
         gui/header.cpp
         gui/tabs.cpp
-        dsp/maths/toms917.cpp
+        gui/post_rack.cpp
         dsp/compressor.cpp
         dsp/ir.cpp
         dsp/overdrives/helios.cpp
         dsp/overdrives/borealis.cpp
-        dsp/overdrives/nebula.cpp
-        dsp/amp_eq.cpp
+        dsp/eq.cpp
+        dsp/chorus.cpp
+        dsp/synth_voices/square_voice.cpp
+        dsp/synth_voices/octave_voice.cpp
+        dsp/synth_voices/triangle_voice.cpp
+        dsp/synth_voices.cpp
         )
 
 if(JUCE_BUILD_STANDALONE)

@@ -71,6 +71,7 @@ inline void paintDesignBorealis(
 )
 {
     juce::Graphics::ScopedSaveState state(g);
+    auto center = bounds.getCentre();
 
     float maxRadius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * 0.45f;
 
@@ -78,38 +79,20 @@ inline void paintDesignBorealis(
     boxPath.addRectangle(bounds);
     g.reduceClipRegion(boxPath);
 
-    const float hexRadius =
-        20.0f; // The radius of the hexagon (center to vertex)
-    const float hexWidth = std::sqrt(3.0f) * hexRadius;
-    const float hexHeight = 2.0f * hexRadius;
+    const int numBackgroundNoiseLayers = 20;
+    float maxBackgroundRadius = bounds.getWidth();
 
-    const float horizontalDist = hexWidth;
-    // Vertical distance between the centers of two rows
-    const float verticalDist = hexHeight * 0.75f;
-
-    // 3. Create a vector to hold all the hexagon paths
-    std::vector<juce::Path> cells;
-
-    const juce::Rectangle<float> templateBounds(0.0f, 0.0f, 1000.0f, 1000.0f);
-
-    int row = 0;
-    for (float y = -hexHeight / 2.0f;
-         y < templateBounds.getBottom() + hexHeight / 2.0f; y += verticalDist)
+    for (int i = 0; i < numBackgroundNoiseLayers; ++i)
     {
-        // Apply a horizontal offset for every odd row
-        float xOffset = (row % 2 == 0) ? 0.0f : horizontalDist / 2.0f;
+        float proportion = (float)i / (numBackgroundNoiseLayers); // 0.0 to
+        float currentRadius = maxBackgroundRadius *
+                              (proportion * 0.8f); // Start larger, go to max
 
-        // Iterate horizontally
-        for (float x = -hexWidth / 2.0f + xOffset;
-             x < templateBounds.getRight() + hexWidth / 2.0f;
-             x += horizontalDist)
-        {
-            g.setColour(GuiColours::DEFAULT_INACTIVE_COLOUR);
-            g.strokePath(
-                createHexagonPath({x, y}, hexRadius), juce::PathStrokeType(1.0f)
-            );
-        }
-        row++;
+        g.setColour(GuiColours::DEFAULT_INACTIVE_COLOUR);
+        g.drawEllipse(
+            center.x - currentRadius, center.y - currentRadius,
+            currentRadius * 2, currentRadius * 2, 1.0f
+        );
     }
 
     paintIconBorealis(

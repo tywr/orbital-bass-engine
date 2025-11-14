@@ -1,5 +1,6 @@
 #include "compressor_knobs_component.h"
 #include "../colours.h"
+#include "../components/solid_tooltip.h"
 #include "../looks/compressor_look_and_feel.h"
 #include "../looks/compressor_selector_look_and_feel.h"
 #include "compressor_dimensions.h"
@@ -9,7 +10,15 @@ CompressorKnobsComponent::CompressorKnobsComponent(
 )
     : parameters(params)
 {
-    // setLookAndFeel(new CompressorLookAndFeel());
+    drag_tooltip.setJustificationType(juce::Justification::centred);
+    drag_tooltip.setAlwaysOnTop(true);
+    drag_tooltip.setColour(
+        juce::Label::backgroundColourId, GuiColours::AMP_BG_COLOUR
+    );
+    addAndMakeVisible(drag_tooltip);
+    slider_being_dragged = false;
+    drag_tooltip.setVisible(false);
+
     type_slider.setLookAndFeel(&selector_look_and_feel);
     ratio_slider.setLookAndFeel(&selector_look_and_feel);
 
@@ -35,6 +44,46 @@ CompressorKnobsComponent::CompressorKnobsComponent(
                 parameters, knob.parameter_id, *knob.slider
             )
         );
+        knob.slider->onDragStart =
+            [this, slider = knob.slider, label = knob.label]()
+        {
+            slider_being_dragged = true;
+            drag_tooltip.setVisible(false);
+            // delay using a Timer
+            juce::Timer::callAfterDelay(
+                300,
+                [this, slider, label]()
+                {
+                    if (slider->isMouseButtonDown())
+                    {
+                        drag_tooltip.setText(
+                            juce::String(slider->getValue(), 2),
+                            juce::dontSendNotification
+                        );
+                        drag_tooltip.setBounds(
+                            label->getX(), label->getY(), label->getWidth(),
+                            label->getHeight()
+                        );
+                        drag_tooltip.toFront(true);
+                        drag_tooltip.setVisible(true);
+                        drag_tooltip.repaint();
+                    }
+                }
+            );
+        };
+        knob.slider->onDragEnd = [this]()
+        {
+            slider_being_dragged = false;
+            drag_tooltip.setVisible(false);
+        };
+        knob.slider->onValueChange = [this, slider = knob.slider]()
+        {
+            if (slider_being_dragged && drag_tooltip.isVisible())
+                drag_tooltip.setText(
+                    juce::String(slider->getValue(), 2),
+                    juce::dontSendNotification
+                );
+        };
     }
     type_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, 20);
     ratio_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, 20);
@@ -46,55 +95,52 @@ CompressorKnobsComponent::~CompressorKnobsComponent()
 
 void CompressorKnobsComponent::paint(juce::Graphics& g)
 {
+    juce::ignoreUnused(g);
 }
 
 void CompressorKnobsComponent::resized()
 {
 
-    int const limit = 3;
     auto bounds = getLocalBounds();
-    auto top_bounds =
-        bounds.removeFromTop(CompressorDimensions::KNOBS_TOP_BOX_HEIGHT);
-    auto label_bounds =
-        top_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT);
-    const int knob_box_size = bounds.getWidth() / limit;
+    int left_size = (int)(0.75f * bounds.getWidth());
+    auto left_bounds = bounds.removeFromLeft(left_size).withSizeKeepingCentre(
+        left_size, CompressorDimensions::KNOBS_INNER_BOX_HEIGHT
+    );
+    auto left_label_bounds =
+        left_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT);
+    const int knob_box_size = left_bounds.getWidth() / 3;
 
-    for (size_t i = 0; i < limit; ++i)
+    for (size_t i = 0; i < 3; ++i)
     {
         CompressorKnob knob = knobs[i];
-        knob.label->setBounds(label_bounds.removeFromLeft(knob_box_size)
+        knob.label->setBounds(left_label_bounds.removeFromLeft(knob_box_size)
                                   .withSizeKeepingCentre(
                                       CompressorDimensions::KNOB_SIZE,
-                                      CompressorDimensions::KNOB_SIZE
+                                      CompressorDimensions::LABEL_HEIGHT
                                   ));
-        knob.slider->setBounds(top_bounds.removeFromLeft(knob_box_size)
+        knob.slider->setBounds(left_bounds.removeFromLeft(knob_box_size)
                                    .withSizeKeepingCentre(
                                        CompressorDimensions::KNOB_SIZE,
                                        CompressorDimensions::KNOB_SIZE
                                    ));
     }
 
-    const int bottom_knob_box_size = bounds.getWidth() / (knobs.size() - limit);
-    auto bottom_bounds =
-        bounds.removeFromBottom(CompressorDimensions::KNOBS_BOTTOM_BOX_HEIGHT);
-    auto label_bottom_bounds =
-        bottom_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT);
-
-    for (size_t i = limit; i < knobs.size(); ++i)
+    const int knob_box_height = bounds.getHeight() / 2;
+    for (size_t i = 3; i < 5; ++i)
     {
+        auto knob_bounds = bounds.removeFromTop(knob_box_height);
         CompressorKnob knob = knobs[i];
-        knob.label->setBounds(label_bottom_bounds
-                                  .removeFromLeft(bottom_knob_box_size)
-                                  .withSizeKeepingCentre(
-                                      CompressorDimensions::KNOB_SIZE,
-                                      CompressorDimensions::KNOB_SIZE
-                                  ));
-        knob.slider->setBounds(bottom_bounds
-                                   .removeFromLeft(bottom_knob_box_size)
-                                   .withSizeKeepingCentre(
-                                       CompressorDimensions::SMALL_KNOB_SIZE,
-                                       CompressorDimensions::SMALL_KNOB_SIZE
-                                   ));
+        knob.label->setBounds(
+            knob_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT)
+                .withSizeKeepingCentre(
+                    CompressorDimensions::KNOB_SIZE,
+                    CompressorDimensions::LABEL_HEIGHT
+                )
+        );
+        knob.slider->setBounds(knob_bounds.withSizeKeepingCentre(
+            CompressorDimensions::SMALL_KNOB_SIZE,
+            CompressorDimensions::SMALL_KNOB_SIZE
+        ));
     }
 }
 

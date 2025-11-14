@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <cfloat>
 #include <juce_dsp/juce_dsp.h>
 #include <utility>
@@ -15,17 +16,24 @@ class CMOS
     {
     }
 
-    using SIMD_Float = juce::dsp::SIMDRegister<float>;
-
-    float processSample(float);
     std::pair<float, float> pmos(float, float);
     std::pair<float, float> nmos(float, float);
 
-    std::pair<SIMD_Float, SIMD_Float> nmos_vec(SIMD_Float vgs, SIMD_Float vds);
-    std::pair<SIMD_Float, SIMD_Float> pmos_vec(SIMD_Float vgs, SIMD_Float vds);
+    float waveshaper_cmos(float);
+    float hermite(float y0, float y1, float d0, float d1, float t);
+
+    void prepare();
+    float processSample(float);
+
     void processBlock(juce::AudioBuffer<float>& buffer, int numSamples);
+    void process(const juce::dsp::ProcessContextReplacing<float>& context);
 
   private:
+    juce::dsp::LookupTableTransform<float> lut;
+    static constexpr int lut_size = 8192;
+    static constexpr float lut_min = -1.8f;
+    static constexpr float lut_max = 5.1f;
+
     static constexpr float n_vtc1 = 1.208306917691355f;
     static constexpr float n_vtc2 = 0.3139084341943607f;
     static constexpr float n_alpha1 = 0.020662094888127674f;
@@ -103,7 +111,7 @@ inline std::pair<float, float> CMOS::pmos(float vgs, float vds)
     return {ids, gds};
 }
 
-inline float CMOS::processSample(float x)
+inline float CMOS::waveshaper_cmos(float x)
 {
     float vin = x + bias;
     float vout = bias;
@@ -128,4 +136,32 @@ inline float CMOS::processSample(float x)
         vout = std::clamp(vout, 0.0f, v_dd);
     }
     return 1.0f - 2.0f * vout / v_dd;
+}
+
+inline void CMOS::prepare()
+{
+    lut.initialise(
+        [this](float x) { return waveshaper_cmos(x); }, lut_min, lut_max,
+        lut_size
+    );
+}
+
+inline float CMOS::processSample(float x)
+{
+    return lut.processSample(x);
+    // return waveshaper_cmos(x);
+}
+
+inline void CMOS::process(
+    const juce::dsp::ProcessContextReplacing<float>& context
+)
+{
+    auto& block = context.getOutputBlock();
+    const size_t num_samples = block.getNumSamples();
+
+    auto* ch = block.getChannelPointer(0);
+    for (size_t i = 0; i < num_samples; ++i)
+    {
+        ch[i] = processSample(ch[i]);
+    }
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../colours.h"
+#include "../components/solid_tooltip.h"
 #include "../looks/compressor_selector_look_and_feel.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -27,6 +28,9 @@ class CompressorKnobsComponent : public juce::Component
 
   private:
     juce::AudioProcessorValueTreeState& parameters;
+
+    SolidTooltip drag_tooltip;
+    bool slider_being_dragged;
 
     juce::Colour const default_type_colour = ColourCodes::grey3;
 

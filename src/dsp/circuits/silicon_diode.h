@@ -1,6 +1,5 @@
 #pragma once
 #include "../maths/omega.h"
-#include "../maths/toms917.h"
 #include <cmath>
 
 class SiliconDiode

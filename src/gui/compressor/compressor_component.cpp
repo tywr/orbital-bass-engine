@@ -3,15 +3,13 @@
 #include "compressor_dimensions.h"
 #include "compressor_knobs_component.h"
 #include "compressor_meter_component.h"
-#include "designs/gravity.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
 CompressorComponent::CompressorComponent(
     juce::AudioProcessorValueTreeState& params, juce::Value& value
 )
-    : parameters(params), gain_reduction_decibels(value),
-      knobs_component(params), meter_component(params, value)
+    : parameters(params), knobs_component(params), meter_component(value)
 {
     addAndMakeVisible(knobs_component);
     addAndMakeVisible(meter_component);
@@ -82,21 +80,97 @@ void CompressorComponent::paint(juce::Graphics& g)
     knobs_component.switchColour(colour1, colour2);
     meter_component.switchColour(colour1, colour2);
 
+    paintMeter(g, colour1, colour2);
+}
+
+void CompressorComponent::paintMeter(
+    juce::Graphics& g, juce::Colour colour1, juce::Colour colour2
+)
+{
+    // Draw meter border
+    float meter_border_thickness = CompressorDimensions::METER_BORDER_THICKNESS;
+    float border_radius = CompressorDimensions::BORDER_RADIUS;
+
     auto bounds = getLocalBounds().withSizeKeepingCentre(
         CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
     );
-    bounds.removeFromBottom(CompressorDimensions::FOOTER_HEIGHT);
+    bounds.removeFromRight(CompressorDimensions::SIDE_WIDTH / 2);
     auto meter_bounds =
-        bounds.removeFromBottom(CompressorDimensions::GAIN_REDUCTION_HEIGHT)
+        bounds.removeFromRight(CompressorDimensions::GAIN_REDUCTION_WIDTH)
             .withSizeKeepingCentre(
                 CompressorDimensions::GAIN_REDUCTION_WIDTH,
                 CompressorDimensions::GAIN_REDUCTION_HEIGHT
             );
-    g.drawImageAt(
-        gravity_cache, (int)inner_bounds.getX(), (int)inner_bounds.getY()
+    auto outer_meter_bounds =
+        meter_bounds
+            .expanded((int)meter_border_thickness, (int)meter_border_thickness)
+            .toFloat();
+    juce::Path meter_border_path;
+    meter_border_path.addRoundedRectangle(
+        outer_meter_bounds, border_radius + meter_border_thickness
     );
-    g.setColour(ColourCodes::bg1);
-    g.fillRect(meter_bounds);
+    meter_border_path.addRoundedRectangle(
+        outer_meter_bounds.reduced(
+            meter_border_thickness, meter_border_thickness
+        ),
+        border_radius
+    );
+    meter_border_path.setUsingNonZeroWinding(false);
+
+    juce::ColourGradient meter_border_gradient(
+        colour1, outer_meter_bounds.getTopLeft(), colour2,
+        outer_meter_bounds.getBottomLeft(), false
+    );
+    g.setGradientFill(meter_border_gradient);
+    g.fillPath(meter_border_path);
+
+    // Draw meter background
+    float height = meter_bounds.getHeight();
+    float width = meter_bounds.getWidth();
+    float offset = CompressorDimensions::METER_OFFSET_Y * (float)height;
+    float x_anchor = (float)meter_bounds.getX() + 0.5f * (float)width;
+    float y_anchor = (float)(meter_bounds.getY() + height + offset);
+    float length =
+        CompressorDimensions::METER_POINTER_LENGTH * (float)height + offset;
+    float marker_length = CompressorDimensions::METER_MARKER_LENGTH;
+
+    g.setColour(ColourCodes::grey0);
+    for (int i = 0; i < 6; ++i)
+    {
+        float alpha_degrees =
+            CompressorDimensions::METER_START_ANGLE +
+            (float)i / 5.0f * CompressorDimensions::METER_ANGLE_RANGE;
+        float alpha = alpha_degrees * juce::MathConstants<float>::pi / 180.0f;
+        float x_end = x_anchor + (length)*std::cos(alpha);
+        float x_start = x_anchor + (length - marker_length) * std::cos(alpha);
+        float y_end = y_anchor + (length)*std::sin(alpha);
+        float y_start = y_anchor + (length - marker_length) * std::sin(alpha);
+        juce::Path p;
+        p.startNewSubPath(x_start, y_start);
+        p.lineTo(x_end, y_end);
+        g.strokePath(
+            p, juce::PathStrokeType(
+                   2.0f, juce::PathStrokeType::JointStyle::curved,
+                   juce::PathStrokeType::EndCapStyle::rounded
+               )
+        );
+
+        juce::String textToDraw = juce::String(i * 4);
+
+        float textPadding = 15.0f; // 10 pixels padding from the outer tick
+        float textRadius = length - marker_length - textPadding;
+        float x_text_centre = x_anchor + textRadius * std::cos(alpha);
+        float y_text_centre = y_anchor + textRadius * std::sin(alpha);
+
+        float textBoxWidth = 25.0f;
+        float textBoxHeight = 15.0f;
+        juce::Rectangle<float> textBox(textBoxWidth, textBoxHeight);
+        textBox.setCentre(x_text_centre, y_text_centre);
+
+        g.drawFittedText(
+            textToDraw, textBox.toNearestInt(), juce::Justification::centred, 1
+        );
+    }
 }
 
 void CompressorComponent::resized()
@@ -104,40 +178,27 @@ void CompressorComponent::resized()
     auto bounds = getLocalBounds().withSizeKeepingCentre(
         CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
     );
+    bounds.removeFromRight(CompressorDimensions::SIDE_WIDTH / 2);
     bypass_button.setBounds(
-        bounds.removeFromBottom(CompressorDimensions::FOOTER_HEIGHT)
+        bounds.removeFromLeft(CompressorDimensions::SIDE_WIDTH)
             .withSizeKeepingCentre(
-                CompressorDimensions::BYPASS_BUTTON_WIDTH,
-                CompressorDimensions::BYPASS_BUTTON_HEIGHT
+                CompressorDimensions::BYPASS_SIZE,
+                CompressorDimensions::BYPASS_SIZE
             )
     );
     meter_component.setBounds(
-        bounds.removeFromBottom(CompressorDimensions::GAIN_REDUCTION_HEIGHT)
-    );
-    title_label.setBounds(
-        bounds.removeFromBottom(CompressorDimensions::TITLE_LABEL_HEIGHT)
-    );
-    bounds.removeFromTop(CompressorDimensions::INNER_Y_TOP_PADDING);
-    knobs_component.setBounds(bounds.removeFromTop(
-        CompressorDimensions::KNOBS_TOP_BOX_HEIGHT +
-        CompressorDimensions::KNOBS_BOTTOM_BOX_HEIGHT +
-        CompressorDimensions::KNOBS_ROW_PADDING
-    ));
-
-    float border_thickness = CompressorDimensions::BORDER_THICKNESS;
-    auto outer_bounds =
-        getLocalBounds()
+        bounds.removeFromRight(CompressorDimensions::GAIN_REDUCTION_WIDTH)
             .withSizeKeepingCentre(
-                CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
+                CompressorDimensions::GAIN_REDUCTION_WIDTH,
+                CompressorDimensions::GAIN_REDUCTION_HEIGHT
+
             )
-            .toFloat();
-    auto inner_bounds = outer_bounds.reduced(border_thickness).toFloat();
-
-    gravity_cache = juce::Image(
-        juce::Image::ARGB, (int)inner_bounds.getWidth(),
-        (int)inner_bounds.getHeight(), true
     );
-
-    juce::Graphics gCache(gravity_cache);
-    paintGravity(gCache, gravity_cache.getBounds().toFloat());
+    knobs_component.setBounds(
+        bounds.removeFromLeft(CompressorDimensions::KNOBS_BOX_WIDTH)
+            .withSizeKeepingCentre(
+                CompressorDimensions::KNOBS_BOX_WIDTH,
+                CompressorDimensions::KNOBS_BOX_HEIGHT
+            )
+    );
 }

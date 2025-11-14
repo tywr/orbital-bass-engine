@@ -14,6 +14,7 @@ class CompressorComponent : public juce::Component
 
     void resized() override;
     void paint(juce::Graphics&) override;
+    void paintMeter(juce::Graphics&, juce::Colour, juce::Colour);
     void visibilityChanged() override
     {
         meter_component.setVisible(isVisible());
@@ -22,12 +23,6 @@ class CompressorComponent : public juce::Component
 
   private:
     juce::AudioProcessorValueTreeState& parameters;
-    juce::Value& gain_reduction_decibels;
-    juce::Rectangle<float> bounds;
-
-    juce::Image gravity_cache;
-
-    void paintStyling(juce::Graphics&, juce::Rectangle<float>);
 
     // Sub-components
     juce::Label title_label;

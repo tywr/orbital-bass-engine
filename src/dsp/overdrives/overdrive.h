@@ -1,25 +1,20 @@
 #pragma once
 #include <juce_dsp/juce_dsp.h>
 
-class Overdrive
+class Overdrive : public juce::dsp::ProcessorBase
 {
   public:
-    virtual void prepare(const juce::dsp::ProcessSpec& spec)
-    {
-        juce::ignoreUnused(spec);
-    }
-    virtual void process(juce::AudioBuffer<float>& buffer)
-    {
-        juce::ignoreUnused(buffer);
-    }
-    virtual void reset()
-    {
-    }
     void virtual setAttack(float newAttack)
     {
         float v = juce::jlimit(0.0f, 10.0f, newAttack);
         attack.setTargetValue(v);
         raw_attack = v;
+    }
+    void virtual setGrunt(float newGrunt)
+    {
+        float v = juce::jlimit(0.0f, 10.0f, newGrunt);
+        grunt.setTargetValue(v);
+        raw_grunt = v;
     }
     void virtual setEra(float newEra)
     {
@@ -38,18 +33,6 @@ class Overdrive
         float v = juce::jlimit(50.0f, 500.0f, new_high_level);
         bass_frequency.setTargetValue(v);
         raw_bass_frequency = v;
-    }
-    void virtual setMod(float new_mod)
-    {
-        float v = juce::jlimit(0.0f, 10.0f, new_mod);
-        mod.setTargetValue(v);
-        raw_mod = v;
-    }
-    void virtual setAggro(float new_aggro)
-    {
-        float v = juce::jlimit(0.0f, 10.0f, new_aggro);
-        aggro.setTargetValue(v);
-        raw_aggro = v;
     }
 
     void applyGain(
@@ -92,14 +75,14 @@ class Overdrive
     }
 
   protected:
-    juce::dsp::ProcessSpec processSpec{-1, 0, 0};
+    juce::dsp::ProcessSpec process_spec{44100.0f, 512, 2};
     float smoothing_time = 0.05f;
 
     // gui parameters
     int type;
     bool bypass;
-    float raw_level, raw_drive, raw_mix, raw_attack, raw_era,
+    float raw_level, raw_drive, raw_mix, raw_attack, raw_grunt, raw_era,
         raw_cross_frequency, raw_bass_frequency, raw_mod, raw_aggro;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> level, drive,
-        mix, attack, era, cross_frequency, bass_frequency, mod, aggro;
+        mix, attack, grunt, era, cross_frequency, bass_frequency, mod, aggro;
 };
