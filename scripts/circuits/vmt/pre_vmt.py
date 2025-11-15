@@ -23,7 +23,6 @@ circuit.R(11, "middle", "output", 470 @ u_kOhm)
 circuit.C(5, "input", "n1", 22 @ u_nF)
 circuit.C(6, "n1", "n2", 22 @ u_nF)
 circuit.C(7, "n2", "middle", 22 @ u_nF)
-circuit.C(8, "middle", "output", 220 @ u_pF)
 
 circuit.R(9, "n1", circuit.gnd, 6.65 @ u_kOhm)
 circuit.R(10, "n2", circuit.gnd, 22 @ u_kOhm)
