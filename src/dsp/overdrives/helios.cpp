@@ -11,15 +11,17 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
     oversampled_spec.sampleRate *= 2;
     process_spec = oversampled_spec;
 
-    oversampler2x.reset();
-    oversampler2x.initProcessing(static_cast<size_t>(spec.maximumBlockSize));
-
+    for (auto oversampler : oversamplers)
+    {
+        oversampler->reset();
+        oversampler->initProcessing(static_cast<size_t>(spec.maximumBlockSize));
+    }
     vmt_buffer.setSize(
-        (int)process_spec.numChannels, (int)process_spec.maximumBlockSize * 4,
+        (int)process_spec.numChannels, (int)process_spec.maximumBlockSize * 16,
         false, false, true
     );
     b3k_buffer.setSize(
-        (int)process_spec.numChannels, (int)process_spec.maximumBlockSize * 4,
+        (int)process_spec.numChannels, (int)process_spec.maximumBlockSize * 16,
         false, false, true
     );
 
@@ -31,6 +33,8 @@ void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
 void HeliosOverdrive::reset()
 {
     oversampler2x.reset();
+    oversampler4x.reset();
+    oversampler8x.reset();
     cmos.reset();
     resetSmoothedValues();
     resetFilters();
@@ -43,9 +47,9 @@ void HeliosOverdrive::resetFilters()
     b3k_pre_lpf.reset();
     b3k_pre_hpf.reset();
     b3k_attack_shelf.reset();
+    b3k_grunt_filter.reset();
     b3k_drive_filter.reset();
-    b3k_pre_filter_1.reset();
-    b3k_pre_filter_2.reset();
+    b3k_pre_filter.reset();
     b3k_post_filter_1.reset();
     b3k_post_filter_2.reset();
     b3k_post_filter_3.reset();
@@ -53,6 +57,7 @@ void HeliosOverdrive::resetFilters()
     vmt_pre_lpf.reset();
     vmt_pre_hpf.reset();
     vmt_attack_shelf.reset();
+    vmt_grunt_filter.reset();
     vmt_drive_filter.reset();
     vmt_pre_filter.reset();
     vmt_post_filter_1.reset();
@@ -89,7 +94,7 @@ void HeliosOverdrive::prepareFilters()
     vmt_pre_lpf.prepare(process_spec);
     auto vmt_pre_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            process_spec.sampleRate, pre_lpf_cutoff
+            process_spec.sampleRate, pre_lpf_cutoff, pre_lpf_q
         );
     *vmt_pre_lpf.coefficients = *vmt_pre_lpf_coefficients;
 
@@ -103,7 +108,7 @@ void HeliosOverdrive::prepareFilters()
     b3k_pre_lpf.prepare(process_spec);
     auto b3k_pre_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            process_spec.sampleRate, pre_lpf_cutoff
+            process_spec.sampleRate, pre_lpf_cutoff, pre_lpf_q
         );
     *b3k_pre_lpf.coefficients = *b3k_pre_lpf_coefficients;
 
@@ -114,19 +119,11 @@ void HeliosOverdrive::prepareFilters()
         );
     *b3k_pre_hpf.coefficients = *b3k_pre_hpf_coefficients;
 
-    b3k_pre_filter_1.prepare(process_spec);
-    auto b3k_pre_coefficients_1 =
-        juce::dsp::IIR::Coefficients<float>::makeHighPass(
-            process_spec.sampleRate, 106.0f, 0.707f
-        );
-    *b3k_pre_filter_1.coefficients = *b3k_pre_coefficients_1;
-
-    b3k_pre_filter_2.prepare(process_spec);
-    auto b3k_pre_coefficients_2 =
-        juce::dsp::IIR::Coefficients<float>::makeNotch(
-            process_spec.sampleRate, 320.0f, 0.18f
-        );
-    *b3k_pre_filter_2.coefficients = *b3k_pre_coefficients_2;
+    b3k_pre_filter.prepare(process_spec);
+    auto b3k_pre_coefficients = juce::dsp::IIR::Coefficients<float>::makeNotch(
+        process_spec.sampleRate, 320.0f, 0.18f
+    );
+    *b3k_pre_filter.coefficients = *b3k_pre_coefficients;
 
     vmt_pre_filter.prepare(process_spec);
     auto vmt_pre_coefficients =
@@ -135,6 +132,20 @@ void HeliosOverdrive::prepareFilters()
             juce::Decibels::decibelsToGain(-34.0f)
         );
     *vmt_pre_filter.coefficients = *vmt_pre_coefficients;
+
+    vmt_grunt_filter.prepare(process_spec);
+    auto vmt_grunt_filter_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeHighPass(
+            process_spec.sampleRate, vmt_grunt_cutoff
+        );
+    *vmt_grunt_filter.coefficients = *vmt_grunt_filter_coefficients;
+
+    b3k_grunt_filter.prepare(process_spec);
+    auto b3k_grunt_filter_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makeHighPass(
+            process_spec.sampleRate, b3k_grunt_cutoff
+        );
+    *b3k_grunt_filter.coefficients = *b3k_grunt_filter_coefficients;
 
     b3k_post_filter_1.prepare(process_spec);
     auto b3k_post_coefficients_1 =
@@ -161,8 +172,8 @@ void HeliosOverdrive::prepareFilters()
     vmt_post_filter_1.prepare(process_spec);
     auto vmt_post_coefficients_1 =
         juce::dsp::IIR::Coefficients<float>::makePeakFilter(
-            process_spec.sampleRate, 700.0f, 0.707f,
-            juce::Decibels::decibelsToGain(-6.0f)
+            process_spec.sampleRate, 2400.0f, 0.707f,
+            juce::Decibels::decibelsToGain(-9.0f)
         );
     *vmt_post_filter_1.coefficients = *vmt_post_coefficients_1;
 
@@ -208,11 +219,8 @@ void HeliosOverdrive::updateDriveFilter()
     float current_drive = drive.getCurrentValue();
     float current_grunt = grunt.getCurrentValue();
 
-    float rolloff_frequency = 3200.0f;
-    float min_frequency = 109.0f;
-    float max_frequency = 309.f;
-    float drive_frequency =
-        min_frequency + (max_frequency - min_frequency) * current_grunt * 0.1f;
+    float rolloff_frequency = 21900.0f;
+    float drive_frequency = 40.0f;
 
     // Set the gain based on the drive parameter
     float min_gain_db = 0.0f;
@@ -234,7 +242,8 @@ void HeliosOverdrive::process(
 )
 {
     auto& block = context.getOutputBlock();
-    auto oversampled_block = oversampler2x.processSamplesUp(block);
+    auto* oversampler = oversamplers[oversampling_index];
+    auto oversampled_block = oversampler->processSamplesUp(block);
 
     const size_t num_samples = oversampled_block.getNumSamples();
 
@@ -282,7 +291,7 @@ void HeliosOverdrive::process(
                    current_level;
         ch[i] = current_mix * od + (1.0f - current_mix) * dry;
     }
-    oversampler2x.processSamplesDown(block);
+    oversampler->processSamplesDown(block);
 }
 
 void HeliosOverdrive::processVMT(
@@ -294,7 +303,7 @@ void HeliosOverdrive::processVMT(
     vmt_pre_filter.process(context);
     vmt_attack_shelf.process(context);
     vmt_drive_filter.process(context);
-    vmt_grunt_shelf.process(context);
+    vmt_grunt_filter.process(context);
     cmos.process(context);
     vmt_post_filter_1.process(context);
     vmt_post_filter_2.process(context);
@@ -307,11 +316,10 @@ void HeliosOverdrive::processB3K(
 {
     b3k_pre_lpf.process(context);
     b3k_pre_hpf.process(context);
-    b3k_pre_filter_1.process(context);
-    b3k_pre_filter_2.process(context);
+    b3k_pre_filter.process(context);
     b3k_attack_shelf.process(context);
     b3k_drive_filter.process(context);
-    b3k_grunt_shelf.process(context);
+    b3k_grunt_filter.process(context);
     cmos.process(context);
     b3k_post_filter_1.process(context);
     b3k_post_filter_2.process(context);

@@ -38,18 +38,22 @@ class HeliosOverdrive : public Overdrive
     juce::dsp::IIR::Filter<float> vmt_pre_lpf;
     juce::dsp::IIR::Filter<float> b3k_pre_lpf;
     float pre_lpf_cutoff = 1540.0f;
+    float pre_lpf_q = 1.5f;
 
     juce::dsp::IIR::Filter<float> era_filter;
     juce::dsp::IIR::Filter<float> vmt_drive_filter;
     juce::dsp::IIR::Filter<float> b3k_drive_filter;
     juce::dsp::IIR::Filter<float> vmt_attack_shelf;
     juce::dsp::IIR::Filter<float> b3k_attack_shelf;
-    juce::dsp::IIR::Filter<float> vmt_grunt_shelf;
-    juce::dsp::IIR::Filter<float> b3k_grunt_shelf;
 
-    juce::dsp::IIR::Filter<float> b3k_pre_filter_1;
-    juce::dsp::IIR::Filter<float> b3k_pre_filter_2;
+    juce::dsp::IIR::Filter<float> b3k_pre_filter;
     juce::dsp::IIR::Filter<float> vmt_pre_filter;
+
+    juce::dsp::IIR::Filter<float> b3k_grunt_filter;
+    float b3k_grunt_cutoff = 333.0f;
+
+    juce::dsp::IIR::Filter<float> vmt_grunt_filter;
+    float vmt_grunt_cutoff = 106.0f;
 
     juce::dsp::IIR::Filter<float> b3k_post_filter_1;
 
@@ -75,8 +79,22 @@ class HeliosOverdrive : public Overdrive
     CMOS cmos2 = CMOS();
 
     juce::dsp::Oversampling<float> oversampler2x{
+        2, 1,
+        juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR,
+        true, false
+    };
+    juce::dsp::Oversampling<float> oversampler4x{
         2, 2,
         juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR,
         true, false
     };
+    juce::dsp::Oversampling<float> oversampler8x{
+        2, 3,
+        juce::dsp::Oversampling<float>::FilterType::filterHalfBandPolyphaseIIR,
+        true, false
+    };
+    std::vector<juce::dsp::Oversampling<float>*> oversamplers = {
+        &oversampler2x, &oversampler4x, &oversampler8x
+    };
+    size_t oversampling_index = 0;
 };
