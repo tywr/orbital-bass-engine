@@ -30,7 +30,7 @@ class HeliosOverdrive : public Overdrive
     juce::AudioBuffer<float> vmt_buffer;
 
     juce::dsp::IIR::Filter<float> vmt_pre_hpf;
-    float pre_hpf_cutoff = 50.0f;
+    float pre_hpf_cutoff = 70.0f;
 
     juce::dsp::IIR::Filter<float> vmt_pre_lpf;
     float pre_lpf_cutoff = 1540.0f;
@@ -43,6 +43,8 @@ class HeliosOverdrive : public Overdrive
     juce::dsp::IIR::Filter<float> vmt_era_filter;
 
     juce::dsp::IIR::Filter<float> vmt_pre_filter;
+    juce::dsp::IIR::Filter<float> vmt_pre_filter_2;
+    juce::dsp::IIR::Filter<float> vmt_pre_filter_3;
 
     juce::dsp::IIR::Filter<float> vmt_post_filter_2;
     float vmt_post_lpf_cutoff_2 = 10730.0f;
@@ -53,8 +55,9 @@ class HeliosOverdrive : public Overdrive
     float vmt_post_lpf_q_3 = 0.67f;
 
     CMOS cmos = CMOS();
-    juce::dsp::WaveShaper<float> mu_amp{[](float x)
-                                        { return std::tanh(0.2f + 3.0f * x); }};
+    juce::dsp::WaveShaper<float> mu_amp{
+        [](float x) { return 4.0f * (x + 0.04f * std::tanh(0.1f + x)); }
+    };
 
     juce::dsp::Oversampling<float> oversampler2x{
         2, 1,

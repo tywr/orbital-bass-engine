@@ -7,7 +7,7 @@
 void HeliosOverdrive::prepare(const juce::dsp::ProcessSpec& spec)
 {
     juce::dsp::ProcessSpec oversampled_spec = spec;
-    oversampled_spec.sampleRate *= 2;
+    oversampled_spec.sampleRate *= (int)(2 * std::pow(2, oversampling_index));
     process_spec = oversampled_spec;
 
     for (auto oversampler : oversamplers)
@@ -46,6 +46,8 @@ void HeliosOverdrive::resetFilters()
     vmt_era_filter.reset();
     vmt_drive_filter.reset();
     vmt_pre_filter.reset();
+    vmt_pre_filter_2.reset();
+    vmt_pre_filter_3.reset();
     vmt_post_filter_2.reset();
     vmt_post_filter_3.reset();
 }
@@ -95,10 +97,28 @@ void HeliosOverdrive::prepareFilters()
     *vmt_pre_hpf.coefficients = *vmt_pre_hpf_coefficients;
 
     vmt_pre_filter.prepare(process_spec);
-    auto vmt_pre_coefficients = juce::dsp::IIR::Coefficients<float>::makeNotch(
-        process_spec.sampleRate, 280.0f, 0.16f
-    );
+    auto vmt_pre_coefficients =
+        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+            process_spec.sampleRate, 288.0f, 0.175f,
+            juce::Decibels::decibelsToGain(-34.55f)
+        );
     *vmt_pre_filter.coefficients = *vmt_pre_coefficients;
+
+    vmt_pre_filter_2.prepare(process_spec);
+    auto vmt_pre_coefficients_2 =
+        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+            process_spec.sampleRate, 80.0f,
+            juce::Decibels::decibelsToGain(-4.0f), 0.5f
+        );
+    *vmt_pre_filter_2.coefficients = *vmt_pre_coefficients_2;
+
+    vmt_pre_filter_3.prepare(process_spec);
+    auto vmt_pre_coefficients_3 =
+        juce::dsp::IIR::Coefficients<float>::makeLowShelf(
+            process_spec.sampleRate, 1539.0f,
+            juce::Decibels::decibelsToGain(-8.0f), 0.40f
+        );
+    *vmt_pre_filter_3.coefficients = *vmt_pre_coefficients_3;
 
     vmt_post_filter_2.prepare(process_spec);
     auto vmt_post_coefficients_2 =
@@ -139,7 +159,7 @@ void HeliosOverdrive::updateAttackFilter()
 void HeliosOverdrive::updateGruntFilter()
 {
     float current_grunt = grunt.getCurrentValue();
-    float min_frequency = 106.0f;
+    float min_frequency = 109.0f;
     float max_frequency = 506.0f;
     float frequency = min_frequency + (max_frequency - min_frequency) *
                                           (1.0f - current_grunt * 0.1f);
@@ -160,7 +180,7 @@ void HeliosOverdrive::updateEraFilter()
 
     auto era_coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(
         process_spec.sampleRate, frequency, 0.707f,
-        juce::Decibels::decibelsToGain(-12.0f + 4.0f * era)
+        juce::Decibels::decibelsToGain(-10.0f - 4.5f * era)
     );
     *vmt_era_filter.coefficients = *era_coefficients;
 }
@@ -169,8 +189,8 @@ void HeliosOverdrive::updateDriveFilter()
 {
     float current_drive = drive.getCurrentValue();
 
-    float rolloff_frequency = 21900.0f;
-    float drive_frequency = 40.0f;
+    float rolloff_frequency = 5000.0f;
+    float drive_frequency = 30.0f;
 
     // Set the gain based on the drive parameter
     float min_gain_db = 0.0f;
@@ -247,6 +267,8 @@ void HeliosOverdrive::processVMT(
     vmt_pre_lpf.process(context);
     vmt_pre_hpf.process(context);
     vmt_pre_filter.process(context);
+    vmt_pre_filter_2.process(context);
+    vmt_pre_filter_3.process(context);
     vmt_attack_shelf.process(context);
     vmt_drive_filter.process(context);
     vmt_grunt_filter.process(context);
