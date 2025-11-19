@@ -32,7 +32,7 @@ class CMOS
   private:
     juce::dsp::LookupTableTransform<float> lut;
     // LookupTableTransformCubic<float> lut;
-    static constexpr int lut_size = 2048;
+    static constexpr int lut_size = 8192;
     static constexpr float lut_min = -1.8f;
     static constexpr float lut_max = 5.1f;
 
@@ -151,6 +151,7 @@ inline void CMOS::prepare()
 inline float CMOS::processSample(float x)
 {
     return lut.processSample(x);
+    // return waveshaper_cmos(x);
 }
 
 inline void CMOS::process(

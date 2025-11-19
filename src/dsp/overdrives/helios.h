@@ -56,7 +56,8 @@ class HeliosOverdrive : public Overdrive
 
     CMOS cmos = CMOS();
     juce::dsp::WaveShaper<float> mu_amp{
-        [](float x) { return 4.0f * (x + 0.04f * std::tanh(0.1f + x)); }
+        // Adds second-order harmonics and ~+32dB gain
+        [](float x) { return 63.0f * (x + 0.04f * (x * x - 1.0f)); }
     };
 
     juce::dsp::Oversampling<float> oversampler2x{

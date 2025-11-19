@@ -18,19 +18,8 @@ circuit.V("cc", "vcc", circuit.gnd, 0 @ u_V)
 circuit.V("ee", "vee", circuit.gnd, 0)
 
 circuit.V("input", "in_node", circuit.gnd, "DC 0V AC 1V")
-# circuit.V("input", "in_amp", circuit.gnd, "DC 0V AC 1V")
 
-# circuit.X(
-#     "U1",
-#     "TL074",
-#     "in_amp",  # 1: Non-inverting input (IN+)
-#     "in_node",  # 2: Inverting input (IN-), connected to output for buffer config
-#     "vcc",  # 3: Positive power supply (V+)
-#     circuit.gnd,  # 4: Negative power supply (V-)
-#     "in_node",  # 5: Output
-# )
-
-circuit.C(16, "in_node", "out_node", 1@ u_nF)
+circuit.C(16, "in_node", "out_node", 1 @ u_nF)
 circuit.R(20, "in_node", "middle_node", 100 @ u_kOhm)
 circuit.C(17, "middle_node", circuit.gnd, 4.7 @ u_nF)
 circuit.R(21, "middle_node", "era_node", 10 @ u_kOhm)
@@ -42,6 +31,7 @@ pot_settings = {
     "Middle (75%)": 75 @ u_kOhm,
     "Maximum (100%)": 100 @ u_kOhm,
 }
+
 
 if __name__ == "__main__":
     figure, ax = plt.subplots(1, 1, figsize=(10, 8), sharex=True)
@@ -71,6 +61,28 @@ for label, resistance in pot_settings.items():
 
 
 if __name__ == "__main__":
+    # Peak filter
+    f0 = 700
+    Q = 0.35
+    gain_dB = -10
+    frequencies = np.array(analysis.frequency)
+    w0 = 2 * np.pi * f0
+    w = 2 * np.pi * frequencies
+    A = 10 ** (gain_dB / 20)
+    numerator_real = w0**2 - w**2
+    numerator_imag = (A * w0 / Q) * w
+    numerator_mag = np.sqrt(numerator_real**2 + numerator_imag**2)
+
+    denominator_real = w0**2 - w**2
+    denominator_imag = (w0 / Q) * w
+    denominator_mag = np.sqrt(denominator_real**2 + denominator_imag**2)
+
+    H_peak = numerator_mag / denominator_mag
+    H_peak_dB = 20 * np.log10(H_peak + 1e-10)
+
+    ax.semilogx(
+        frequencies, H_peak_dB, "k--", label="Ideal Peak Filter (-10 dB at 700 Hz)"
+    )
     ax.legend()
     plt.tight_layout(rect=[0, 0, 1, 0.96])
     plt.show()

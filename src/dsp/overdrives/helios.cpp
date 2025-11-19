@@ -173,14 +173,18 @@ void HeliosOverdrive::updateGruntFilter()
 void HeliosOverdrive::updateEraFilter()
 {
     float current_era = era.getCurrentValue();
+    float era = 1.0f - 0.099f * current_era;
+
     float min_frequency = 700.0f;
-    float max_frequency = 2200.0f;
-    float era = std::sqrt(1.0f - 0.099f * current_era);
-    float frequency = min_frequency + (max_frequency - min_frequency) * era;
+    float frequency = min_frequency * std::exp(1.21533f * era * era);
+
+    float min_q = 0.35f;
+    float max_q = 0.12f;
+    float q = min_q + (max_q - min_q) * era;
 
     auto era_coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(
-        process_spec.sampleRate, frequency, 0.707f,
-        juce::Decibels::decibelsToGain(-10.0f - 4.5f * era)
+        process_spec.sampleRate, frequency, q,
+        juce::Decibels::decibelsToGain(-10.0f - 4.3f * era)
     );
     *vmt_era_filter.coefficients = *era_coefficients;
 }
@@ -194,7 +198,7 @@ void HeliosOverdrive::updateDriveFilter()
 
     // Set the gain based on the drive parameter
     float min_gain_db = 0.0f;
-    float max_gain_db = 48.0f;
+    float max_gain_db = 30.0f;
     float drive_filter_gain = juce::Decibels::decibelsToGain(
         min_gain_db + (max_gain_db - min_gain_db) * current_drive * 0.1f
     );
