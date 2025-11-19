@@ -151,7 +151,6 @@ inline void CMOS::prepare()
 inline float CMOS::processSample(float x)
 {
     return lut.processSample(x);
-    // return waveshaper_cmos(x);
 }
 
 inline void CMOS::process(

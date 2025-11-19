@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../circuits/cmos.h"
-#include "../circuits/cmos_approx.h"
 #include "overdrive.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_dsp/juce_dsp.h>

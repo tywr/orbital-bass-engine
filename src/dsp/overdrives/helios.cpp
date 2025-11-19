@@ -44,12 +44,6 @@ void HeliosOverdrive::resetFilters()
     vmt_attack_shelf.reset();
     vmt_grunt_filter.reset();
     vmt_era_filter.reset();
-    vmt_drive_filter.reset();
-    vmt_pre_filter.reset();
-    vmt_pre_filter_2.reset();
-    vmt_pre_filter_3.reset();
-    vmt_post_filter_2.reset();
-    vmt_post_filter_3.reset();
 }
 
 void HeliosOverdrive::resetSmoothedValues()
