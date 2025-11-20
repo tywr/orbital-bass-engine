@@ -2,11 +2,17 @@
 
 void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
 {
-    if (parameterID == "compressor_ratio")
+    if (parameterID == "compressor_attack")
     {
-        const float values[] = {2.0f, 4.0f, 8.0f, 12.0f, 20.0f};
-        int index = static_cast<int>(v);
-        compressor.setRatio(values[index]);
+        compressor.setAttack(v);
+    }
+    else if (parameterID == "compressor_release")
+    {
+        compressor.setRelease(v);
+    }
+    else if (parameterID == "compressor_ratio")
+    {
+        compressor.setRatio(v);
     }
     else if (parameterID == "compressor_threshold")
     {
@@ -15,10 +21,6 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     else if (parameterID == "compressor_level_db")
     {
         compressor.setLevel(juce::Decibels::decibelsToGain(v));
-    }
-    else if (parameterID == "compressor_type")
-    {
-        compressor.setTypeFromIndex(static_cast<int>(v));
     }
     else if (parameterID == "compressor_mix")
     {

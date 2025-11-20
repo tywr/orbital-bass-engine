@@ -26,7 +26,7 @@ constexpr int GAIN_REDUCTION_WIDTH = 220;
 constexpr int BYPASS_SIZE = 20;
 
 constexpr int LABEL_HEIGHT = 20;
-constexpr int SMALL_KNOB_SIZE = 60;
+constexpr int SMALL_KNOB_SIZE = 35;
 constexpr int KNOB_SIZE = 60;
 
 constexpr int TITLE_LABEL_HEIGHT = 100;

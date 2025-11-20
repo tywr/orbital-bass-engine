@@ -56,10 +56,15 @@ class CompressorKnobsComponent : public juce::Component
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         level_slider_attachment;
 
-    juce::Slider type_slider;
-    juce::Label type_label;
+    juce::Slider attack_slider;
+    juce::Label attack_label;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        type_slider_attachment;
+        attack_slider_attachment;
+
+    juce::Slider release_slider;
+    juce::Label release_label;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        release_slider_attachment;
 
     std::vector<
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>>
@@ -67,11 +72,13 @@ class CompressorKnobsComponent : public juce::Component
 
     // Define knobs for easy looping
     std::vector<CompressorKnob> knobs = {
-        {&threshold_slider, &threshold_label, "compressor_threshold", "threshold"  },
-        {&mix_slider,       &mix_label,       "compressor_mix",       "mix"  },
-        {&level_slider,     &level_label,     "compressor_level_db",  "level"},
-        {&ratio_slider,     &ratio_label,     "compressor_ratio",     "ratio"},
-        {&type_slider,      &type_label,      "compressor_type",      "type" }
+        {&threshold_slider, &threshold_label, "compressor_threshold",
+         "threshold"                                                           },
+        {&mix_slider,       &mix_label,       "compressor_mix",       "mix"    },
+        {&level_slider,     &level_label,     "compressor_level_db",  "level"  },
+        {&ratio_slider,     &ratio_label,     "compressor_ratio",     "ratio"  },
+        {&attack_slider,    &attack_label,    "compressor_attack",    "attack" },
+        {&release_slider,   &release_label,   "compressor_release",   "release"},
     };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CompressorKnobsComponent)

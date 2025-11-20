@@ -13,12 +13,6 @@ createParameterLayout()
             "output_gain_db", "Output Gain dB",
             juce::NormalisableRange<float>(-48.0f, 6.0f, 0.1f, 0.9f), 0.0f
         ),
-        std::make_unique<juce::AudioParameterChoice>(
-            "compressor_type",                // Parameter ID
-            "Compressor Type",                // Display name
-            juce::StringArray{"OPTO", "FET"}, // Choice options
-            0
-        ),
         std::make_unique<juce::AudioParameterBool>(
             "compressor_bypass", "Compressor Bypass", false
         ),
@@ -26,10 +20,23 @@ createParameterLayout()
             "compressor_threshold", "Compressor Treshold",
             juce::NormalisableRange<float>(-48.0f, 0.0f, 0.1f), -24.0f
         ),
-        std::make_unique<juce::AudioParameterChoice>(
-            "compressor_ratio", "Ratio",
-            juce::StringArray{"2:1", "4:1", "8:1", "12:1", "20:1"},
-            0 // Default index
+        std::make_unique<juce::AudioParameterFloat>(
+            "compressor_ratio", "Compressor Ratio",
+            juce::NormalisableRange<float>(2.0f, 20.0f, 0.1f), 4.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "compressor_attack", "Compressor Attack Time (ms)",
+            juce::NormalisableRange<float>(
+                0.1f, 10.0f, 0.01f, 0.2890647108933747f
+            ),
+            0.3f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "compressor_release", "Compressor Release Time (ms)",
+            juce::NormalisableRange<float>(
+                10.0f, 1000.0f, 0.1f, 0.2890647108933747f
+            ),
+            100.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "compressor_level_db", "Compressor Gain dB",
@@ -38,25 +45,6 @@ createParameterLayout()
         std::make_unique<juce::AudioParameterFloat>(
             "compressor_mix", "Compressor Mix",
             juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f
-        ),
-        std::make_unique<juce::AudioParameterBool>(
-            "fuzz_bypass", "Fuzz Bypass", false
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "fuzz_tone", "Fuzz Tone",
-            juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f), 5.0f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "fuzz_sustain", "Fuzz Sustain",
-            juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f), 5.0f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "fuzz_mix", "Fuzz Mix",
-            juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "fuzz_level", "Fuzz Level",
-            juce::NormalisableRange<float>(-24.0f, 12.0f, 0.01f), 5.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "amp_master", "Amp Master Level",

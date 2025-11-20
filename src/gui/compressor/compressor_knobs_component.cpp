@@ -19,8 +19,9 @@ CompressorKnobsComponent::CompressorKnobsComponent(
     slider_being_dragged = false;
     drag_tooltip.setVisible(false);
 
-    type_slider.setLookAndFeel(&selector_look_and_feel);
     ratio_slider.setLookAndFeel(&selector_look_and_feel);
+    attack_slider.setLookAndFeel(&selector_look_and_feel);
+    release_slider.setLookAndFeel(&selector_look_and_feel);
 
     for (auto knob : knobs)
     {
@@ -85,8 +86,6 @@ CompressorKnobsComponent::CompressorKnobsComponent(
                 );
         };
     }
-    type_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, 20);
-    ratio_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, 20);
 }
 
 CompressorKnobsComponent::~CompressorKnobsComponent()
@@ -125,8 +124,8 @@ void CompressorKnobsComponent::resized()
                                    ));
     }
 
-    const int knob_box_height = bounds.getHeight() / 2;
-    for (size_t i = 3; i < 5; ++i)
+    const int knob_box_height = bounds.getHeight() / 3;
+    for (size_t i = 3; i < 6; ++i)
     {
         auto knob_bounds = bounds.removeFromTop(knob_box_height);
         CompressorKnob knob = knobs[i];
