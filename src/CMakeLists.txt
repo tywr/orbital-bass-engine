@@ -53,6 +53,7 @@ target_sources(${PROJECT_NAME}
         gui/post_rack.cpp
         gui/tuner.cpp
         dsp/compressor.cpp
+        dsp/pitch_detector.cpp
         dsp/ir.cpp
         dsp/overdrives/helios.cpp
         dsp/overdrives/borealis.cpp

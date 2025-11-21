@@ -94,9 +94,11 @@ void PluginEditor::showTuner()
 {
     tuner.setVisible(true);
     tuner.toFront(true);
+    processorRef.setTunerBypass(false);
 }
 
 void PluginEditor::hideTuner()
 {
     tuner.setVisible(false);
+    processorRef.setTunerBypass(true);
 }

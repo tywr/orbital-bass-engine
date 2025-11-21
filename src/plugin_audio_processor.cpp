@@ -245,6 +245,15 @@ void PluginAudioProcessor::processBlock(
     current_input_gain.applyGain(buffer, num_samples);
     updateInputLevel(buffer);
 
+    if (!is_tuner_bypassed)
+    {
+        currentPitch.setValue(pitch_detector.getPitch(context));
+    }
+    else
+    {
+        currentPitch.setValue(0.0f);
+    }
+
     if (synth_bypass_parameter->load() < 0.5f)
         synth_voices.process(context);
 
