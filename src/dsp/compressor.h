@@ -44,14 +44,14 @@ class Compressor : juce::dsp::ProcessorBase
 
     void setAttack(float newAttack)
     {
-        float v = juce::jlimit(0.0f, 1.0f, newAttack);
+        float v = juce::jlimit(0.0f, 1000.0f, newAttack);
         attack.setTargetValue(v);
         raw_attack = v;
     }
 
     void setRelease(float newRelease)
     {
-        float v = juce::jlimit(0.0f, 1.0f, newRelease);
+        float v = juce::jlimit(0.0f, 10000.0f, newRelease);
         release.setTargetValue(v);
         raw_release = v;
     }
