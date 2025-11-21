@@ -6,16 +6,19 @@
 #include <juce_dsp/juce_dsp.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
-class Tuner : public juce::Component, public juce::Timer
+class Tuner : public juce::Component,
+              public juce::Timer,
+              public juce::Value::Listener
 {
   public:
-    Tuner();
+    Tuner(juce::Value& v);
     ~Tuner() override;
 
     void resized() override;
     void paint(juce::Graphics&) override;
     void timerCallback() override;
     void visibilityChanged() override;
+    void valueChanged(juce::Value& v) override;
 
     void setPitch(float freq);
 
@@ -24,6 +27,7 @@ class Tuner : public juce::Component, public juce::Timer
   private:
     void updatePitchDisplay();
     juce::String getNoteLabel(int noteIndex) const;
+    juce::Value& pitch_value;
 
     juce::TextButton closeButton;
 

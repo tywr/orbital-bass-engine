@@ -1,11 +1,14 @@
 #include "tuner.h"
-#include <juce_gui_basics/juce_gui_basics.h>
 #include <cmath>
+#include <juce_gui_basics/juce_gui_basics.h>
 
-Tuner::Tuner()
+Tuner::Tuner(juce::Value& v) : pitch_value(v)
 {
     startTimerHz(60);
     smoothedFreq.reset(60, 0.1);
+
+    pitch_value.addListener(this);
+    pitch_value.setValue(0.0f);
 
     addAndMakeVisible(closeButton);
     closeButton.setButtonText("X");
@@ -18,6 +21,7 @@ Tuner::Tuner()
 
 Tuner::~Tuner()
 {
+    pitch_value.removeListener(this);
 }
 
 void Tuner::paint(juce::Graphics& g)
@@ -32,12 +36,16 @@ void Tuner::paint(juce::Graphics& g)
     // Draw note label
     g.setColour(ColourCodes::white0);
     g.setFont(48.0f);
-    g.drawText(noteLabel, innerBounds.removeFromTop(60.0f), juce::Justification::centred);
+    g.drawText(
+        noteLabel, innerBounds.removeFromTop(60.0f),
+        juce::Justification::centred
+    );
 
     // Draw pitch slider
     auto sliderArea = innerBounds.reduced(20.0f, 40.0f);
     float sliderHeight = 20.0f;
-    auto sliderBounds = sliderArea.withHeight(sliderHeight).withCentre(innerBounds.getCentre());
+    auto sliderBounds =
+        sliderArea.withHeight(sliderHeight).withCentre(innerBounds.getCentre());
 
     // Slider background
     g.setColour(ColourCodes::white0.withAlpha(0.2f));
@@ -46,7 +54,10 @@ void Tuner::paint(juce::Graphics& g)
     // Center marker
     float centerX = sliderBounds.getCentreX();
     g.setColour(ColourCodes::white0.withAlpha(0.5f));
-    g.drawLine(centerX, sliderBounds.getY() - 5.0f, centerX, sliderBounds.getBottom() + 5.0f, 2.0f);
+    g.drawLine(
+        centerX, sliderBounds.getY() - 5.0f, centerX,
+        sliderBounds.getBottom() + 5.0f, 2.0f
+    );
 
     // Pitch indicator
     if (currentFreq > 0.0f)
@@ -55,11 +66,15 @@ void Tuner::paint(juce::Graphics& g)
         g.setColour(inTune ? juce::Colours::green : ColourCodes::white0);
 
         float normalizedPos = juce::jlimit(-1.0f, 1.0f, centsDeviation / 50.0f);
-        float indicatorX = centerX + normalizedPos * (sliderBounds.getWidth() / 2.0f - 10.0f);
+        float indicatorX =
+            centerX + normalizedPos * (sliderBounds.getWidth() / 2.0f - 10.0f);
         float indicatorSize = 16.0f;
 
-        g.fillEllipse(indicatorX - indicatorSize / 2.0f, sliderBounds.getCentreY() - indicatorSize / 2.0f,
-                      indicatorSize, indicatorSize);
+        g.fillEllipse(
+            indicatorX - indicatorSize / 2.0f,
+            sliderBounds.getCentreY() - indicatorSize / 2.0f, indicatorSize,
+            indicatorSize
+        );
     }
 }
 
@@ -75,8 +90,9 @@ void Tuner::resized()
     );
 }
 
-void Tuner::setPitch(float freq)
+void Tuner::valueChanged(juce::Value& newValue)
 {
+    float freq = static_cast<float>(newValue.getValue());
     targetFreq.store(freq);
 }
 
@@ -127,6 +143,7 @@ void Tuner::updatePitchDisplay()
 
 juce::String Tuner::getNoteLabel(int noteIndex) const
 {
-    static const char* notes[] = {"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"};
+    static const char* notes[] = {"A",  "A#", "B", "C",  "C#", "D",
+                                  "D#", "E",  "F", "F#", "G",  "G#"};
     return notes[noteIndex];
 }

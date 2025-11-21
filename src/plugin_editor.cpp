@@ -12,7 +12,8 @@ PluginEditor::PluginEditor(
 )
     : AudioProcessorEditor(&p), processorRef(p), parameters(params),
       header(params, processorRef.inputLevel, processorRef.outputLevel),
-      tabs(params, processorRef.compressorGainReductionDb)
+      tabs(params, processorRef.compressorGainReductionDb),
+      tuner(processorRef.currentPitch)
 {
 
     setLookAndFeel(new BaseLookAndFeel());
