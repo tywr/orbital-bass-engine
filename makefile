@@ -18,6 +18,10 @@ run: build-release
 	killall ${PROJECT_NAME} || true
 	open ${BUILD_RELEASE_DIR}/src/${PROJECT_NAME}_artefacts/Release/Standalone/${PROJECT_NAME}.app
 
+run-debug: build-debug
+	killall ${PROJECT_NAME} || true
+	open ${BUILD_DEBUG_DIR}/src/${PROJECT_NAME}_artefacts/Debug/Standalone/${PROJECT_NAME}.app
+
 debug: build-debug
 	lldb ${BUILD_DEBUG_DIR}/src/${PROJECT_NAME}_artefacts/Debug/Standalone/${PROJECT_NAME}.app/Contents/MacOS/${PROJECT_NAME}
 

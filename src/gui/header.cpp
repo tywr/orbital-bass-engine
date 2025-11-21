@@ -41,6 +41,14 @@ Header::Header(
         std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             parameters, "output_gain_db", outputGainSlider
         );
+
+    addAndMakeVisible(tunerButton);
+    tunerButton.setButtonText("TUNER");
+    tunerButton.onClick = [this]()
+    {
+        if (onTunerClicked)
+            onTunerClicked();
+    };
 }
 
 Header::~Header()
@@ -66,5 +74,12 @@ void Header::resized()
     inputGainSlider.setBounds(bounds.removeFromLeft(knob_size + knob_padding));
     outputGainSlider.setBounds(
         bounds.removeFromRight(knob_size + knob_padding)
+    );
+
+    int const buttonWidth = 60;
+    int const buttonHeight = 25;
+    tunerButton.setBounds(
+        bounds.getCentreX() - buttonWidth / 2,
+        bounds.getCentreY() - buttonHeight / 2, buttonWidth, buttonHeight
     );
 }

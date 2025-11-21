@@ -20,6 +20,10 @@ PluginEditor::PluginEditor(
     addAndMakeVisible(header);
     addAndMakeVisible(tabs);
 
+    addChildComponent(tuner);
+    tuner.onClose = [this]() { hideTuner(); };
+    header.onTunerClicked = [this]() { showTuner(); };
+
     juce::ignoreUnused(processorRef);
 
     getLookAndFeel().setColour(
@@ -83,4 +87,16 @@ void PluginEditor::resized()
     auto bounds = getLocalBounds();
     header.setBounds(bounds.removeFromTop(header_height));
     tabs.setBounds(bounds);
+    tuner.setBounds(getLocalBounds());
+}
+
+void PluginEditor::showTuner()
+{
+    tuner.setVisible(true);
+    tuner.toFront(true);
+}
+
+void PluginEditor::hideTuner()
+{
+    tuner.setVisible(false);
 }

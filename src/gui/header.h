@@ -29,5 +29,11 @@ class Header : public juce::Component
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         outputGainAttachment;
 
+    juce::TextButton tunerButton;
+
+  public:
+    std::function<void()> onTunerClicked;
+
+  private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Header)
 };

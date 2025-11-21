@@ -50,6 +50,7 @@ target_sources(${PROJECT_NAME}
         gui/header.cpp
         gui/tabs.cpp
         gui/post_rack.cpp
+        gui/tuner.cpp
         dsp/compressor.cpp
         dsp/ir.cpp
         dsp/overdrives/helios.cpp

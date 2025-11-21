@@ -2,6 +2,7 @@
 
 #include "gui/header.h"
 #include "gui/tabs.h"
+#include "gui/tuner.h"
 #include "plugin_audio_processor.h"
 
 //==============================================================================
@@ -32,5 +33,10 @@ class PluginEditor final : public juce::AudioProcessorEditor
     juce::AudioProcessorValueTreeState& parameters;
     Header header;
     Tabs tabs;
+    Tuner tuner;
+
+    void showTuner();
+    void hideTuner();
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginEditor)
 };
