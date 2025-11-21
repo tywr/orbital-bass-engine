@@ -29,7 +29,7 @@ class Header : public juce::Component
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         outputGainAttachment;
 
-    juce::TextButton tunerButton;
+    juce::ToggleButton tunerButton;
 
   public:
     std::function<void()> onTunerClicked;

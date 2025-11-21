@@ -34,6 +34,7 @@ target_sources(${PROJECT_NAME}
         gui/looks/header_look_and_feel.cpp
         gui/looks/eq_look_and_feel.cpp
         gui/looks/compressor_selector_look_and_feel.cpp
+        gui/looks/tuner_look_and_feel.cpp
         gui/compressor/compressor_knobs_component.cpp
         gui/compressor/compressor_meter_component.cpp
         gui/compressor/compressor_component.cpp

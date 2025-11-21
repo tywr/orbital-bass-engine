@@ -2,6 +2,7 @@
 
 #include "colours.h"
 #include "looks/header_look_and_feel.h"
+#include "looks/tuner_look_and_feel.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -43,7 +44,7 @@ Header::Header(
         );
 
     addAndMakeVisible(tunerButton);
-    tunerButton.setButtonText("TUNER");
+    tunerButton.setLookAndFeel(new TunerLookAndFeel());
     tunerButton.onClick = [this]()
     {
         if (onTunerClicked)
