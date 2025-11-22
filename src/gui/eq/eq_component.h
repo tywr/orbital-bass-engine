@@ -24,9 +24,5 @@ class EqComponent : public juce::Component
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>
         bypass_attachment;
 
-    juce::Slider lpf_slider;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        lpf_slider_attachment;
-
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EqComponent)
 };

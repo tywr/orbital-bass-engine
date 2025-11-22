@@ -12,16 +12,16 @@ EqComponent::EqComponent(juce::AudioProcessorValueTreeState& params)
     setLookAndFeel(new EqLookAndFeel());
     addAndMakeVisible(sliders_component);
     addAndMakeVisible(bypass_button);
-    addAndMakeVisible(lpf_slider);
+    // addAndMakeVisible(lpf_slider);
 
-    lpf_slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    lpf_slider.setTextBoxStyle(
-        juce::Slider::TextBoxBelow, false, 70, EqDimensions::LABEL_HEIGHT
-    );
-    lpf_slider_attachment =
-        std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-            parameters, "eq_lpf", lpf_slider
-        );
+    // lpf_slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    // lpf_slider.setTextBoxStyle(
+    //     juce::Slider::TextBoxBelow, false, 70, EqDimensions::LABEL_HEIGHT
+    // );
+    // lpf_slider_attachment =
+    //     std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+    //         parameters, "eq_lpf", lpf_slider
+    //     );
 
     bypass_attachment =
         std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
@@ -32,8 +32,7 @@ EqComponent::EqComponent(juce::AudioProcessorValueTreeState& params)
         juce::ToggleButton::tickColourId, GuiColours::DEFAULT_INACTIVE_COLOUR
     );
     bypass_button.setColour(
-        juce::ToggleButton::tickDisabledColourId,
-        GuiColours::EQ_ACTIVE_COLOUR_1
+        juce::ToggleButton::tickDisabledColourId, GuiColours::EQ_ACTIVE_COLOUR_1
     );
     bypass_button.onClick = [this]() { repaint(); };
 }
@@ -85,7 +84,7 @@ void EqComponent::paint(juce::Graphics& g)
 
     sliders_component.switchColour(colour1, colour2);
 
-    lpf_slider.setColour(juce::Slider::rotarySliderFillColourId, colour1);
+    // lpf_slider.setColour(juce::Slider::rotarySliderFillColourId, colour1);
 }
 
 void EqComponent::resized()
@@ -104,9 +103,9 @@ void EqComponent::resized()
         EqDimensions::BYPASS_SIZE, EqDimensions::BYPASS_SIZE
     ));
 
-    auto right_bounds = bounds.removeFromRight(EqDimensions::SIDE_WIDTH);
-    lpf_slider.setBounds(right_bounds.withSizeKeepingCentre(
-        EqDimensions::KNOB_SIZE,
-        EqDimensions::KNOB_SIZE + EqDimensions::LABEL_HEIGHT
-    ));
+    // auto right_bounds = bounds.removeFromRight(EqDimensions::SIDE_WIDTH);
+    // lpf_slider.setBounds(right_bounds.withSizeKeepingCentre(
+    //     EqDimensions::KNOB_SIZE,
+    //     EqDimensions::KNOB_SIZE + EqDimensions::LABEL_HEIGHT
+    // ));
 }

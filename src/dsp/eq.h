@@ -13,46 +13,60 @@ class EQ : juce::dsp::ProcessorBase
     void resetSmoothedValues();
     void reset() override;
 
-    void set80Gain(float g)
+    void setLowShelfGain(float g)
     {
         float v = juce::jlimit(0.0f, 2.0f, g);
-        b80_gain.setTargetValue(v);
-        raw_b80_gain = v;
+        low_shelf_gain.setTargetValue(v);
+        raw_low_shelf_gain = v;
     }
 
-    void set250Gain(float g)
+    void setLowMidFreq(float f)
     {
-        float v = juce::jlimit(0.0f, 2.0f, g);
-        b250_gain.setTargetValue(v);
-        raw_b250_gain = v;
+        float v = juce::jlimit(200.0f, 800.0f, f);
+        low_mid_freq.setTargetValue(v);
+        raw_low_mid_freq = v;
     }
 
-    void set500Gain(float g)
+    void setLowMidQ(float q)
     {
-        float v = juce::jlimit(0.0f, 2.0f, g);
-        b500_gain.setTargetValue(v);
-        raw_b500_gain = v;
+        float v = juce::jlimit(0.1f, 4.0f, q);
+        low_mid_q.setTargetValue(v);
+        raw_low_mid_q = v;
     }
 
-    void set1500Gain(float g)
+    void setLowMidGain(float g)
     {
         float v = juce::jlimit(0.0f, 2.0f, g);
-        b1500_gain.setTargetValue(v);
-        raw_b1500_gain = v;
+        low_mid_gain.setTargetValue(v);
+        raw_low_mid_gain = v;
     }
 
-    void set3000Gain(float g)
+    void setHighMidFreq(float f)
     {
-        float v = juce::jlimit(0.0f, 2.0f, g);
-        b3000_gain.setTargetValue(v);
-        raw_b3000_gain = v;
+        float v = juce::jlimit(800.0f, 2500.0f, f);
+        high_mid_freq.setTargetValue(v);
+        raw_high_mid_freq = v;
     }
 
-    void set5000Gain(float g)
+    void setHighMidQ(float q)
+    {
+        float v = juce::jlimit(0.1f, 4.0f, q);
+        high_mid_q.setTargetValue(v);
+        raw_high_mid_q = v;
+    }
+
+    void setHighMidGain(float g)
     {
         float v = juce::jlimit(0.0f, 2.0f, g);
-        b5000_gain.setTargetValue(v);
-        raw_b5000_gain = v;
+        high_mid_gain.setTargetValue(v);
+        raw_high_mid_gain = v;
+    }
+
+    void setHighShelfGain(float g)
+    {
+        float v = juce::jlimit(0.0f, 2.0f, g);
+        high_shelf_gain.setTargetValue(v);
+        raw_high_shelf_gain = v;
     }
 
     void setLpfFrequency(float g)
@@ -70,34 +84,28 @@ class EQ : juce::dsp::ProcessorBase
     juce::dsp::IIR::Filter<float> lpf_filter_1;
     juce::dsp::IIR::Filter<float> lpf_filter_2;
 
-    juce::dsp::IIR::Filter<float> b80_filter;
-    float b80_freq = 80.0f;
-    float b80_q = 0.742f;
+    juce::dsp::IIR::Filter<float> low_shelf_filter;
+    float low_shelf_freq = 80.0f;
+    float low_shelf_q = 0.7f;
 
-    juce::dsp::IIR::Filter<float> b250_filter;
-    float b250_freq = 250.0f;
-    float b250_q = 1.05f;
+    juce::dsp::IIR::Filter<float> low_mid_filter;
 
-    juce::dsp::IIR::Filter<float> b500_filter;
-    float b500_freq = 500.0f;
-    float b500_q = 1.080f;
+    juce::dsp::IIR::Filter<float> high_mid_filter;
 
-    juce::dsp::IIR::Filter<float> b1500_filter;
-    float b1500_freq = 1500.0f;
-    float b1500_q = 1.080f;
-
-    juce::dsp::IIR::Filter<float> b3000_filter;
-    float b3000_freq = 3000.0f;
-    float b3000_q = 1.636f;
-
-    juce::dsp::IIR::Filter<float> b5000_filter;
-    float b5000_freq = 5000.0f;
-    float b5000_q = 0.349f;
+    juce::dsp::IIR::Filter<float> high_shelf_filter;
+    float high_shelf_freq = 3200.0f;
+    float high_shelf_q = 0.7f;
 
     float smoothing_time = 0.05f;
-    float raw_b80_gain = 1.0f, raw_b250_gain = 1.0f, raw_b500_gain = 1.0f,
-          raw_b1500_gain = 1.0f, raw_b3000_gain = 1.0f, raw_b5000_gain = 1.0f,
-          raw_lpf_frequency = 1.0f;
-    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> b80_gain,
-        b250_gain, b500_gain, b1500_gain, b3000_gain, b5000_gain, lpf_frequency;
+    float raw_low_shelf_gain = 1.0f;
+    float raw_low_mid_freq = 400.0f, raw_low_mid_q = 0.7f, raw_low_mid_gain = 1.0f;
+    float raw_high_mid_freq = 1500.0f, raw_high_mid_q = 0.7f, raw_high_mid_gain = 1.0f;
+    float raw_high_shelf_gain = 1.0f;
+    float raw_lpf_frequency = 3000.0f;
+
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> low_shelf_gain;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> low_mid_freq, low_mid_q, low_mid_gain;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> high_mid_freq, high_mid_q, high_mid_gain;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> high_shelf_gain;
+    juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> lpf_frequency;
 };

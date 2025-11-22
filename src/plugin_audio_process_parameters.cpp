@@ -55,41 +55,49 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
         overdrive.setGrunt(v);
     }
     // EQ
-    else if (parameterID == "eq_b80")
+    else if (parameterID == "eq_low_shelf_gain")
     {
         float bv = juce::jlimit(-20.0f, 20.0f, v);
         float dbv = juce::Decibels::decibelsToGain(bv);
-        eq.set80Gain(dbv);
+        eq.setLowShelfGain(dbv);
     }
-    else if (parameterID == "eq_b250")
+    else if (parameterID == "eq_low_mid_freq")
     {
-        float bv = juce::jlimit(-20.0f, 20.0f, v);
-        float dbv = juce::Decibels::decibelsToGain(bv);
-        eq.set250Gain(dbv);
+        float bv = juce::jlimit(200.0f, 800.0f, v);
+        eq.setLowMidFreq(bv);
     }
-    else if (parameterID == "eq_b500")
+    else if (parameterID == "eq_low_mid_q")
     {
-        float bv = juce::jlimit(-20.0f, 20.0f, v);
-        float dbv = juce::Decibels::decibelsToGain(bv);
-        eq.set500Gain(dbv);
+        float bv = juce::jlimit(0.1f, 4.0f, v);
+        eq.setLowMidQ(bv);
     }
-    else if (parameterID == "eq_b1500")
+    else if (parameterID == "eq_low_mid_gain")
     {
         float bv = juce::jlimit(-20.0f, 20.0f, v);
         float dbv = juce::Decibels::decibelsToGain(bv);
-        eq.set1500Gain(dbv);
+        eq.setLowMidGain(dbv);
     }
-    else if (parameterID == "eq_b3000")
+    else if (parameterID == "eq_high_mid_freq")
     {
-        float bv = juce::jlimit(-20.0f, 20.0f, v);
-        float dbv = juce::Decibels::decibelsToGain(bv);
-        eq.set3000Gain(dbv);
+        float bv = juce::jlimit(800.0f, 2500.0f, v);
+        eq.setHighMidFreq(bv);
     }
-    else if (parameterID == "eq_b5000")
+    else if (parameterID == "eq_high_mid_q")
+    {
+        float bv = juce::jlimit(0.1f, 4.0f, v);
+        eq.setHighMidQ(bv);
+    }
+    else if (parameterID == "eq_high_mid_gain")
     {
         float bv = juce::jlimit(-20.0f, 20.0f, v);
         float dbv = juce::Decibels::decibelsToGain(bv);
-        eq.set5000Gain(dbv);
+        eq.setHighMidGain(dbv);
+    }
+    else if (parameterID == "eq_high_shelf_gain")
+    {
+        float bv = juce::jlimit(-20.0f, 20.0f, v);
+        float dbv = juce::Decibels::decibelsToGain(bv);
+        eq.setHighShelfGain(dbv);
     }
     else if (parameterID == "eq_lpf")
     {

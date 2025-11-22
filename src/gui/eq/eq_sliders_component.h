@@ -29,47 +29,47 @@ class EqSlidersComponent : public juce::Component
 
     juce::Colour const default_type_colour = ColourCodes::grey3;
 
-    juce::Slider b80_slider;
-    juce::Label b80_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        b80_slider_attachment;
+    juce::Slider low_shelf_gain_slider;
+    juce::Label low_shelf_gain_label;
 
-    juce::Slider b250_slider;
-    juce::Label b250_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        b250_slider_attachment;
+    juce::Slider low_mid_freq_slider;
+    juce::Label low_mid_freq_label;
+    juce::Slider low_mid_q_slider;
+    juce::Label low_mid_q_label;
+    juce::Slider low_mid_gain_slider;
+    juce::Label low_mid_gain_label;
 
-    juce::Slider b500_slider;
-    juce::Label b500_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        b500_slider_attachment;
+    juce::Slider high_mid_freq_slider;
+    juce::Label high_mid_freq_label;
+    juce::Slider high_mid_q_slider;
+    juce::Label high_mid_q_label;
+    juce::Slider high_mid_gain_slider;
+    juce::Label high_mid_gain_label;
 
-    juce::Slider b1500_slider;
-    juce::Label b1500_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        b1500_slider_attachment;
+    juce::Slider high_shelf_gain_slider;
+    juce::Label high_shelf_gain_label;
 
-    juce::Slider b3000_slider;
-    juce::Label b3000_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        b3000_slider_attachment;
-
-    juce::Slider b5000_slider;
-    juce::Label b5000_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        b5000_slider_attachment;
+    juce::Slider lpf_slider;
+    juce::Label lpf_label;
 
     std::vector<
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>>
         slider_attachments;
 
     std::vector<EqSlider> sliders = {
-        {&b80_slider,   &b80_label,   "eq_b80",   "80"  },
-        {&b250_slider,  &b250_label,  "eq_b250",  "250" },
-        {&b500_slider,  &b500_label,  "eq_b500",  "500" },
-        {&b1500_slider, &b1500_label, "eq_b1500", "1.5k"},
-        {&b3000_slider, &b3000_label, "eq_b3000", "3k"  },
-        {&b5000_slider, &b5000_label, "eq_b5000", "5k"  },
+        {&low_shelf_gain_slider,  &low_shelf_gain_label,  "eq_low_shelf_gain",
+         "low"                                                                        },
+        {&low_mid_freq_slider,    &low_mid_freq_label,    "eq_low_mid_freq",    "freq"},
+        {&low_mid_q_slider,       &low_mid_q_label,       "eq_low_mid_q",       "q"   },
+        {&low_mid_gain_slider,    &low_mid_gain_label,    "eq_low_mid_gain",    "gain"},
+        {&high_mid_freq_slider,   &high_mid_freq_label,   "eq_high_mid_freq",
+         "freq"                                                                       },
+        {&high_mid_q_slider,      &high_mid_q_label,      "eq_high_mid_q",      "q"   },
+        {&high_mid_gain_slider,   &high_mid_gain_label,   "eq_high_mid_gain",
+         "gain"                                                                       },
+        {&high_shelf_gain_slider, &high_shelf_gain_label, "eq_high_shelf_gain",
+         "highs"                                                                      },
+        {&lpf_slider,             &lpf_label,             "eq_lpf",             "lpf" },
     };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EqSlidersComponent)

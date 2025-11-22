@@ -118,27 +118,35 @@ createParameterLayout()
             "eq_bypass", "EQ Bypass", true
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "eq_b80", "EQ Low-band",
+            "eq_low_shelf_gain", "EQ Low Shelf Gain",
             juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "eq_b250", "EQ 250 Hz-Band",
+            "eq_low_mid_freq", "EQ Low-Mid Frequency",
+            juce::NormalisableRange<float>(200.0f, 800.0f, 1.0f), 400.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_low_mid_q", "EQ Low-Mid Q",
+            juce::NormalisableRange<float>(0.1f, 4.0f, 0.01f), 0.7f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_low_mid_gain", "EQ Low-Mid Gain",
             juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "eq_b500", "EQ 500 Hz-Band",
+            "eq_high_mid_freq", "EQ High-Mid Frequency",
+            juce::NormalisableRange<float>(800.0f, 2500.0f, 1.0f), 1500.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_high_mid_q", "EQ High-Mid Q",
+            juce::NormalisableRange<float>(0.1f, 4.0f, 0.01f), 0.7f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_high_mid_gain", "EQ High-Mid Gain",
             juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "eq_b1500", "EQ 1.5 kHz-Band",
-            juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "eq_b3000", "EQ 3 kHz-Band",
-            juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "eq_b5000", "EQ High-band",
+            "eq_high_shelf_gain", "EQ High Shelf Gain",
             juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
