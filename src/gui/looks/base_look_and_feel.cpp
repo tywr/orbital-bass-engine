@@ -76,51 +76,48 @@ void BaseLookAndFeel::drawToggleButton(
     bool isButtonDown
 )
 {
-    juce::Colour colour;
+    auto bounds = button.getLocalBounds().toFloat();
+
+    // Define switch dimensions (vertical pill)
+    const float switchWidth = juce::jmin(bounds.getWidth(), bounds.getHeight()) * 0.5f;
+    const float switchHeight = switchWidth * 2.0f;
+    const float thumbSize = switchWidth * 0.8f;
+    const float padding = (switchWidth - thumbSize) / 2.0f;
+
+    // Center the switch in the button bounds
+    auto switchBounds = juce::Rectangle<float>(switchWidth, switchHeight)
+        .withCentre(bounds.getCentre());
+
+    // Determine colors based on state
+    juce::Colour trackColour;
     if (button.getToggleState())
-        colour =
-            button.findColour(juce::ToggleButton::tickColourId); // "On" colour
+        trackColour = button.findColour(juce::ToggleButton::tickColourId);
     else
-        colour = button.findColour(
-            juce::ToggleButton::tickDisabledColourId
-        ); // "Off" colour
+        trackColour = button.findColour(juce::ToggleButton::tickDisabledColourId);
 
+    if (isMouseOverButton)
+        trackColour = trackColour.brighter(0.1f);
+
+    // Draw the pill-shaped track
+    g.setColour(trackColour);
+    g.fillRoundedRectangle(switchBounds, switchWidth / 2.0f);
+
+    // Calculate thumb position (bottom when on, top when off)
+    float thumbY;
+    if (button.getToggleState())
+        thumbY = switchBounds.getBottom() - thumbSize - padding; // Bottom position (ON)
+    else
+        thumbY = switchBounds.getY() + padding; // Top position (OFF)
+
+    float thumbX = switchBounds.getCentreX() - thumbSize / 2.0f;
+
+    // Draw the circular thumb
+    juce::Colour thumbColour = juce::Colours::white;
     if (isButtonDown)
-        colour = button.findColour(juce::ToggleButton::tickDisabledColourId);
-    else if (isMouseOverButton)
-        colour = colour.brighter(0.2f);
+        thumbColour = thumbColour.darker(0.1f);
 
-    g.setColour(colour);
-
-    const float buttonStrokeWidth = 2.0f;
-    auto bounds =
-        button.getLocalBounds().toFloat().reduced(buttonStrokeWidth / 2.0f);
-
-    auto size = juce::jmin(bounds.getWidth(), bounds.getHeight());
-    auto area = bounds.withSizeKeepingCentre(size, size);
-
-    auto centerX = area.getCentreX();
-    auto centerY = area.getCentreY();
-    auto radius = size / 2.0f;
-
-    juce::Path powerSymbol;
-
-    powerSymbol.addCentredArc(
-        centerX, centerY, radius, radius, 0.0f,
-        juce::MathConstants<float>::pi * 0.15f, // Start angle
-        juce::MathConstants<float>::pi * 1.85f, // End angle
-        true
-    ); // Draw clockwise
-
-    powerSymbol.startNewSubPath(centerX, centerY);
-    powerSymbol.lineTo(centerX, area.getY());
-
-    g.strokePath(
-        powerSymbol, juce::PathStrokeType(
-                         buttonStrokeWidth, juce::PathStrokeType::curved,
-                         juce::PathStrokeType::rounded
-                     )
-    ); // Rounded ends look nicer
+    g.setColour(thumbColour);
+    g.fillEllipse(thumbX, thumbY, thumbSize, thumbSize);
 }
 
 void BaseLookAndFeel::drawRotarySlider(

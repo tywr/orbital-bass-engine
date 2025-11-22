@@ -9,7 +9,6 @@
 EqComponent::EqComponent(juce::AudioProcessorValueTreeState& params)
     : parameters(params), sliders_component(params)
 {
-    setLookAndFeel(new EqLookAndFeel());
     addAndMakeVisible(sliders_component);
     addAndMakeVisible(bypass_button);
     // addAndMakeVisible(lpf_slider);

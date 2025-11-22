@@ -23,7 +23,7 @@ constexpr int KNOBS_INNER_BOX_HEIGHT = 100;
 constexpr int GAIN_REDUCTION_HEIGHT = 100;
 constexpr int GAIN_REDUCTION_WIDTH = 220;
 
-constexpr int BYPASS_SIZE = 20;
+constexpr int BYPASS_SIZE = 30;
 
 constexpr int LABEL_HEIGHT = 20;
 constexpr int SMALL_KNOB_SIZE = 35;
