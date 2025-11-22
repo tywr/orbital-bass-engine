@@ -30,7 +30,7 @@ IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
 
     addAndMakeVisible(type_display);
     type_display.setFont(
-        juce::Font(juce::FontOptions("Oxanium", 24.0f, juce::Font::plain)), true
+        juce::Font(juce::FontOptions("Fixedsys Core", 24.0f, juce::Font::plain)), true
     );
     type_display.setJustification(juce::Justification::centred);
     type_display.setColour(ColourCodes::grey3);
@@ -87,33 +87,25 @@ void IRComponent::paint(juce::Graphics& g)
     {
         colour = GuiColours::DEFAULT_INACTIVE_COLOUR;
     }
-    auto outer_bounds =
+    auto bounds =
         getLocalBounds()
             .withSizeKeepingCentre(IRDimensions::WIDTH, IRDimensions::HEIGHT)
             .toFloat();
-    auto inner_bounds =
-        outer_bounds.reduced(IRDimensions::BORDER_THICKNESS).toFloat();
-
-    g.setColour(ColourCodes::bg0);
-    g.fillRoundedRectangle(inner_bounds, IRDimensions::CORNER_RADIUS);
-
-    juce::Path border_path;
-    border_path.addRoundedRectangle(
-        outer_bounds,
-        IRDimensions::CORNER_RADIUS + IRDimensions::BORDER_THICKNESS
+    auto middle_bounds = bounds.withSizeKeepingCentre(
+        IRDimensions::WIDTH -
+            2 * (IRDimensions::SIDE_PADDING + IRDimensions::SIDE_WIDTH),
+        IRDimensions::HEIGHT
     );
-    border_path.addRoundedRectangle(inner_bounds, IRDimensions::CORNER_RADIUS);
-    border_path.setUsingNonZeroWinding(false);
-    g.setColour(colour);
-    g.fillPath(border_path);
 
-    auto right_bounds =
-        inner_bounds.removeFromRight(IRDimensions::SIDE_WIDTH)
+    auto display_bounds =
+        middle_bounds.removeFromRight(IRDimensions::IR_LABEL_WIDTH)
             .withSizeKeepingCentre(
                 IRDimensions::IR_LABEL_WIDTH, IRDimensions::IR_LABEL_HEIGHT
             );
-    type_display.setBoundingBox(right_bounds);
+    type_display.setBoundingBox(display_bounds);
     type_display.draw(g, 1.0f);
+    g.setColour(juce::Colours::black);
+    g.fillRoundedRectangle(display_bounds.toFloat(), 5.0f);
 }
 
 void IRComponent::resized()
@@ -122,8 +114,20 @@ void IRComponent::resized()
         IRDimensions::WIDTH, IRDimensions::HEIGHT
     );
     auto middle_bounds = bounds.withSizeKeepingCentre(
-        IRDimensions::WIDTH - 2 * IRDimensions::SIDE_WIDTH, IRDimensions::HEIGHT
+        IRDimensions::WIDTH -
+            2 * (IRDimensions::SIDE_PADDING + IRDimensions::SIDE_WIDTH),
+        IRDimensions::HEIGHT
     );
+
+    auto display_bounds =
+        middle_bounds.removeFromRight(IRDimensions::IR_LABEL_WIDTH)
+            .withSizeKeepingCentre(
+                IRDimensions::IR_LABEL_WIDTH, IRDimensions::IR_LABEL_HEIGHT
+            );
+    type_display.setBounds(display_bounds.withSizeKeepingCentre(
+        IRDimensions::IR_LABEL_WIDTH, IRDimensions::IR_LABEL_HEIGHT
+    ));
+
     auto knob_bounds = middle_bounds.withSizeKeepingCentre(
         middle_bounds.getWidth(), IRDimensions::BOX_HEIGHT
     );
@@ -147,11 +151,6 @@ void IRComponent::resized()
     auto left_bounds = bounds.removeFromLeft(IRDimensions::SIDE_WIDTH);
     bypassButton.setBounds(left_bounds.withSizeKeepingCentre(
         IRDimensions::BYPASS_SIZE, IRDimensions::BYPASS_SIZE
-    ));
-
-    auto right_bounds = bounds.removeFromRight(IRDimensions::SIDE_WIDTH);
-    type_display.setBounds(right_bounds.withSizeKeepingCentre(
-        IRDimensions::IR_LABEL_WIDTH, IRDimensions::IR_LABEL_HEIGHT
     ));
 }
 

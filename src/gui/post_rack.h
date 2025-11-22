@@ -11,6 +11,7 @@ class PostRackComponent : public juce::Component
     PostRackComponent(juce::AudioProcessorValueTreeState& params);
     ~PostRackComponent() override;
 
+    void paint(juce::Graphics& g) override;
     void resized() override;
 
   private:

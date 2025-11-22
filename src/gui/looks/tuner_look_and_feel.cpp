@@ -36,7 +36,6 @@ void TunerLookAndFeel::drawToggleButton(
     auto area = bounds.withSizeKeepingCentre(size, size);
 
     auto centerX = area.getCentreX();
-    auto centerY = area.getCentreY();
 
     // Tuning fork shape
     juce::Path tuningFork;

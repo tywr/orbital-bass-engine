@@ -6,7 +6,7 @@ constexpr int WIDTH = 850;
 constexpr int HEIGHT = 180;
 constexpr int CORNER_RADIUS = 20;
 constexpr int BORDER_THICKNESS = 5;
-constexpr int SIDE_WIDTH = 150;
+constexpr int SIDE_WIDTH = 120;
 
 constexpr int BYPASS_SIZE = 30;
 

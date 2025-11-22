@@ -32,6 +32,7 @@ ChorusComponent::~ChorusComponent()
 
 void ChorusComponent::paint(juce::Graphics& g)
 {
+    juce::ignoreUnused(g);
     bool bypass = bypass_button.getToggleState();
     juce::Colour colour1;
     juce::Colour colour2;
@@ -45,33 +46,6 @@ void ChorusComponent::paint(juce::Graphics& g)
         colour1 = GuiColours::DEFAULT_INACTIVE_COLOUR;
         colour2 = GuiColours::DEFAULT_INACTIVE_COLOUR;
     }
-    float border_thickness = ChorusDimensions::BORDER_THICKNESS;
-    float border_radius = ChorusDimensions::CORNER_RADIUS;
-
-    auto outer_bounds =
-        getLocalBounds()
-            .withSizeKeepingCentre(
-                ChorusDimensions::WIDTH, ChorusDimensions::HEIGHT
-            )
-            .toFloat();
-    auto inner_bounds = outer_bounds.reduced(border_thickness).toFloat();
-
-    g.setColour(GuiColours::CHORUS_BG_COLOUR);
-    g.fillRoundedRectangle(inner_bounds, border_radius);
-
-    juce::Path border_path;
-    border_path.addRoundedRectangle(
-        outer_bounds, border_radius + border_thickness
-    );
-    border_path.addRoundedRectangle(inner_bounds, border_radius);
-    border_path.setUsingNonZeroWinding(false);
-
-    juce::ColourGradient border_gradient(
-        colour1, outer_bounds.getTopLeft(), colour2,
-        outer_bounds.getBottomLeft(), false
-    );
-    g.setGradientFill(border_gradient);
-    g.fillPath(border_path);
 
     knobs_component.switchColour(colour1, colour2);
 }
@@ -82,7 +56,9 @@ void ChorusComponent::resized()
         ChorusDimensions::WIDTH, ChorusDimensions::HEIGHT
     );
     auto middle_bounds = bounds.withSizeKeepingCentre(
-        bounds.getWidth() - ChorusDimensions::SIDE_WIDTH * 2, ChorusDimensions::BOX_HEIGHT
+        bounds.getWidth() -
+            (ChorusDimensions::SIDE_PADDING + ChorusDimensions::SIDE_WIDTH) * 2,
+        ChorusDimensions::BOX_HEIGHT
     );
     knobs_component.setBounds(middle_bounds);
 

@@ -55,35 +55,8 @@ void EqComponent::paint(juce::Graphics& g)
         colour1 = GuiColours::DEFAULT_INACTIVE_COLOUR;
         colour2 = GuiColours::DEFAULT_INACTIVE_COLOUR;
     }
-    float border_thickness = EqDimensions::BORDER_THICKNESS;
-    float border_radius = EqDimensions::CORNER_RADIUS;
-
-    auto outer_bounds =
-        getLocalBounds()
-            .withSizeKeepingCentre(EqDimensions::WIDTH, EqDimensions::HEIGHT)
-            .toFloat();
-    auto inner_bounds = outer_bounds.reduced(border_thickness).toFloat();
-
-    g.setColour(GuiColours::EQ_BG_COLOUR);
-    g.fillRoundedRectangle(inner_bounds, border_radius);
-
-    juce::Path border_path;
-    border_path.addRoundedRectangle(
-        outer_bounds, border_radius + border_thickness
-    );
-    border_path.addRoundedRectangle(inner_bounds, border_radius);
-    border_path.setUsingNonZeroWinding(false);
-
-    juce::ColourGradient border_gradient(
-        colour1, outer_bounds.getTopLeft(), colour2,
-        outer_bounds.getBottomLeft(), false
-    );
-    g.setGradientFill(border_gradient);
-    g.fillPath(border_path);
 
     sliders_component.switchColour(colour1, colour2);
-
-    // lpf_slider.setColour(juce::Slider::rotarySliderFillColourId, colour1);
 }
 
 void EqComponent::resized()
