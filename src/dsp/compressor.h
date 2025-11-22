@@ -72,8 +72,12 @@ class Compressor : juce::dsp::ProcessorBase
     int lastType = -1;
 
     float smoothing_time = 0.05f;
-    float raw_mix, raw_level, raw_threshold_db, raw_ratio, raw_attack,
-        raw_release;
+    float raw_mix = 1.0f;
+    float raw_level = 1.0f;
+    float raw_threshold_db = 0.0f;
+    float raw_ratio = 1.0f;
+    float raw_attack = 5.0f;
+    float raw_release = 50.0f;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> mix, level,
         threshold_db, ratio, attack, release;
 

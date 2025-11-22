@@ -95,8 +95,9 @@ class EQ : juce::dsp::ProcessorBase
     float b5000_q = 0.349f;
 
     float smoothing_time = 0.05f;
-    float raw_b80_gain, raw_b250_gain, raw_b500_gain, raw_b1500_gain,
-        raw_b3000_gain, raw_b5000_gain, raw_lpf_frequency;
+    float raw_b80_gain = 1.0f, raw_b250_gain = 1.0f, raw_b500_gain = 1.0f,
+          raw_b1500_gain = 1.0f, raw_b3000_gain = 1.0f, raw_b5000_gain = 1.0f,
+          raw_lpf_frequency = 1.0f;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> b80_gain,
         b250_gain, b500_gain, b1500_gain, b3000_gain, b5000_gain, lpf_frequency;
 };

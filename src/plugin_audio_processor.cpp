@@ -171,6 +171,7 @@ void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     irConvolver.prepare(spec);
     chorus.prepare(spec);
     overdrive.prepare(spec);
+    pitch_detector.prepare(spec);
     prepareParameters();
 }
 
@@ -247,7 +248,9 @@ void PluginAudioProcessor::processBlock(
 
     if (!is_tuner_bypassed)
     {
-        currentPitch.setValue(pitch_detector.getPitch(context));
+        float pitch = pitch_detector.getPitch(context);
+        currentPitch.setValue(pitch);
+        std::cout << "Detected Pitch: " << pitch << std::endl;
     }
     else
     {
