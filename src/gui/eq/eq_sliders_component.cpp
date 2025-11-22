@@ -15,8 +15,8 @@ EqSlidersComponent::EqSlidersComponent(
         addAndMakeVisible(slider.label);
         slider.label->setText(slider.label_text, juce::dontSendNotification);
         slider.label->setJustificationType(juce::Justification::centred);
-        slider.slider->setSliderStyle(juce::Slider::LinearVertical);
-        slider.slider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, 20);
+        slider.slider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+        slider.slider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, EqDimensions::LABEL_HEIGHT);
         slider.label->setColour(
             juce::Slider::textBoxOutlineColourId,
             juce::Colours::transparentBlack
@@ -57,8 +57,8 @@ void EqSlidersComponent::resized()
                                     ));
         slider.slider->setBounds(bounds.removeFromLeft(slider_box_size)
                                      .withSizeKeepingCentre(
-                                         EqDimensions::SLIDER_WIDTH,
-                                         EqDimensions::SLIDER_HEIGHT
+                                         EqDimensions::KNOB_SIZE,
+                                         EqDimensions::KNOB_SIZE + EqDimensions::LABEL_HEIGHT
                                      ));
     }
 }
@@ -71,7 +71,7 @@ void EqSlidersComponent::switchColour(
     for (EqSlider slider : sliders)
     {
         slider.slider->setColour(
-            juce::Slider::thumbColourId, colour1
+            juce::Slider::rotarySliderFillColourId, colour1
         );
     }
     repaint();
