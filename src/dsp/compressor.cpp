@@ -11,6 +11,8 @@ void Compressor::reset()
     gr = 1.0f;
     gr_db = 0.0f;
 
+    hpf_freq.reset(processSpec.sampleRate, smoothing_time);
+    hpf_freq.setCurrentAndTargetValue(raw_hpf_freq);
     mix.reset(processSpec.sampleRate, smoothing_time);
     mix.setCurrentAndTargetValue(raw_mix);
     level.reset(processSpec.sampleRate, smoothing_time);
@@ -19,17 +21,29 @@ void Compressor::reset()
     threshold_db.setCurrentAndTargetValue(raw_threshold_db);
     ratio.reset(processSpec.sampleRate, smoothing_time);
     ratio.setCurrentAndTargetValue(raw_ratio);
+
+    updateHPF();
 }
 
 void Compressor::prepare(const juce::dsp::ProcessSpec& spec)
 {
     processSpec = spec;
+    hpf_filter.prepare(spec);
     reset();
+}
+
+void Compressor::updateHPF()
+{
+    float current_hpf_freq = hpf_freq.getCurrentValue();
+    auto coeffs = juce::dsp::IIR::Coefficients<float>::makeHighPass(
+        processSpec.sampleRate, current_hpf_freq
+    );
+    *hpf_filter.coefficients = *coeffs;
 }
 
 void Compressor::computeGainReductionFet(float& sample, float sampleRate)
 {
-    float input_level = std::abs(sample);
+    float input_level = std::abs(hpf_filter.processSample(sample));
     float input_level_db = juce::Decibels::gainToDecibels(input_level + 1e-10f);
     float current_threshold_db = threshold_db.getNextValue();
     float current_attack = 0.001f * attack.getNextValue();
@@ -78,6 +92,12 @@ void Compressor::process(
     float sampleRate = static_cast<float>(processSpec.sampleRate);
     auto& block = context.getOutputBlock();
     const size_t num_samples = block.getNumSamples();
+
+    if (hpf_freq.isSmoothing())
+    {
+        hpf_freq.skip((int)num_samples);
+        updateHPF();
+    }
 
     auto* ch = block.getChannelPointer(0);
     for (int i = 0; i < (int)num_samples; ++i)

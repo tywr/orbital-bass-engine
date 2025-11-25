@@ -36,6 +36,11 @@ class CompressorKnobsComponent : public juce::Component
 
     CompressorSelectorLookAndFeel selector_look_and_feel;
 
+    juce::Slider hpf_slider;
+    juce::Label hpf_label;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        hpf_slider_attachment;
+
     juce::Slider threshold_slider;
     juce::Label threshold_label;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
@@ -72,6 +77,7 @@ class CompressorKnobsComponent : public juce::Component
 
     // Define knobs for easy looping
     std::vector<CompressorKnob> knobs = {
+        {&hpf_slider,       &hpf_label,       "compressor_hpf",       "hpf"    },
         {&threshold_slider, &threshold_label, "compressor_threshold",
          "threshold"                                                           },
         {&mix_slider,       &mix_label,       "compressor_mix",       "mix"    },

@@ -6,6 +6,10 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
     {
         compressor.setAttack(v);
     }
+    else if (parameterID == "compressor_hpf")
+    {
+        compressor.setHPF(v);
+    }
     else if (parameterID == "compressor_release")
     {
         compressor.setRelease(v);

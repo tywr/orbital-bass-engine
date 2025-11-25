@@ -107,9 +107,9 @@ void CompressorKnobsComponent::resized()
     );
     auto left_label_bounds =
         left_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT);
-    const int knob_box_size = left_bounds.getWidth() / 3;
+    const int knob_box_size = left_bounds.getWidth() / 4;
 
-    for (size_t i = 0; i < 3; ++i)
+    for (size_t i = 0; i < 4; ++i)
     {
         CompressorKnob knob = knobs[i];
         knob.label->setBounds(left_label_bounds.removeFromLeft(knob_box_size)
@@ -125,7 +125,7 @@ void CompressorKnobsComponent::resized()
     }
 
     const int knob_box_height = bounds.getHeight() / 3;
-    for (size_t i = 3; i < 6; ++i)
+    for (size_t i = 4; i < 7; ++i)
     {
         auto knob_bounds = bounds.removeFromTop(knob_box_height);
         CompressorKnob knob = knobs[i];

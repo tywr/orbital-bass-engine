@@ -14,8 +14,15 @@ class Compressor : juce::dsp::ProcessorBase
     void reset() override;
     void computeGainReductionOptometric(float& sample, float sampleRate);
     void computeGainReductionFet(float& sample, float sampleRate);
+    void updateHPF();
     void applyLevel(juce::AudioBuffer<float>& buffer);
 
+    void setHPF(float newHPF)
+    {
+        float v = juce::jlimit(0.0f, 20000.0f, newHPF);
+        hpf_freq.setTargetValue(v);
+        raw_hpf_freq = v;
+    }
     void setRatio(float newRatio)
     {
         float v = juce::jlimit(0.0f, 20.0f, newRatio);
@@ -66,6 +73,7 @@ class Compressor : juce::dsp::ProcessorBase
     int debugCounter = 0;
 
     void (Compressor::*gainFunction)(float&, float) = nullptr;
+    juce::dsp::IIR::Filter<float> hpf_filter;
 
     // gui parameters
     int type;
@@ -78,8 +86,9 @@ class Compressor : juce::dsp::ProcessorBase
     float raw_ratio = 1.0f;
     float raw_attack = 5.0f;
     float raw_release = 50.0f;
+    float raw_hpf_freq = 20.0f;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> mix, level,
-        threshold_db, ratio, attack, release;
+        threshold_db, ratio, attack, release, hpf_freq;
 
     // internal state of compressor
     float current_level = 1.0f;

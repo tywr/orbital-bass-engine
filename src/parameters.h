@@ -17,6 +17,13 @@ createParameterLayout()
             "compressor_bypass", "Compressor Bypass", false
         ),
         std::make_unique<juce::AudioParameterFloat>(
+            "compressor_hpf", "Compressor HPF (Hz)",
+            juce::NormalisableRange<float>(
+                20.0f, 200.0f, 0.1f, 0.2890647108933747f
+            ),
+            20.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
             "compressor_threshold", "Compressor Treshold",
             juce::NormalisableRange<float>(-48.0f, 0.0f, 0.1f), -24.0f
         ),
