@@ -27,9 +27,9 @@ createParameterLayout()
         std::make_unique<juce::AudioParameterFloat>(
             "compressor_attack", "Compressor Attack Time (ms)",
             juce::NormalisableRange<float>(
-                0.1f, 10.0f, 0.01f, 0.2890647108933747f
+                0.1f, 100.0f, 0.01f, 0.2890647108933747f
             ),
-            0.3f
+            10.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "compressor_release", "Compressor Release Time (ms)",
@@ -85,15 +85,15 @@ createParameterLayout()
             juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "chorus_rate", "Chorus Rate",
+            "chorus_rate", "Chorus Rate (Hz)",
             juce::NormalisableRange<float>(0.5f, 2.5f, 0.01f), 1.5f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "chorus_depth", "Chorus Depth",
+            "chorus_depth", "Chorus Depth (ms)",
             juce::NormalisableRange<float>(0.0f, 1.5f, 0.01f), 0.75f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "chorus_crossover", "Chorus Crossover",
+            "chorus_crossover", "Chorus Crossover (Hz)",
             juce::NormalisableRange<float>(50.0f, 1000.0f, 0.1f, 0.3755212f),
             200.0f
         ),
