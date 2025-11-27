@@ -6,7 +6,7 @@ Meter::Meter(juce::Value& v) : measured_value(v)
     startTimerHz(60);
 
     addAndMakeVisible(slider);
-    slider.setRange(-48.0f, 6.0f, 0.1f);
+    slider.setRange(-48.0f, 6.0f, 0.01f);
     slider.setSkewFactor(1.0);
     slider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
     slider.setSliderStyle(juce::Slider::LinearBarVertical);

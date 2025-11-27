@@ -28,6 +28,7 @@ class CompressorMeterComponent : public juce::Component,
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>
         smoothed_value;
     float raw_value = 0.0f;
+    float peak_value = 0.0f;
     float smoothing_time = 0.2f;
     int refresh_rate = 60;
 

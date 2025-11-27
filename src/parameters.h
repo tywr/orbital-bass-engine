@@ -11,7 +11,7 @@ createParameterLayout()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "output_gain_db", "Output Gain dB",
-            juce::NormalisableRange<float>(-48.0f, 6.0f, 0.1f, 0.9f), 0.0f
+            juce::NormalisableRange<float>(-48.0f, 12.0f, 0.1f, 0.9f), 0.0f
         ),
         std::make_unique<juce::AudioParameterBool>(
             "compressor_bypass", "Compressor Bypass", false

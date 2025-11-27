@@ -9,9 +9,8 @@ CompressorMeterComponent::CompressorMeterComponent(juce::Value& v)
     startTimerHz(refresh_rate);
     addAndMakeVisible(gain_reduction_slider);
 
-    gain_reduction_slider.setRange(0, 20.0f, 0.5f);
-    gain_reduction_slider.setSkewFactor(1.0);
-    gain_reduction_slider.setValue(0.0);
+    gain_reduction_slider.setRange(0.0f, 20.0f, 0.05f);
+    gain_reduction_slider.setValue(0.0f);
     gain_reduction_slider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
 
     gain_reduction_value.addListener(this);
@@ -24,19 +23,22 @@ CompressorMeterComponent::~CompressorMeterComponent()
 
 void CompressorMeterComponent::timerCallback()
 {
-    if (raw_value > smoothed_value.getCurrentValue())
+    // Use the peak value captured since last timer callback
+    if (peak_value > smoothed_value.getCurrentValue())
     {
-        smoothed_value.setCurrentAndTargetValue(raw_value);
+        smoothed_value.setCurrentAndTargetValue(peak_value);
     }
     else
     {
-        smoothed_value.setTargetValue(raw_value);
+        smoothed_value.setTargetValue(peak_value);
         smoothed_value.getNextValue();
     }
     gain_reduction_slider.setValue(
         smoothed_value.getCurrentValue(), juce::dontSendNotification
     );
-    // repaint();
+
+    // Reset peak for next frame
+    peak_value = 0.0f;
 }
 
 void CompressorMeterComponent::visibilityChanged()
@@ -57,6 +59,11 @@ void CompressorMeterComponent::visibilityChanged()
 void CompressorMeterComponent::valueChanged(juce::Value& v)
 {
     raw_value = -1.0f * static_cast<float>(v.getValue());
+    // Track the peak (maximum) value
+    if (raw_value > peak_value)
+    {
+        peak_value = raw_value;
+    }
 }
 
 void CompressorMeterComponent::paint(juce::Graphics& g)
