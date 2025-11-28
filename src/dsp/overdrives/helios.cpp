@@ -79,7 +79,7 @@ void HeliosOverdrive::prepareFilters()
     vmt_pre_lpf.prepare(process_spec);
     auto vmt_pre_lpf_coefficients =
         juce::dsp::IIR::Coefficients<float>::makeLowPass(
-            process_spec.sampleRate, pre_lpf_cutoff, pre_lpf_q
+            process_spec.sampleRate, pre_lpf_cutoff
         );
     *vmt_pre_lpf.coefficients = *vmt_pre_lpf_coefficients;
 
@@ -263,8 +263,8 @@ void HeliosOverdrive::processVMT(
     const juce::dsp::ProcessContextReplacing<float>& context
 )
 {
-    mu_amp.process(context);
     vmt_pre_lpf.process(context);
+    mu_amp.process(context);
     vmt_pre_hpf.process(context);
     vmt_pre_filter.process(context);
     vmt_pre_filter_2.process(context);
