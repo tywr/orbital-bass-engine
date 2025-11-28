@@ -91,18 +91,16 @@ void HeliosOverdrive::prepareFilters()
     *vmt_pre_hpf.coefficients = *vmt_pre_hpf_coefficients;
 
     vmt_pre_filter.prepare(process_spec);
-    auto vmt_pre_coefficients =
-        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
-            process_spec.sampleRate, 288.0f, 0.175f,
-            juce::Decibels::decibelsToGain(-34.55f)
-        );
+    auto vmt_pre_coefficients = juce::dsp::IIR::Coefficients<float>::makeNotch(
+        process_spec.sampleRate, 288.0f, 0.175f
+    );
     *vmt_pre_filter.coefficients = *vmt_pre_coefficients;
 
     vmt_pre_filter_2.prepare(process_spec);
     auto vmt_pre_coefficients_2 =
         juce::dsp::IIR::Coefficients<float>::makePeakFilter(
-            process_spec.sampleRate, 80.0f,
-            juce::Decibels::decibelsToGain(-4.0f), 0.5f
+            process_spec.sampleRate, 65.0f,
+            juce::Decibels::decibelsToGain(-2.5f), 0.45f
         );
     *vmt_pre_filter_2.coefficients = *vmt_pre_coefficients_2;
 
@@ -153,7 +151,7 @@ void HeliosOverdrive::updateAttackFilter()
 void HeliosOverdrive::updateGruntFilter()
 {
     float current_grunt = grunt.getCurrentValue();
-    float min_frequency = 109.0f;
+    float min_frequency = 120.0f;
     float max_frequency = 506.0f;
     float frequency = min_frequency + (max_frequency - min_frequency) *
                                           (1.0f - current_grunt * 0.1f);
@@ -172,13 +170,17 @@ void HeliosOverdrive::updateEraFilter()
     float min_frequency = 700.0f;
     float frequency = min_frequency * std::exp(1.21533f * era * era);
 
-    float min_q = 0.35f;
-    float max_q = 0.12f;
+    float min_q = 0.45f;
+    float max_q = 0.25f;
     float q = min_q + (max_q - min_q) * era;
 
-    auto era_coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(
-        process_spec.sampleRate, frequency, q,
-        juce::Decibels::decibelsToGain(-10.0f - 4.3f * era)
+    // auto era_coefficients =
+    // juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+    //     process_spec.sampleRate, frequency, q,
+    //     juce::Decibels::decibelsToGain(-10.0f - 4.3f * era)
+    // );
+    auto era_coefficients = juce::dsp::IIR::Coefficients<float>::makeNotch(
+        process_spec.sampleRate, frequency, q
     );
     *vmt_era_filter.coefficients = *era_coefficients;
 }

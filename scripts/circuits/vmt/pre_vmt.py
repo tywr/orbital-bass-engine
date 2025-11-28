@@ -45,27 +45,17 @@ analysis = simulator.ac(
     variation="dec",
 )
 
-f0 = 288  # Notch frequency in Hz
+f0 = 286  # Notch frequency in Hz
 Q = 0.175
-gain_dB = -34.55  # Peak gain in dB
 frequencies = np.array(analysis.frequency)
-
-# Notch filter transfer function: H(s) = (s^2 + w0^2) / (s^2 + (w0/Q)*s + w0^2)
-# For frequency response: s = j*2*pi*f
-# w0 = 2 * np.pi * f0
-# w = 2 * np.pi * frequencies
 
 w0 = 2 * np.pi * f0
 w = 2 * np.pi * frequencies
 
-# Linear gain
-A = 10 ** (gain_dB / 20)
-
 # Transfer function magnitude for peaking filter
 # H(s) = (s^2 + (A*w0/Q)*s + w0^2) / (s^2 + (w0/Q)*s + w0^2)
 numerator_real = w0**2 - w**2
-numerator_imag = (A * w0 / Q) * w
-numerator_mag = np.sqrt(numerator_real**2 + numerator_imag**2)
+numerator_mag = np.sqrt(numerator_real**2)
 
 denominator_real = w0**2 - w**2
 denominator_imag = (w0 / Q) * w
@@ -75,9 +65,9 @@ H_peak = numerator_mag / denominator_mag
 H_peak_dB = 20 * np.log10(H_peak + 1e-10)
 
 # Second filter for difference
-f0 = 80  # Notch frequency in Hz
-Q = 0.5
-gain_dB = -2  # Peak gain in dB
+f0 = 65
+Q = 0.45
+gain_dB = -2.5
 frequencies = np.array(analysis.frequency)
 w0 = 2 * np.pi * f0
 w = 2 * np.pi * frequencies
@@ -95,7 +85,7 @@ H2_peak_dB = 20 * np.log10(H2_peak + 1e-10)
 
 
 # Low shelf
-f0 = 1510  # Shelf frequency in Hz
+f0 = 1539  # Shelf frequency in Hz
 Q = 0.4  # Q factor (0.707 is typical for shelf filters)
 gain_dB = -8  # Shelf gain in dB
 
