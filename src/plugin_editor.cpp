@@ -12,14 +12,14 @@ PluginEditor::PluginEditor(
 )
     : AudioProcessorEditor(&p), processorRef(p), parameters(params),
       header(params, processorRef.inputLevel, processorRef.outputLevel, processorRef.getSessionManager()),
-      tabs(params, processorRef.compressorGainReductionDb),
+      panels(params, processorRef.compressorGainReductionDb),
       tuner(processorRef.currentPitch)
 {
 
     setLookAndFeel(new BaseLookAndFeel());
     setSize(1080, 720);
     addAndMakeVisible(header);
-    addAndMakeVisible(tabs);
+    addAndMakeVisible(panels);
 
     auto& presetIconButtons = header.getPresetIconButtons();
     auto& presetBar = header.getPresetBar();
@@ -96,7 +96,7 @@ void PluginEditor::resized()
     const int header_height = static_cast<int>(getHeight() * header_ratio);
     header.setBounds(bounds.removeFromTop(header_height));
 
-    tabs.setBounds(bounds);
+    panels.setBounds(bounds);
     tuner.setBounds(getLocalBounds());
 }
 

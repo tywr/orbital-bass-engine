@@ -54,7 +54,7 @@ target_sources(${PROJECT_NAME}
         gui/ir/ir_component.cpp
         gui/meter.cpp
         gui/header.cpp
-        gui/tabs.cpp
+        gui/panels.cpp
         gui/post_rack.cpp
         gui/tuner.cpp
         dsp/compressor.cpp
