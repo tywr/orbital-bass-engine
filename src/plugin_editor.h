@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gui/header.h"
+#include "gui/preset_bar.h"
 #include "gui/tabs.h"
 #include "gui/tuner.h"
 #include "plugin_audio_processor.h"
@@ -31,12 +32,16 @@ class PluginEditor final : public juce::AudioProcessorEditor
     bool is_background_drawn = false;
     PluginAudioProcessor& processorRef;
     juce::AudioProcessorValueTreeState& parameters;
+    PresetBar presetBar;
     Header header;
     Tabs tabs;
     Tuner tuner;
 
     void showTuner();
     void hideTuner();
+    void handlePresetClicked(int index);
+    void handleLoadSession();
+    void handleSavePreset();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginEditor)
 };

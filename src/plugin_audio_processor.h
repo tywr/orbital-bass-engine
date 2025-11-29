@@ -8,6 +8,8 @@
 #include "dsp/overdrives/overdrive.h"
 #include "dsp/pitch_detector.h"
 #include "dsp/synth_voices.h"
+#include "preset_manager.h"
+#include "session_manager.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
@@ -69,6 +71,9 @@ class PluginAudioProcessor final
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
+    PresetManager& getPresetManager() { return presetManager; }
+    SessionManager& getSessionManager() { return sessionManager; }
+
   private:
     juce::AudioProcessorValueTreeState parameters;
     juce::AudioProcessorValueTreeState::ParameterLayout parameterLayout;
@@ -97,6 +102,9 @@ class PluginAudioProcessor final
     std::atomic<float>* eq_bypass_parameter = nullptr;
     std::atomic<float>* synth_bypass_parameter = nullptr;
     bool is_tuner_bypassed = true;
+
+    PresetManager presetManager;
+    SessionManager sessionManager;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginAudioProcessor)
 };

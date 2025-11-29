@@ -28,6 +28,8 @@ target_sources(${PROJECT_NAME}
         plugin_editor.cpp
         plugin_audio_processor.cpp
         plugin_audio_process_parameters.cpp
+        preset_manager.cpp
+        session_manager.cpp
         gui/looks/amp_small_look_and_feel.cpp
         gui/looks/base_look_and_feel.cpp
         gui/looks/compressor_look_and_feel.cpp
@@ -35,6 +37,7 @@ target_sources(${PROJECT_NAME}
         gui/looks/eq_look_and_feel.cpp
         gui/looks/compressor_selector_look_and_feel.cpp
         gui/looks/tuner_look_and_feel.cpp
+        gui/preset_bar.cpp
         gui/compressor/compressor_knobs_component.cpp
         gui/compressor/compressor_meter_component.cpp
         gui/compressor/compressor_component.cpp

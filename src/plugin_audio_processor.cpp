@@ -14,7 +14,9 @@ PluginAudioProcessor::PluginAudioProcessor()
       parameters(
           *this, nullptr, juce::Identifier("PluginParameters"),
           createParameterLayout()
-      )
+      ),
+      presetManager(parameters),
+      sessionManager(presetManager)
 {
     parameters.state.setProperty("ir_filepath", juce::String(""), nullptr);
     parameters.state.addListener(this);
