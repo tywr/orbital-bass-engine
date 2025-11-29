@@ -3,6 +3,9 @@
 #include "colours.h"
 #include "meter.h"
 #include "preset_bar.h"
+#include "preset_icon_buttons.h"
+#include "session_name_display.h"
+#include "../session_manager.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -15,7 +18,9 @@ class Header : public juce::Component
     void resized() override;
     void paint(juce::Graphics&) override;
 
+    PresetIconButtons& getPresetIconButtons() { return presetIconButtons; }
     PresetBar& getPresetBar() { return presetBar; }
+    SessionNameDisplay& getSessionNameDisplay() { return sessionNameDisplay; }
 
   private:
     juce::AudioProcessorValueTreeState& parameters;
@@ -34,6 +39,8 @@ class Header : public juce::Component
 
     juce::ToggleButton tunerButton;
 
+    PresetIconButtons presetIconButtons;
+    SessionNameDisplay sessionNameDisplay;
     PresetBar presetBar;
 
   public:

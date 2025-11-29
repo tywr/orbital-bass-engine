@@ -26,7 +26,7 @@ void HeaderLookAndFeel::drawRotarySlider(
     g.strokePath(
         backgroundArc,
         juce::PathStrokeType(
-            lineW, juce::PathStrokeType::mitered, juce::PathStrokeType::square
+            lineW / 2.0f, juce::PathStrokeType::mitered, juce::PathStrokeType::square
         )
     );
 

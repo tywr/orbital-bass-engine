@@ -38,6 +38,8 @@ target_sources(${PROJECT_NAME}
         gui/looks/compressor_selector_look_and_feel.cpp
         gui/looks/tuner_look_and_feel.cpp
         gui/preset_bar.cpp
+        gui/preset_icon_buttons.cpp
+        gui/session_name_display.cpp
         gui/compressor/compressor_knobs_component.cpp
         gui/compressor/compressor_meter_component.cpp
         gui/compressor/compressor_component.cpp

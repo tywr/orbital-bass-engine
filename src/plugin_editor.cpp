@@ -17,14 +17,16 @@ PluginEditor::PluginEditor(
 {
 
     setLookAndFeel(new BaseLookAndFeel());
-    setSize(900, 650);
+    setSize(1080, 720);
     addAndMakeVisible(header);
     addAndMakeVisible(tabs);
 
+    auto& presetIconButtons = header.getPresetIconButtons();
     auto& presetBar = header.getPresetBar();
+
+    presetIconButtons.onLoadSessionClicked = [this]() { handleLoadSession(); };
+    presetIconButtons.onSavePresetClicked = [this]() { handleSavePreset(); };
     presetBar.onPresetClicked = [this](int index) { handlePresetClicked(index); };
-    presetBar.onLoadSessionClicked = [this]() { handleLoadSession(); };
-    presetBar.onSavePresetClicked = [this]() { handleSavePreset(); };
 
     addChildComponent(tuner);
     tuner.onClose = [this]() { hideTuner(); };

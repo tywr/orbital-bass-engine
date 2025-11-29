@@ -6,7 +6,7 @@
 class HeaderLookAndFeel : public BaseLookAndFeel
 {
   private:
-    float stroke_width = 3.0f;
+    float stroke_width = 4.0f;
     juce::Font main_font =
         juce::Font(juce::FontOptions("Oxanium", 10.0f, juce::Font::plain))
             .withExtraKerningFactor(0.2f);
