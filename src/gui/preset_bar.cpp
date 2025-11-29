@@ -43,7 +43,7 @@ void PresetSlot::paint(juce::Graphics& g)
         }
     }
 
-    g.setFont(juce::Font("Oxanium", 11.0f, juce::Font::plain));
+    g.setFont(juce::Font("Typestar", 13.0f, juce::Font::plain));
 
     if (isEmptySlot)
     {

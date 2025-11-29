@@ -17,7 +17,7 @@ void SessionNameDisplay::paint(juce::Graphics& g)
     g.fillAll(juce::Colours::transparentBlack);
 
     g.setColour(ColourCodes::white0);
-    g.setFont(juce::Font(juce::FontOptions("Oxanium", 11.0f, juce::Font::plain)));
+    g.setFont(juce::Font(juce::FontOptions("Typestar", 13.0f, juce::Font::plain)));
 
     auto bounds = getLocalBounds();
     if (sessionName.isEmpty())
