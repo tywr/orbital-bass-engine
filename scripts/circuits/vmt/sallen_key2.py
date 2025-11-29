@@ -39,23 +39,26 @@ circuit.X(
     "TL074",
     "nf",
     "out",
-    "va",
-    circuit.gnd,  # 4: Negative power supply (V-)
+    "vb",
+    circuit.gnd,
     "out",
 )
 
 
-circuit.R(22, "in", "n1", 10 @ u_kOhm)
-circuit.C(18, "n1", "out", 1 @ u_nF)
-circuit.R(23, "n1", "nf", 22 @ u_kOhm)
-circuit.C(19, "nf", circuit.gnd, 1 @ u_nF)
+circuit.R(1, "in", "va", 1 @ u_MOhm)
+# circuit.R(2, "in", circuit.gnd, 1 @ u_MOhm)
+
+circuit.R(24, "in", "n1", 22 @ u_kOhm)
+circuit.C(20, "n1", "out", 2.2 @ u_nF)
+circuit.R(25, "n1", "nf", 100 @ u_kOhm)
+circuit.C(21, "nf", circuit.gnd, 1 @ u_nF)
 
 
 simulator = circuit.simulator(temperature=25, nominal_temperature=25)
 analysis = simulator.ac(
     start_frequency=20 @ u_Hz,
     stop_frequency=100 @ u_kHz,  # Adjusted for better view of audio range
-    number_of_points=100,
+    number_of_points=1000,
     variation="dec",
 )
 

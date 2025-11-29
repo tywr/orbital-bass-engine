@@ -14,7 +14,7 @@ circuit = Circuit("Analog Filter Circuit")
 
 # Define the input voltage source.
 # We use an AC source with a magnitude of 1V to perform frequency analysis.
-circuit.V("input", "input", circuit.gnd, "DC 0 AC 1")
+circuit.V("input", "input", circuit.gnd, "DC 4.5V AC 1")
 
 # Components connected to the input node
 circuit.R(8, "input", "middle", 261 @ u_kOhm)
@@ -28,6 +28,9 @@ circuit.C(8, "middle", "output", 220 @ u_pF)
 circuit.R(9, "n1", circuit.gnd, 6.65 @ u_kOhm)
 circuit.R(10, "n2", circuit.gnd, 22 @ u_kOhm)
 circuit.R(12, "output", circuit.gnd, 470 @ u_kOhm)
+
+circuit.C(9, "output", "output_bis", 100 @ u_nF)
+circuit.R(13, "output_bis", circuit.gnd, 1 @ u_MOhm)
 
 
 # --- Print the Circuit Netlist ---
@@ -45,9 +48,11 @@ analysis = simulator.ac(
     variation="dec",
 )
 
-f0 = 286  # Notch frequency in Hz
-Q = 0.175
+f0 = 288  # Notch frequency in Hz
+Q = 0.15
 frequencies = np.array(analysis.frequency)
+gain_dB = -34.3
+A = 10 ** (gain_dB / 20)
 
 w0 = 2 * np.pi * f0
 w = 2 * np.pi * frequencies
@@ -55,7 +60,8 @@ w = 2 * np.pi * frequencies
 # Transfer function magnitude for peaking filter
 # H(s) = (s^2 + (A*w0/Q)*s + w0^2) / (s^2 + (w0/Q)*s + w0^2)
 numerator_real = w0**2 - w**2
-numerator_mag = np.sqrt(numerator_real**2)
+numerator_imag = (A * w0 / Q) * w
+numerator_mag = np.sqrt(numerator_imag**2 + numerator_real**2)
 
 denominator_real = w0**2 - w**2
 denominator_imag = (w0 / Q) * w
@@ -66,8 +72,8 @@ H_peak_dB = 20 * np.log10(H_peak + 1e-10)
 
 # Second filter for difference
 f0 = 65
-Q = 0.45
-gain_dB = -2.5
+Q = 0.4
+gain_dB = -3.5
 frequencies = np.array(analysis.frequency)
 w0 = 2 * np.pi * f0
 w = 2 * np.pi * frequencies
@@ -86,7 +92,7 @@ H2_peak_dB = 20 * np.log10(H2_peak + 1e-10)
 
 # Low shelf
 f0 = 1539  # Shelf frequency in Hz
-Q = 0.4  # Q factor (0.707 is typical for shelf filters)
+Q = 0.45  # Q factor (0.707 is typical for shelf filters)
 gain_dB = -8  # Shelf gain in dB
 
 frequencies = np.array(analysis.frequency)
@@ -123,8 +129,8 @@ ax.semilogx(
 )
 
 # Plot Magnitude in dB
-ax.semilogx(frequencies, 20 * np.log10(np.absolute(analysis.output)))
-ax.semilogx(frequencies, H_dB - 20 * np.log10(np.absolute(analysis.output)))
+ax.semilogx(frequencies, 20 * np.log10(np.absolute(analysis.output_bis)))
+ax.semilogx(frequencies, H_dB - 20 * np.log10(np.absolute(analysis.output_bis)))
 ax.set_title("Magnitude Response")
 ax.set_xlabel("Frequency [Hz]")
 ax.set_ylabel("Magnitude [dB]")
