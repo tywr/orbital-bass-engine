@@ -38,6 +38,7 @@ bool PresetManager::loadPreset(const juce::File& file, Preset& outPreset)
 
     outPreset.name = presetName;
     outPreset.state = state;
+    outPreset.sourceFile = file;
     outPreset.isEmpty = false;
 
     return true;

@@ -121,6 +121,7 @@ void PluginEditor::handlePresetClicked(int index)
     const auto& preset = sessionManager.getPreset(index);
 
     sessionManager.setCurrentPresetIndex(index);
+    processorRef.saveCurrentPresetIndex(index);
 
     if (!preset.isEmpty)
     {
@@ -143,23 +144,28 @@ void PluginEditor::handleLoadSession()
         if (selectedFolder == juce::File())
             return;
 
-        auto& sessionManager = processorRef.getSessionManager();
-
-        if (sessionManager.loadSessionFromFolder(selectedFolder))
+        if (processorRef.loadSession(selectedFolder))
         {
-            auto xmlFiles = selectedFolder.findChildFiles(juce::File::findFiles, false, "*.xml");
-            int numLoaded = juce::jmin(xmlFiles.size(), SessionManager::MAX_PRESETS);
+            auto& sessionManager = processorRef.getSessionManager();
+            int numLoaded = 0;
+            for (int i = 0; i < SessionManager::MAX_PRESETS; ++i)
+            {
+                if (!sessionManager.getPreset(i).isEmpty)
+                    numLoaded++;
+            }
 
             juce::String message;
             if (numLoaded == 0)
             {
                 message = "Session folder set to: " + selectedFolder.getFullPathName() +
-                         "\n\nNo presets found. Presets you save will be stored in this folder.";
+                         "\n\nNo presets found. Presets you save will be stored as preset_1.xml through preset_5.xml." +
+                         "\n\nThis session will be automatically loaded next time you open the plugin.";
             }
             else
             {
                 message = "Session loaded from: " + selectedFolder.getFullPathName() +
-                         "\n\nLoaded " + juce::String(numLoaded) + " preset" + (numLoaded == 1 ? "" : "s") + ".";
+                         "\n\nLoaded " + juce::String(numLoaded) + " preset" + (numLoaded == 1 ? "" : "s") + "." +
+                         "\n\nThis session will be automatically loaded next time you open the plugin.";
             }
 
             juce::AlertWindow::showMessageBoxAsync(

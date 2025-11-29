@@ -15,16 +15,18 @@ bool SessionManager::loadSessionFromFolder(const juce::File& folder)
     sessionName = folder.getFileName();
     sessionFolder = folder;
 
-    auto xmlFiles = folder.findChildFiles(juce::File::findFiles, false, "*.xml");
-
     int loadedCount = 0;
-    for (int i = 0; i < juce::jmin(xmlFiles.size(), MAX_PRESETS); ++i)
+    for (int i = 0; i < MAX_PRESETS; ++i)
     {
-        Preset preset;
-        if (presetManager.loadPreset(xmlFiles[i], preset))
+        juce::File presetFile = folder.getChildFile("preset_" + juce::String(i + 1) + ".xml");
+        if (presetFile.existsAsFile())
         {
-            presets[loadedCount] = preset;
-            loadedCount++;
+            Preset preset;
+            if (presetManager.loadPreset(presetFile, preset))
+            {
+                presets[i] = preset;
+                loadedCount++;
+            }
         }
     }
 
@@ -39,13 +41,15 @@ void SessionManager::saveSession(const juce::File& folder, const juce::String& n
         folder.createDirectory();
 
     sessionName = name;
+    sessionFolder = folder;
 
     for (int i = 0; i < MAX_PRESETS; ++i)
     {
         if (!presets[i].isEmpty)
         {
-            juce::File presetFile = folder.getChildFile(presets[i].name + ".xml");
+            juce::File presetFile = folder.getChildFile("preset_" + juce::String(i + 1) + ".xml");
             presetManager.savePreset(presetFile, presets[i].name);
+            presets[i].sourceFile = presetFile;
         }
     }
 }
@@ -59,12 +63,18 @@ const Preset& SessionManager::getPreset(int index) const
 void SessionManager::setPreset(int index, const Preset& preset)
 {
     jassert(index >= 0 && index < MAX_PRESETS);
-    presets[index] = preset;
 
     if (sessionFolder != juce::File() && !preset.isEmpty)
     {
-        juce::File presetFile = sessionFolder.getChildFile(preset.name + ".xml");
+        juce::File presetFile = sessionFolder.getChildFile("preset_" + juce::String(index + 1) + ".xml");
         presetManager.savePreset(presetFile, preset.name);
+
+        presets[index] = preset;
+        presets[index].sourceFile = presetFile;
+    }
+    else
+    {
+        presets[index] = preset;
     }
 
     notifySessionChanged();
@@ -73,6 +83,16 @@ void SessionManager::setPreset(int index, const Preset& preset)
 void SessionManager::clearPreset(int index)
 {
     jassert(index >= 0 && index < MAX_PRESETS);
+
+    if (sessionFolder != juce::File())
+    {
+        const auto& preset = presets[index];
+        if (!preset.isEmpty && preset.sourceFile.existsAsFile())
+        {
+            preset.sourceFile.deleteFile();
+        }
+    }
+
     presets[index] = Preset();
     notifySessionChanged();
 }

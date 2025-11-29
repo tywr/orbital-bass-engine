@@ -74,6 +74,12 @@ class PluginAudioProcessor final
     PresetManager& getPresetManager() { return presetManager; }
     SessionManager& getSessionManager() { return sessionManager; }
 
+    bool loadSession(const juce::File& folder);
+    void saveSessionPath(const juce::String& path);
+    juce::String getSessionFolderPath() const;
+    void loadSavedSession();
+    void saveCurrentPresetIndex(int index);
+
   private:
     juce::AudioProcessorValueTreeState parameters;
     juce::AudioProcessorValueTreeState::ParameterLayout parameterLayout;
