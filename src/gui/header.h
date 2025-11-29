@@ -2,17 +2,20 @@
 
 #include "colours.h"
 #include "meter.h"
+#include "preset_bar.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
 class Header : public juce::Component
 {
   public:
-    Header(juce::AudioProcessorValueTreeState&, juce::Value&, juce::Value&);
+    Header(juce::AudioProcessorValueTreeState&, juce::Value&, juce::Value&, SessionManager&);
     ~Header() override;
 
     void resized() override;
     void paint(juce::Graphics&) override;
+
+    PresetBar& getPresetBar() { return presetBar; }
 
   private:
     juce::AudioProcessorValueTreeState& parameters;
@@ -30,6 +33,8 @@ class Header : public juce::Component
         outputGainAttachment;
 
     juce::ToggleButton tunerButton;
+
+    PresetBar presetBar;
 
   public:
     std::function<void()> onTunerClicked;

@@ -9,46 +9,43 @@ void IconButton::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds().toFloat();
 
+    juce::Colour iconColour;
     if (isHovered)
     {
-        g.setColour(ColourCodes::grey2);
-        g.fillRoundedRectangle(bounds, 4.0f);
+        iconColour = ColourCodes::white1;
     }
     else
     {
-        g.setColour(ColourCodes::bg2);
-        g.fillRoundedRectangle(bounds, 4.0f);
+        iconColour = ColourCodes::white0;
     }
 
-    g.setColour(ColourCodes::grey3);
-    g.drawRoundedRectangle(bounds.reduced(1.0f), 4.0f, 1.0f);
-
-    auto iconBounds = bounds.reduced(8.0f);
-    g.setColour(ColourCodes::white0);
+    auto iconBounds = bounds.reduced(10.0f);
+    g.setColour(iconColour);
 
     if (iconType == Folder)
     {
-        float folderHeight = iconBounds.getHeight() * 0.7f;
-        float folderWidth = iconBounds.getWidth();
+        float folderHeight = iconBounds.getHeight() * 0.55f;
+        float folderWidth = iconBounds.getWidth() * 0.7f;
+        float folderX = iconBounds.getCentreX() - folderWidth / 2.0f;
         float folderY = iconBounds.getCentreY() - folderHeight / 2.0f;
         float tabWidth = folderWidth * 0.4f;
         float tabHeight = folderHeight * 0.25f;
 
         juce::Path folderPath;
-        folderPath.startNewSubPath(iconBounds.getX(), folderY + tabHeight);
-        folderPath.lineTo(iconBounds.getX() + tabWidth, folderY + tabHeight);
-        folderPath.lineTo(iconBounds.getX() + tabWidth + 3, folderY);
-        folderPath.lineTo(iconBounds.getRight(), folderY);
-        folderPath.lineTo(iconBounds.getRight(), folderY + folderHeight);
-        folderPath.lineTo(iconBounds.getX(), folderY + folderHeight);
+        folderPath.startNewSubPath(folderX, folderY + tabHeight);
+        folderPath.lineTo(folderX + tabWidth, folderY + tabHeight);
+        folderPath.lineTo(folderX + tabWidth + 2, folderY);
+        folderPath.lineTo(folderX + folderWidth, folderY);
+        folderPath.lineTo(folderX + folderWidth, folderY + folderHeight);
+        folderPath.lineTo(folderX, folderY + folderHeight);
         folderPath.closeSubPath();
 
-        g.strokePath(folderPath, juce::PathStrokeType(1.5f));
+        g.strokePath(folderPath, juce::PathStrokeType(1.2f));
     }
     else if (iconType == Save)
     {
-        float arrowWidth = iconBounds.getWidth() * 0.8f;
-        float arrowHeight = iconBounds.getHeight() * 0.8f;
+        float arrowWidth = iconBounds.getWidth() * 0.5f;
+        float arrowHeight = iconBounds.getHeight() * 0.6f;
         float centerX = iconBounds.getCentreX();
         float centerY = iconBounds.getCentreY();
 
@@ -60,11 +57,11 @@ void IconButton::paint(juce::Graphics& g)
         arrowPath.lineTo(centerX, centerY + arrowHeight / 2.0f);
         arrowPath.lineTo(centerX + arrowWidth / 3.0f, centerY + arrowHeight / 6.0f);
 
-        float baseY = centerY + arrowHeight / 2.0f + 2.0f;
+        float baseY = centerY + arrowHeight / 2.0f + 1.5f;
         arrowPath.startNewSubPath(centerX - arrowWidth / 2.0f, baseY);
         arrowPath.lineTo(centerX + arrowWidth / 2.0f, baseY);
 
-        g.strokePath(arrowPath, juce::PathStrokeType(1.8f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+        g.strokePath(arrowPath, juce::PathStrokeType(1.5f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
     }
 }
 
@@ -108,27 +105,23 @@ void PresetSlot::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds().toFloat();
 
+    juce::Colour textColour;
+
     if (isActive)
     {
-        g.setColour(ColourCodes::blue2);
-        g.fillRoundedRectangle(bounds, 4.0f);
+        textColour = ColourCodes::blue2;
     }
     else if (isHovered)
     {
-        g.setColour(isEmptySlot ? ColourCodes::grey1 : ColourCodes::grey2);
-        g.fillRoundedRectangle(bounds, 4.0f);
+        textColour = isEmptySlot ? ColourCodes::grey3 : ColourCodes::white1;
     }
     else
     {
-        g.setColour(ColourCodes::bg2);
-        g.fillRoundedRectangle(bounds, 4.0f);
+        textColour = isEmptySlot ? ColourCodes::grey2 : ColourCodes::white0;
     }
 
-    g.setColour(ColourCodes::grey3);
-    g.drawRoundedRectangle(bounds.reduced(1.0f), 4.0f, 1.0f);
-
-    g.setColour(isEmptySlot ? ColourCodes::grey2 : ColourCodes::white0);
-    g.setFont(12.0f);
+    g.setColour(textColour);
+    g.setFont(juce::Font("Oxanium", 11.0f, juce::Font::plain));
 
     if (isEmptySlot)
     {
@@ -136,8 +129,13 @@ void PresetSlot::paint(juce::Graphics& g)
     }
     else
     {
-        auto textBounds = bounds.reduced(4.0f);
-        g.drawFittedText(presetName, textBounds.toNearestInt(), juce::Justification::centred, 2);
+        g.drawFittedText(presetName, bounds.toNearestInt(), juce::Justification::centred, 2);
+    }
+
+    if (isActive)
+    {
+        float underlineY = bounds.getBottom() - 2.0f;
+        g.drawLine(bounds.getX() + 4.0f, underlineY, bounds.getRight() - 4.0f, underlineY, 2.0f);
     }
 }
 
@@ -186,14 +184,9 @@ PresetBar::PresetBar(SessionManager& sm)
     };
     addAndMakeVisible(savePresetButton.get());
 
-    sessionNameLabel.setJustificationType(juce::Justification::centredLeft);
-    sessionNameLabel.setColour(juce::Label::textColourId, ColourCodes::white0);
-    addAndMakeVisible(sessionNameLabel);
-
     sessionManager.addListener(this);
 
     updatePresetSlots();
-    updateSessionLabel();
 }
 
 PresetBar::~PresetBar()
@@ -204,19 +197,16 @@ PresetBar::~PresetBar()
 void PresetBar::resized()
 {
     auto bounds = getLocalBounds();
-    bounds.reduce(4, 4);
+    auto iconButtonSize = bounds.getHeight() - 4;
+    auto spacing = 6;
 
-    auto iconButtonSize = bounds.getHeight();
-    auto spacing = 4;
+    bounds.removeFromLeft(2);
 
-    loadSessionButton->setBounds(bounds.removeFromLeft(iconButtonSize).reduced(2));
+    loadSessionButton->setBounds(bounds.removeFromLeft(iconButtonSize));
     bounds.removeFromLeft(spacing);
 
-    savePresetButton->setBounds(bounds.removeFromLeft(iconButtonSize).reduced(2));
-    bounds.removeFromLeft(spacing);
-
-    sessionNameLabel.setBounds(bounds.removeFromLeft(150));
-    bounds.removeFromLeft(spacing);
+    savePresetButton->setBounds(bounds.removeFromLeft(iconButtonSize));
+    bounds.removeFromLeft(spacing * 2);
 
     int slotWidth = (bounds.getWidth() - (SessionManager::MAX_PRESETS - 1) * spacing) / SessionManager::MAX_PRESETS;
 
@@ -230,13 +220,12 @@ void PresetBar::resized()
 
 void PresetBar::paint(juce::Graphics& g)
 {
-    g.fillAll(ColourCodes::bg0);
+    g.fillAll(juce::Colours::transparentBlack);
 }
 
 void PresetBar::sessionChanged()
 {
     updatePresetSlots();
-    updateSessionLabel();
 }
 
 void PresetBar::currentPresetChanged(int newIndex)
@@ -253,17 +242,5 @@ void PresetBar::updatePresetSlots()
     {
         presetSlots[i]->setPreset(sessionManager.getPreset(i));
         presetSlots[i]->setActive(i == sessionManager.getCurrentPresetIndex());
-    }
-}
-
-void PresetBar::updateSessionLabel()
-{
-    if (sessionManager.hasSessionFolder())
-    {
-        sessionNameLabel.setText("Session: " + sessionManager.getSessionName(), juce::dontSendNotification);
-    }
-    else
-    {
-        sessionNameLabel.setText("No session loaded", juce::dontSendNotification);
     }
 }

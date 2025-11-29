@@ -74,10 +74,8 @@ private:
 
     std::unique_ptr<IconButton> loadSessionButton;
     std::unique_ptr<IconButton> savePresetButton;
-    juce::Label sessionNameLabel;
 
     void updatePresetSlots();
-    void updateSessionLabel();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PresetBar)
 };

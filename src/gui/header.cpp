@@ -8,9 +8,9 @@
 
 Header::Header(
     juce::AudioProcessorValueTreeState& params, juce::Value& vin,
-    juce::Value& vout
+    juce::Value& vout, SessionManager& sm
 )
-    : parameters(params), inputMeter(vin), outputMeter(vout)
+    : parameters(params), inputMeter(vin), outputMeter(vout), presetBar(sm)
 {
     setLookAndFeel(new HeaderLookAndFeel());
 
@@ -50,6 +50,8 @@ Header::Header(
         if (onTunerClicked)
             onTunerClicked();
     };
+
+    addAndMakeVisible(presetBar);
 }
 
 Header::~Header()
@@ -70,17 +72,28 @@ void Header::resized()
 
     auto bounds = getLocalBounds().reduced(padding);
 
+    // Left side: input meter and gain
     inputMeter.setBounds(bounds.removeFromLeft(meter_width));
-    outputMeter.setBounds(bounds.removeFromRight(meter_width));
+    bounds.removeFromLeft(padding);
     inputGainSlider.setBounds(bounds.removeFromLeft(knob_size + knob_padding));
-    outputGainSlider.setBounds(
-        bounds.removeFromRight(knob_size + knob_padding)
-    );
+    bounds.removeFromLeft(padding);
 
-    int const buttonWidth = 60;
-    int const buttonHeight = 25;
-    tunerButton.setBounds(
-        bounds.getCentreX() - buttonWidth / 2,
-        bounds.getCentreY() - buttonHeight / 2, buttonWidth, buttonHeight
-    );
+    // Right side: output gain and meter
+    outputMeter.setBounds(bounds.removeFromRight(meter_width));
+    bounds.removeFromRight(padding);
+    outputGainSlider.setBounds(bounds.removeFromRight(knob_size + knob_padding));
+    bounds.removeFromRight(padding);
+
+    // Center area: tuner button, load/save icons, and preset slots
+    auto centerBounds = bounds;
+
+    int const iconButtonSize = centerBounds.getHeight() - 4;
+    int const spacing = 6;
+
+    // Tuner button - same size as preset icon buttons
+    tunerButton.setBounds(centerBounds.removeFromLeft(iconButtonSize));
+    centerBounds.removeFromLeft(spacing);
+
+    // Preset bar takes the remaining space
+    presetBar.setBounds(centerBounds);
 }

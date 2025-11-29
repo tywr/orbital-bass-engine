@@ -12,56 +12,47 @@ void TunerLookAndFeel::drawToggleButton(
     bool isButtonDown
 )
 {
-    juce::Colour colour;
-    if (button.getToggleState())
-        colour =
-            button.findColour(juce::ToggleButton::tickColourId); // "On" colour
-    else
-        colour = button.findColour(
-            juce::ToggleButton::tickDisabledColourId
-        ); // "Off" colour
+    juce::Colour colour = ColourCodes::white0; // Always white like other icons
 
     if (isButtonDown)
-        colour = button.findColour(juce::ToggleButton::tickDisabledColourId);
+        colour = ColourCodes::grey3;
     else if (isMouseOverButton)
         colour = colour.brighter(0.2f);
 
     g.setColour(colour);
 
-    const float buttonStrokeWidth = 2.0f;
-    auto bounds =
-        button.getLocalBounds().toFloat().reduced(buttonStrokeWidth / 2.0f);
+    const float buttonStrokeWidth = 1.3f;
+    auto bounds = button.getLocalBounds().toFloat().reduced(10.5f);
 
-    auto size = juce::jmin(bounds.getWidth(), bounds.getHeight());
-    auto area = bounds.withSizeKeepingCentre(size, size);
+    auto centerX = bounds.getCentreX();
+    auto centerY = bounds.getCentreY();
 
-    auto centerX = area.getCentreX();
-
-    // Tuning fork shape
+    // Tuning fork shape - scaled to match other icons
     juce::Path tuningFork;
 
-    float forkWidth = size * 0.4f;
-    float forkHeight = size * 0.5f;
+    float forkWidth = bounds.getWidth() * 0.3f;
+    float forkHeight = bounds.getHeight() * 0.22f;
+    float handleLength = bounds.getHeight() * 0.18f;
 
     float leftProngX = centerX - forkWidth / 2.0f;
     float rightProngX = centerX + forkWidth / 2.0f;
-    float topY = area.getY() + size * 0.1f;
+    float topY = centerY - forkHeight - handleLength / 2.0f;
     float curveY = topY + forkHeight;
-    float bottomY = area.getBottom() - size * 0.05f;
+    float handleEndY = curveY + handleLength;
 
     // Left prong
     tuningFork.startNewSubPath(leftProngX, topY);
     tuningFork.lineTo(leftProngX, curveY);
 
     // Curve at bottom connecting to handle
-    tuningFork.quadraticTo(leftProngX, curveY + forkHeight * 0.3f, centerX, curveY + forkHeight * 0.3f);
+    tuningFork.quadraticTo(leftProngX, curveY + handleLength * 0.2f, centerX, curveY + handleLength * 0.2f);
 
-    // Handle
-    tuningFork.lineTo(centerX, bottomY);
+    // Handle (tail)
+    tuningFork.lineTo(centerX, handleEndY);
 
     // Back up to curve
-    tuningFork.startNewSubPath(centerX, curveY + forkHeight * 0.3f);
-    tuningFork.quadraticTo(rightProngX, curveY + forkHeight * 0.3f, rightProngX, curveY);
+    tuningFork.startNewSubPath(centerX, curveY + handleLength * 0.2f);
+    tuningFork.quadraticTo(rightProngX, curveY + handleLength * 0.2f, rightProngX, curveY);
 
     // Right prong
     tuningFork.lineTo(rightProngX, topY);
@@ -72,4 +63,9 @@ void TunerLookAndFeel::drawToggleButton(
                         juce::PathStrokeType::rounded
                     )
     );
+
+    // Small dot at the bottom of the handle
+    float dotRadius = 1.4f;
+    float dotY = handleEndY + 1.8f;
+    g.fillEllipse(centerX - dotRadius, dotY - dotRadius, dotRadius * 2.0f, dotRadius * 2.0f);
 }

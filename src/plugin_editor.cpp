@@ -11,18 +11,17 @@ PluginEditor::PluginEditor(
     PluginAudioProcessor& p, juce::AudioProcessorValueTreeState& params
 )
     : AudioProcessorEditor(&p), processorRef(p), parameters(params),
-      presetBar(processorRef.getSessionManager()),
-      header(params, processorRef.inputLevel, processorRef.outputLevel),
+      header(params, processorRef.inputLevel, processorRef.outputLevel, processorRef.getSessionManager()),
       tabs(params, processorRef.compressorGainReductionDb),
       tuner(processorRef.currentPitch)
 {
 
     setLookAndFeel(new BaseLookAndFeel());
-    setSize(900, 700);
-    addAndMakeVisible(presetBar);
+    setSize(900, 650);
     addAndMakeVisible(header);
     addAndMakeVisible(tabs);
 
+    auto& presetBar = header.getPresetBar();
     presetBar.onPresetClicked = [this](int index) { handlePresetClicked(index); };
     presetBar.onLoadSessionClicked = [this]() { handleLoadSession(); };
     presetBar.onSavePresetClicked = [this]() { handleSavePreset(); };
@@ -91,11 +90,8 @@ void PluginEditor::resized()
 {
     auto bounds = getLocalBounds();
 
-    const int presetBarHeight = 40;
-    presetBar.setBounds(bounds.removeFromTop(presetBarHeight));
-
     const float header_ratio = 0.1f;
-    const int header_height = static_cast<int>((getHeight() - presetBarHeight) * header_ratio);
+    const int header_height = static_cast<int>(getHeight() * header_ratio);
     header.setBounds(bounds.removeFromTop(header_height));
 
     tabs.setBounds(bounds);
