@@ -1,5 +1,91 @@
 #include "preset_bar.h"
 
+IconButton::IconButton(IconType type)
+    : iconType(type)
+{
+}
+
+void IconButton::paint(juce::Graphics& g)
+{
+    auto bounds = getLocalBounds().toFloat();
+
+    if (isHovered)
+    {
+        g.setColour(ColourCodes::grey2);
+        g.fillRoundedRectangle(bounds, 4.0f);
+    }
+    else
+    {
+        g.setColour(ColourCodes::bg2);
+        g.fillRoundedRectangle(bounds, 4.0f);
+    }
+
+    g.setColour(ColourCodes::grey3);
+    g.drawRoundedRectangle(bounds.reduced(1.0f), 4.0f, 1.0f);
+
+    auto iconBounds = bounds.reduced(8.0f);
+    g.setColour(ColourCodes::white0);
+
+    if (iconType == Folder)
+    {
+        float folderHeight = iconBounds.getHeight() * 0.7f;
+        float folderWidth = iconBounds.getWidth();
+        float folderY = iconBounds.getCentreY() - folderHeight / 2.0f;
+        float tabWidth = folderWidth * 0.4f;
+        float tabHeight = folderHeight * 0.25f;
+
+        juce::Path folderPath;
+        folderPath.startNewSubPath(iconBounds.getX(), folderY + tabHeight);
+        folderPath.lineTo(iconBounds.getX() + tabWidth, folderY + tabHeight);
+        folderPath.lineTo(iconBounds.getX() + tabWidth + 3, folderY);
+        folderPath.lineTo(iconBounds.getRight(), folderY);
+        folderPath.lineTo(iconBounds.getRight(), folderY + folderHeight);
+        folderPath.lineTo(iconBounds.getX(), folderY + folderHeight);
+        folderPath.closeSubPath();
+
+        g.strokePath(folderPath, juce::PathStrokeType(1.5f));
+    }
+    else if (iconType == Save)
+    {
+        float arrowWidth = iconBounds.getWidth() * 0.8f;
+        float arrowHeight = iconBounds.getHeight() * 0.8f;
+        float centerX = iconBounds.getCentreX();
+        float centerY = iconBounds.getCentreY();
+
+        juce::Path arrowPath;
+        arrowPath.startNewSubPath(centerX, centerY - arrowHeight / 2.0f);
+        arrowPath.lineTo(centerX, centerY + arrowHeight / 2.0f);
+
+        arrowPath.startNewSubPath(centerX - arrowWidth / 3.0f, centerY + arrowHeight / 6.0f);
+        arrowPath.lineTo(centerX, centerY + arrowHeight / 2.0f);
+        arrowPath.lineTo(centerX + arrowWidth / 3.0f, centerY + arrowHeight / 6.0f);
+
+        float baseY = centerY + arrowHeight / 2.0f + 2.0f;
+        arrowPath.startNewSubPath(centerX - arrowWidth / 2.0f, baseY);
+        arrowPath.lineTo(centerX + arrowWidth / 2.0f, baseY);
+
+        g.strokePath(arrowPath, juce::PathStrokeType(1.8f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+    }
+}
+
+void IconButton::mouseDown(const juce::MouseEvent&)
+{
+    if (onClick)
+        onClick();
+}
+
+void IconButton::mouseEnter(const juce::MouseEvent&)
+{
+    isHovered = true;
+    repaint();
+}
+
+void IconButton::mouseExit(const juce::MouseEvent&)
+{
+    isHovered = false;
+    repaint();
+}
+
 PresetSlot::PresetSlot(int slotIndex)
     : index(slotIndex)
 {
@@ -86,19 +172,19 @@ PresetBar::PresetBar(SessionManager& sm)
         addAndMakeVisible(presetSlots[i].get());
     }
 
-    loadSessionButton.setButtonText("Load Session");
-    loadSessionButton.onClick = [this]() {
+    loadSessionButton = std::make_unique<IconButton>(IconButton::Folder);
+    loadSessionButton->onClick = [this]() {
         if (onLoadSessionClicked)
             onLoadSessionClicked();
     };
-    addAndMakeVisible(loadSessionButton);
+    addAndMakeVisible(loadSessionButton.get());
 
-    savePresetButton.setButtonText("Save Preset");
-    savePresetButton.onClick = [this]() {
+    savePresetButton = std::make_unique<IconButton>(IconButton::Save);
+    savePresetButton->onClick = [this]() {
         if (onSavePresetClicked)
             onSavePresetClicked();
     };
-    addAndMakeVisible(savePresetButton);
+    addAndMakeVisible(savePresetButton.get());
 
     sessionNameLabel.setJustificationType(juce::Justification::centredLeft);
     sessionNameLabel.setColour(juce::Label::textColourId, ColourCodes::white0);
@@ -120,13 +206,13 @@ void PresetBar::resized()
     auto bounds = getLocalBounds();
     bounds.reduce(4, 4);
 
-    auto buttonWidth = 100;
+    auto iconButtonSize = bounds.getHeight();
     auto spacing = 4;
 
-    loadSessionButton.setBounds(bounds.removeFromLeft(buttonWidth));
+    loadSessionButton->setBounds(bounds.removeFromLeft(iconButtonSize).reduced(2));
     bounds.removeFromLeft(spacing);
 
-    savePresetButton.setBounds(bounds.removeFromLeft(buttonWidth));
+    savePresetButton->setBounds(bounds.removeFromLeft(iconButtonSize).reduced(2));
     bounds.removeFromLeft(spacing);
 
     sessionNameLabel.setBounds(bounds.removeFromLeft(150));
