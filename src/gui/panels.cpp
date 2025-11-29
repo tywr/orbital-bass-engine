@@ -5,8 +5,7 @@ Panels::Panels(
     juce::Value& compressorGainReductionDb
 )
     : compressor_component(params, compressorGainReductionDb),
-      amp_component(params),
-      post_rack_component(params)
+      amp_component(params), post_rack_component(params)
 {
     addAndMakeVisible(compressor_component);
     addAndMakeVisible(amp_component);
@@ -27,7 +26,7 @@ void Panels::resized()
     auto bounds = getLocalBounds();
 
     // Top section split: compressor on left, amp on right
-    auto top_section = bounds.removeFromTop(bounds.getHeight() / 2);
+    auto top_section = bounds.removeFromTop(2 * bounds.getHeight() / 3);
     int top_half_width = top_section.getWidth() / 2;
 
     compressor_component.setBounds(top_section.removeFromLeft(top_half_width));

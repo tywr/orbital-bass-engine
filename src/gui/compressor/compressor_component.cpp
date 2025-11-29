@@ -1,5 +1,6 @@
 #include "compressor_component.h"
 #include "../colours.h"
+#include "../dimensions.h"
 #include "compressor_dimensions.h"
 #include "compressor_knobs_component.h"
 #include "compressor_meter_component.h"
@@ -38,91 +39,39 @@ void CompressorComponent::paint(juce::Graphics& g)
 {
     bool bypass = bypass_button.getToggleState();
     juce::Colour colour1;
-    juce::Colour colour2;
     if (!bypass)
     {
         colour1 = GuiColours::COMPRESSOR_ACTIVE_COLOUR_1;
-        colour2 = GuiColours::COMPRESSOR_ACTIVE_COLOUR_2;
     }
     else
     {
         colour1 = GuiColours::DEFAULT_INACTIVE_COLOUR;
-        colour2 = GuiColours::DEFAULT_INACTIVE_COLOUR;
     }
-    float border_thickness = CompressorDimensions::BORDER_THICKNESS;
-    float border_radius = CompressorDimensions::BORDER_RADIUS;
-
-    auto outer_bounds =
-        getLocalBounds()
-            .withSizeKeepingCentre(
-                CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
-            )
-            .toFloat();
-    auto inner_bounds = outer_bounds.reduced(border_thickness).toFloat();
+    float border_thickness = GuiDimensions::PANEL_BORDER_THICKNESS;
+    auto bounds = getLocalBounds();
 
     g.setColour(GuiColours::COMPRESSOR_BG_COLOUR);
-    g.fillRoundedRectangle(inner_bounds, border_radius);
+    g.fillRect(bounds);
 
-    juce::Path border_path;
-    border_path.addRoundedRectangle(
-        outer_bounds, border_radius + border_thickness
-    );
-    border_path.addRoundedRectangle(inner_bounds, border_radius);
-    border_path.setUsingNonZeroWinding(false);
+    g.setColour(colour1);
+    g.drawRect(bounds, border_thickness);
 
-    juce::ColourGradient border_gradient(
-        colour1, outer_bounds.getTopLeft(), colour2,
-        outer_bounds.getBottomLeft(), false
-    );
-    g.setGradientFill(border_gradient);
-    g.fillPath(border_path);
+    knobs_component.switchColour(colour1, colour1);
+    meter_component.switchColour(colour1, colour1);
 
-    knobs_component.switchColour(colour1, colour2);
-    meter_component.switchColour(colour1, colour2);
-
-    paintMeter(g, colour1, colour2);
+    paintMeter(g, colour1, colour1);
 }
 
 void CompressorComponent::paintMeter(
     juce::Graphics& g, juce::Colour colour1, juce::Colour colour2
 )
 {
-    // Draw meter border
-    float meter_border_thickness = CompressorDimensions::METER_BORDER_THICKNESS;
-    float border_radius = CompressorDimensions::BORDER_RADIUS;
+    auto bounds = getLocalBounds();
+    auto bounds_height =
+        bounds.getHeight() - GuiDimensions::PANEL_TITLE_BAR_HEIGHT;
+    bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
 
-    auto bounds = getLocalBounds().withSizeKeepingCentre(
-        CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
-    );
-    bounds.removeFromRight(CompressorDimensions::SIDE_WIDTH / 2);
-    auto meter_bounds =
-        bounds.removeFromRight(CompressorDimensions::GAIN_REDUCTION_WIDTH)
-            .withSizeKeepingCentre(
-                CompressorDimensions::GAIN_REDUCTION_WIDTH,
-                CompressorDimensions::GAIN_REDUCTION_HEIGHT
-            );
-    auto outer_meter_bounds =
-        meter_bounds
-            .expanded((int)meter_border_thickness, (int)meter_border_thickness)
-            .toFloat();
-    juce::Path meter_border_path;
-    meter_border_path.addRoundedRectangle(
-        outer_meter_bounds, border_radius + meter_border_thickness
-    );
-    meter_border_path.addRoundedRectangle(
-        outer_meter_bounds.reduced(
-            meter_border_thickness, meter_border_thickness
-        ),
-        border_radius
-    );
-    meter_border_path.setUsingNonZeroWinding(false);
-
-    juce::ColourGradient meter_border_gradient(
-        colour1, outer_meter_bounds.getTopLeft(), colour2,
-        outer_meter_bounds.getBottomLeft(), false
-    );
-    g.setGradientFill(meter_border_gradient);
-    g.fillPath(meter_border_path);
+    auto meter_bounds = bounds.removeFromTop(bounds_height / 2);
 
     // Draw meter background
     float height = meter_bounds.getHeight();
@@ -175,30 +124,14 @@ void CompressorComponent::paintMeter(
 
 void CompressorComponent::resized()
 {
-    auto bounds = getLocalBounds().withSizeKeepingCentre(
-        CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
-    );
-    bounds.removeFromRight(CompressorDimensions::SIDE_WIDTH / 2);
+    auto bounds = getLocalBounds();
+    auto width = bounds.getWidth();
+    auto height = bounds.getHeight() - GuiDimensions::PANEL_TITLE_BAR_HEIGHT;
+    auto title_bounds =
+        bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
     bypass_button.setBounds(
-        bounds.removeFromLeft(CompressorDimensions::SIDE_WIDTH)
-            .withSizeKeepingCentre(
-                CompressorDimensions::BYPASS_SIZE,
-                CompressorDimensions::BYPASS_SIZE
-            )
+        title_bounds.removeFromRight(GuiDimensions::BYPASS_BUTTON_WIDTH)
     );
-    meter_component.setBounds(
-        bounds.removeFromRight(CompressorDimensions::GAIN_REDUCTION_WIDTH)
-            .withSizeKeepingCentre(
-                CompressorDimensions::GAIN_REDUCTION_WIDTH,
-                CompressorDimensions::GAIN_REDUCTION_HEIGHT
-
-            )
-    );
-    knobs_component.setBounds(
-        bounds.removeFromLeft(CompressorDimensions::KNOBS_BOX_WIDTH)
-            .withSizeKeepingCentre(
-                CompressorDimensions::KNOBS_BOX_WIDTH,
-                CompressorDimensions::KNOBS_BOX_HEIGHT
-            )
-    );
+    meter_component.setBounds(bounds.removeFromTop(height / 2));
+    knobs_component.setBounds(bounds);
 }
