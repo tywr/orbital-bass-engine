@@ -143,7 +143,7 @@ void Header::resized()
 
     // Center area: tuner button and preset controls
     int const iconButtonSize = bounds.getHeight() - 4;
-    int const spacing = 6;
+    int const spacing = 10;
 
     // Tuner button on the left
     tunerButton.setBounds(bounds.removeFromLeft(iconButtonSize));
