@@ -70,8 +70,11 @@ void CompressorComponent::paintMeter(
     auto bounds_height =
         bounds.getHeight() - GuiDimensions::PANEL_TITLE_BAR_HEIGHT;
     bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
-
     auto meter_bounds = bounds.removeFromTop(bounds_height / 2);
+
+    float border_thickness = GuiDimensions::PANEL_BORDER_THICKNESS;
+    g.setColour(colour1);
+    g.drawRect(meter_bounds, border_thickness);
 
     // Draw meter background
     float height = meter_bounds.getHeight();
@@ -89,11 +92,12 @@ void CompressorComponent::paintMeter(
         float alpha_degrees =
             CompressorDimensions::METER_START_ANGLE +
             (float)i / 5.0f * CompressorDimensions::METER_ANGLE_RANGE;
-        float alpha = alpha_degrees * juce::MathConstants<float>::pi / 180.0f;
+        float alpha = alpha_degrees * 3.14159265359f / 180.0f;
         float x_end = x_anchor + (length)*std::cos(alpha);
         float x_start = x_anchor + (length - marker_length) * std::cos(alpha);
         float y_end = y_anchor + (length)*std::sin(alpha);
         float y_start = y_anchor + (length - marker_length) * std::sin(alpha);
+
         juce::Path p;
         p.startNewSubPath(x_start, y_start);
         p.lineTo(x_end, y_end);

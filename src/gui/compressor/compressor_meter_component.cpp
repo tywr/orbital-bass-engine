@@ -5,14 +5,7 @@
 CompressorMeterComponent::CompressorMeterComponent(juce::Value& v)
     : gain_reduction_value(v)
 {
-    setLookAndFeel(new CompressorLookAndFeel());
     startTimerHz(refresh_rate);
-    addAndMakeVisible(gain_reduction_slider);
-
-    gain_reduction_slider.setRange(0.0f, 20.0f, 0.05f);
-    gain_reduction_slider.setValue(0.0f);
-    gain_reduction_slider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
-
     gain_reduction_value.addListener(this);
     smoothed_value.reset(refresh_rate, smoothing_time);
 }
@@ -33,10 +26,6 @@ void CompressorMeterComponent::timerCallback()
         smoothed_value.setTargetValue(peak_value);
         smoothed_value.getNextValue();
     }
-    gain_reduction_slider.setValue(
-        smoothed_value.getCurrentValue(), juce::dontSendNotification
-    );
-
     // Reset peak for next frame
     peak_value = 0.0f;
 }
@@ -68,16 +57,40 @@ void CompressorMeterComponent::valueChanged(juce::Value& v)
 
 void CompressorMeterComponent::paint(juce::Graphics& g)
 {
-    ignoreUnused(g);
+    // ignoreUnused(g);
+    float v = smoothed_value.getCurrentValue();
+    float max_db = 20.0f;
+
+    float width = getWidth();
+    float height = getHeight();
+    float offset = CompressorDimensions::METER_OFFSET_Y * (float)height;
+    float ratio = juce::jlimit(0.0f, 1.0f, (float)(v / max_db));
+    float alpha_degrees = CompressorDimensions::METER_START_ANGLE +
+                          CompressorDimensions::METER_ANGLE_RANGE * ratio;
+    float alpha = alpha_degrees * 3.14159265359f / 180.0f;
+
+    float length =
+        CompressorDimensions::METER_POINTER_LENGTH * (float)height + offset;
+    float x_anchor = (float)getX() + (float)width * 0.5f;
+    float y_anchor = (float)(getY() + height + offset);
+    float x_end = x_anchor + length * std::cos(alpha);
+    float y_end = y_anchor + length * std::sin(alpha);
+
+    g.setColour(colour);
+    juce::Path p;
+    p.startNewSubPath(x_anchor, y_anchor);
+    p.lineTo(x_end, y_end);
+    g.strokePath(
+        p, juce::PathStrokeType(
+               2.0f, juce::PathStrokeType::JointStyle::curved,
+               juce::PathStrokeType::EndCapStyle::rounded
+           )
+    );
 }
 
 void CompressorMeterComponent::resized()
 {
     auto bounds = getLocalBounds();
-    gain_reduction_slider.setBounds(bounds.withSizeKeepingCentre(
-        CompressorDimensions::GAIN_REDUCTION_WIDTH,
-        CompressorDimensions::GAIN_REDUCTION_HEIGHT
-    ));
 }
 
 void CompressorMeterComponent::switchColour(
@@ -85,8 +98,6 @@ void CompressorMeterComponent::switchColour(
 )
 {
     juce::ignoreUnused(colour2);
-    gain_reduction_slider.setColour(
-        juce::Slider::rotarySliderFillColourId, colour1
-    );
+    colour = colour1;
     repaint();
 }

@@ -1,8 +1,6 @@
 #include "compressor_knobs_component.h"
 #include "../colours.h"
 #include "../components/solid_tooltip.h"
-#include "../looks/compressor_look_and_feel.h"
-#include "../looks/compressor_selector_look_and_feel.h"
 #include "compressor_dimensions.h"
 
 CompressorKnobsComponent::CompressorKnobsComponent(
@@ -18,10 +16,6 @@ CompressorKnobsComponent::CompressorKnobsComponent(
     addAndMakeVisible(drag_tooltip);
     slider_being_dragged = false;
     drag_tooltip.setVisible(false);
-
-    ratio_slider.setLookAndFeel(&selector_look_and_feel);
-    attack_slider.setLookAndFeel(&selector_look_and_feel);
-    release_slider.setLookAndFeel(&selector_look_and_feel);
 
     for (auto knob : knobs)
     {

@@ -31,8 +31,7 @@ class CompressorMeterComponent : public juce::Component,
     float peak_value = 0.0f;
     float smoothing_time = 0.2f;
     int refresh_rate = 60;
-
-    juce::Slider gain_reduction_slider;
+    juce::Colour colour;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CompressorMeterComponent)
 };
