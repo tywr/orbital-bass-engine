@@ -12,9 +12,13 @@ CompressorComponent::CompressorComponent(
 )
     : parameters(params), knobs_component(params), meter_component(value)
 {
+    addAndMakeVisible(title_label);
     addAndMakeVisible(knobs_component);
     addAndMakeVisible(meter_component);
     addAndMakeVisible(bypass_button);
+
+    title_label.setText("COMPRESSOR", juce::dontSendNotification);
+    title_label.setJustificationType(juce::Justification::centredLeft);
 
     bypass_attachment =
         std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
@@ -49,6 +53,7 @@ void CompressorComponent::paint(juce::Graphics& g)
     }
     float border_thickness = GuiDimensions::PANEL_BORDER_THICKNESS;
     auto bounds = getLocalBounds();
+    title_label.setColour(juce::Label::textColourId, colour1);
 
     g.setColour(GuiColours::COMPRESSOR_BG_COLOUR);
     g.fillRect(bounds);
@@ -69,12 +74,13 @@ void CompressorComponent::paintMeter(
     auto bounds = getLocalBounds();
     auto bounds_height =
         bounds.getHeight() - GuiDimensions::PANEL_TITLE_BAR_HEIGHT;
-    bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    auto title_bounds =
+        bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
     auto meter_bounds = bounds.removeFromTop(bounds_height / 2);
 
     float border_thickness = GuiDimensions::PANEL_BORDER_THICKNESS;
     g.setColour(colour1);
-    g.drawRect(meter_bounds, border_thickness);
+    g.drawRect(title_bounds, border_thickness);
 
     // Draw meter background
     float height = meter_bounds.getHeight();
@@ -133,6 +139,7 @@ void CompressorComponent::resized()
     auto height = bounds.getHeight() - GuiDimensions::PANEL_TITLE_BAR_HEIGHT;
     auto title_bounds =
         bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    title_label.setBounds(title_bounds.removeFromLeft(100.0f));
     bypass_button.setBounds(
         title_bounds.removeFromRight(GuiDimensions::BYPASS_BUTTON_WIDTH)
     );

@@ -32,10 +32,8 @@ target_sources(${PROJECT_NAME}
         session_manager.cpp
         gui/looks/amp_small_look_and_feel.cpp
         gui/looks/base_look_and_feel.cpp
-        gui/looks/compressor_look_and_feel.cpp
         gui/looks/header_look_and_feel.cpp
         gui/looks/eq_look_and_feel.cpp
-        gui/looks/compressor_selector_look_and_feel.cpp
         gui/looks/tuner_look_and_feel.cpp
         gui/preset_bar.cpp
         gui/preset_icon_buttons.cpp

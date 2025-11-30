@@ -2,7 +2,6 @@
 
 #include "../colours.h"
 #include "../components/solid_tooltip.h"
-#include "../looks/compressor_selector_look_and_feel.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
@@ -33,8 +32,6 @@ class CompressorKnobsComponent : public juce::Component
     bool slider_being_dragged;
 
     juce::Colour const default_type_colour = ColourCodes::grey3;
-
-    CompressorSelectorLookAndFeel selector_look_and_feel;
 
     juce::Slider hpf_slider;
     juce::Label hpf_label;

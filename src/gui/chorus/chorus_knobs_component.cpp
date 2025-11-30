@@ -1,8 +1,6 @@
 #include "chorus_knobs_component.h"
 #include "../colours.h"
 #include "../components/solid_tooltip.h"
-#include "../looks/compressor_look_and_feel.h"
-#include "../looks/compressor_selector_look_and_feel.h"
 #include "chorus_dimensions.h"
 
 ChorusKnobsComponent::ChorusKnobsComponent(

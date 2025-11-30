@@ -1,5 +1,4 @@
 #include "compressor_meter_component.h"
-#include "../looks/compressor_look_and_feel.h"
 #include "compressor_dimensions.h"
 
 CompressorMeterComponent::CompressorMeterComponent(juce::Value& v)
@@ -71,8 +70,8 @@ void CompressorMeterComponent::paint(juce::Graphics& g)
 
     float length =
         CompressorDimensions::METER_POINTER_LENGTH * (float)height + offset;
-    float x_anchor = (float)getX() + (float)width * 0.5f;
-    float y_anchor = (float)(getY() + height + offset);
+    float x_anchor = (float)width * 0.5f;
+    float y_anchor = (float)(height + offset);
     float x_end = x_anchor + length * std::cos(alpha);
     float y_end = y_anchor + length * std::sin(alpha);
 
