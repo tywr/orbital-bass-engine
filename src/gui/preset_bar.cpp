@@ -1,7 +1,7 @@
 #include "preset_bar.h"
+#include "colours.h"
 
-PresetSlot::PresetSlot(int slotIndex)
-    : index(slotIndex)
+PresetSlot::PresetSlot(int slotIndex) : index(slotIndex)
 {
 }
 
@@ -25,7 +25,7 @@ void PresetSlot::paint(juce::Graphics& g)
     if (isActive)
     {
         // Selected: orange square background
-        g.setColour(juce::Colour(0xffff8c00)); // Orange
+        g.setColour(ColourCodes::orange); // Orange
         g.fillRect(bounds.reduced(2.0f));
 
         g.setColour(juce::Colours::black);
@@ -47,11 +47,15 @@ void PresetSlot::paint(juce::Graphics& g)
 
     if (isEmptySlot)
     {
-        g.drawText(juce::String(index + 1), bounds, juce::Justification::centred);
+        g.drawText(
+            juce::String(index + 1), bounds, juce::Justification::centred
+        );
     }
     else
     {
-        g.drawFittedText(presetName, bounds.toNearestInt(), juce::Justification::centred, 2);
+        g.drawFittedText(
+            presetName, bounds.toNearestInt(), juce::Justification::centred, 2
+        );
     }
 }
 
@@ -73,13 +77,13 @@ void PresetSlot::mouseExit(const juce::MouseEvent&)
     repaint();
 }
 
-PresetBar::PresetBar(SessionManager& sm)
-    : sessionManager(sm)
+PresetBar::PresetBar(SessionManager& sm) : sessionManager(sm)
 {
     for (int i = 0; i < SessionManager::MAX_PRESETS; ++i)
     {
         presetSlots[i] = std::make_unique<PresetSlot>(i);
-        presetSlots[i]->onClicked = [this](int index) {
+        presetSlots[i]->onClicked = [this](int index)
+        {
             if (onPresetClicked)
                 onPresetClicked(index);
         };
@@ -101,7 +105,9 @@ void PresetBar::resized()
     auto bounds = getLocalBounds();
     auto spacing = 6;
 
-    int slotWidth = (bounds.getWidth() - (SessionManager::MAX_PRESETS - 1) * spacing) / SessionManager::MAX_PRESETS;
+    int slotWidth =
+        (bounds.getWidth() - (SessionManager::MAX_PRESETS - 1) * spacing) /
+        SessionManager::MAX_PRESETS;
 
     for (int i = 0; i < SessionManager::MAX_PRESETS; ++i)
     {
@@ -117,10 +123,12 @@ void PresetBar::paint(juce::Graphics& g)
     g.fillAll(juce::Colours::transparentBlack);
 
     // Draw a single white border around all preset slots
-    if (!presetSlots.empty() && presetSlots[0] && presetSlots[SessionManager::MAX_PRESETS - 1])
+    if (!presetSlots.empty() && presetSlots[0] &&
+        presetSlots[SessionManager::MAX_PRESETS - 1])
     {
         auto firstSlot = presetSlots[0]->getBounds();
-        auto lastSlot = presetSlots[SessionManager::MAX_PRESETS - 1]->getBounds();
+        auto lastSlot =
+            presetSlots[SessionManager::MAX_PRESETS - 1]->getBounds();
 
         // Calculate bounds that encompass all slots
         int x = firstSlot.getX();

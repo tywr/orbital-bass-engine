@@ -84,14 +84,14 @@ void CompressorMeterComponent::paint(juce::Graphics& g)
     p.lineTo(x_end, y_end);
     g.strokePath(
         p, juce::PathStrokeType(
-               2.0f, juce::PathStrokeType::JointStyle::curved,
-               juce::PathStrokeType::EndCapStyle::rounded
+               3.0f, juce::PathStrokeType::JointStyle::curved,
+               juce::PathStrokeType::EndCapStyle::square
            )
     );
 
     // Draw inverted triangle marker at the end
     float triangle_size = marker_length * 0.15f;
-    float angle_spread = 0.02f;
+    float angle_spread = 0.03f;
 
     // Triangle tip points inward toward the anchor
     float tip_radius = length - triangle_size;

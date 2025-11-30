@@ -10,10 +10,10 @@ constexpr int BORDER_THICKNESS = 6.0f;
 constexpr int METER_BORDER_THICKNESS = 2.0f;
 constexpr int BORDER_RADIUS = 20.0f;
 
-constexpr float METER_OFFSET_Y = 0.5f;
-constexpr float METER_POINTER_LENGTH = 0.9f;
-constexpr int METER_START_ANGLE = 225;
-constexpr int METER_ANGLE_RANGE = 90;
+constexpr float METER_OFFSET_Y = 1.5f;
+constexpr float METER_POINTER_LENGTH = 0.75f;
+constexpr int METER_START_ANGLE = 240;
+constexpr int METER_ANGLE_RANGE = 60;
 constexpr float METER_MARKER_LENGTH = 0.2f;
 
 constexpr int KNOBS_BOX_WIDTH = 450;

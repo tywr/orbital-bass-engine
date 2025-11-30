@@ -29,8 +29,7 @@ CompressorComponent::CompressorComponent(
         juce::ToggleButton::tickColourId, GuiColours::DEFAULT_INACTIVE_COLOUR
     );
     bypass_button.setColour(
-        juce::ToggleButton::tickDisabledColourId,
-        GuiColours::COMPRESSOR_ACTIVE_COLOUR_1
+        juce::ToggleButton::tickDisabledColourId, ColourCodes::orange
     );
     bypass_button.onClick = [this]() { repaint(); };
 }
@@ -43,26 +42,44 @@ void CompressorComponent::paint(juce::Graphics& g)
 {
     bool bypass = bypass_button.getToggleState();
     juce::Colour colour1;
+    juce::Colour colour2;
+    juce::Colour border_colour;
     if (!bypass)
     {
-        colour1 = GuiColours::COMPRESSOR_ACTIVE_COLOUR_1;
+        colour1 = ColourCodes::orange;
+        colour2 = ColourCodes::white0;
+        border_colour = ColourCodes::grey0;
     }
     else
     {
         colour1 = GuiColours::DEFAULT_INACTIVE_COLOUR;
+        colour2 = ColourCodes::grey0;
+        border_colour = ColourCodes::grey0;
     }
     float border_thickness = GuiDimensions::PANEL_BORDER_THICKNESS;
     auto bounds = getLocalBounds();
-    title_label.setColour(juce::Label::textColourId, colour1);
+    title_label.setColour(juce::Label::textColourId, colour2);
 
     g.setColour(GuiColours::COMPRESSOR_BG_COLOUR);
     g.fillRect(bounds);
 
-    g.setColour(colour1);
+    g.setColour(border_colour);
     g.drawRect(bounds, border_thickness);
 
-    knobs_component.switchColour(colour1, colour1);
-    meter_component.switchColour(colour1, colour1);
+    auto title_bounds =
+        bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+
+    g.setColour(ColourCodes::bg2);
+    g.fillRect(title_bounds);
+
+    g.setColour(border_colour);
+    g.drawRect(title_bounds, border_thickness);
+
+    bounds.removeFromTop(bounds.getHeight() / 2.0f);
+    g.drawRect(bounds, border_thickness);
+
+    knobs_component.switchColour(colour1, colour2);
+    meter_component.switchColour(colour1, colour2);
 
     paintMeter(g, colour1, colour1);
 }
@@ -74,13 +91,8 @@ void CompressorComponent::paintMeter(
     auto bounds = getLocalBounds();
     auto bounds_height =
         bounds.getHeight() - GuiDimensions::PANEL_TITLE_BAR_HEIGHT;
-    auto title_bounds =
-        bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
     auto meter_bounds = bounds.removeFromTop(bounds_height / 2);
-
-    float border_thickness = GuiDimensions::PANEL_BORDER_THICKNESS;
-    g.setColour(colour1);
-    g.drawRect(title_bounds, border_thickness);
 
     // Draw meter background
     float height = meter_bounds.getHeight();
