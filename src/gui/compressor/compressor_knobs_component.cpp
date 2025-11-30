@@ -93,47 +93,63 @@ void CompressorKnobsComponent::paint(juce::Graphics& g)
 
 void CompressorKnobsComponent::resized()
 {
-
     auto bounds = getLocalBounds();
-    int left_size = (int)(0.75f * bounds.getWidth());
-    auto left_bounds = bounds.removeFromLeft(left_size).withSizeKeepingCentre(
-        left_size, CompressorDimensions::KNOBS_INNER_BOX_HEIGHT
-    );
-    auto left_label_bounds =
-        left_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT);
-    const int knob_box_size = left_bounds.getWidth() / 4;
 
-    for (size_t i = 0; i < 4; ++i)
+    // Left side: threshold alone
+    auto left_bounds = bounds.removeFromLeft(bounds.getWidth() / 4);
+    auto threshold_label_bounds = left_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT);
+    CompressorKnob threshold_knob = knobs[1]; // threshold
+    threshold_knob.label->setBounds(threshold_label_bounds.withSizeKeepingCentre(
+        CompressorDimensions::KNOB_SIZE,
+        CompressorDimensions::LABEL_HEIGHT
+    ));
+    threshold_knob.slider->setBounds(left_bounds.withSizeKeepingCentre(
+        CompressorDimensions::KNOB_SIZE,
+        CompressorDimensions::KNOB_SIZE
+    ));
+
+    // Right side: two rows of 3 knobs each
+    auto right_bounds = bounds;
+
+    // Top row: hpf, mix, level
+    auto top_row_bounds = right_bounds.removeFromTop(right_bounds.getHeight() / 2);
+    auto top_label_bounds = top_row_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT);
+    const int top_knob_box_size = top_row_bounds.getWidth() / 3;
+
+    std::vector<size_t> top_row_indices = {0, 2, 3}; // hpf, mix, level
+    for (size_t i : top_row_indices)
     {
         CompressorKnob knob = knobs[i];
-        knob.label->setBounds(left_label_bounds.removeFromLeft(knob_box_size)
+        knob.label->setBounds(top_label_bounds.removeFromLeft(top_knob_box_size)
                                   .withSizeKeepingCentre(
                                       CompressorDimensions::KNOB_SIZE,
                                       CompressorDimensions::LABEL_HEIGHT
                                   ));
-        knob.slider->setBounds(left_bounds.removeFromLeft(knob_box_size)
+        knob.slider->setBounds(top_row_bounds.removeFromLeft(top_knob_box_size)
                                    .withSizeKeepingCentre(
                                        CompressorDimensions::KNOB_SIZE,
                                        CompressorDimensions::KNOB_SIZE
                                    ));
     }
 
-    const int knob_box_height = bounds.getHeight() / 3;
-    for (size_t i = 4; i < 7; ++i)
+    // Bottom row: attack, release, ratio
+    auto bottom_label_bounds = right_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT);
+    const int bottom_knob_box_size = right_bounds.getWidth() / 3;
+
+    std::vector<size_t> bottom_row_indices = {5, 6, 4}; // attack, release, ratio
+    for (size_t i : bottom_row_indices)
     {
-        auto knob_bounds = bounds.removeFromTop(knob_box_height);
         CompressorKnob knob = knobs[i];
-        knob.label->setBounds(
-            knob_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT)
-                .withSizeKeepingCentre(
-                    CompressorDimensions::KNOB_SIZE,
-                    CompressorDimensions::LABEL_HEIGHT
-                )
-        );
-        knob.slider->setBounds(knob_bounds.withSizeKeepingCentre(
-            CompressorDimensions::SMALL_KNOB_SIZE,
-            CompressorDimensions::SMALL_KNOB_SIZE
-        ));
+        knob.label->setBounds(bottom_label_bounds.removeFromLeft(bottom_knob_box_size)
+                                  .withSizeKeepingCentre(
+                                      CompressorDimensions::KNOB_SIZE,
+                                      CompressorDimensions::LABEL_HEIGHT
+                                  ));
+        knob.slider->setBounds(right_bounds.removeFromLeft(bottom_knob_box_size)
+                                   .withSizeKeepingCentre(
+                                       CompressorDimensions::KNOB_SIZE,
+                                       CompressorDimensions::KNOB_SIZE
+                                   ));
     }
 }
 
