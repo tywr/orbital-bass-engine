@@ -88,6 +88,30 @@ void CompressorMeterComponent::paint(juce::Graphics& g)
                juce::PathStrokeType::EndCapStyle::rounded
            )
     );
+
+    // Draw inverted triangle marker at the end
+    float triangle_size = marker_length * 0.15f;
+    float angle_spread = 0.02f;
+
+    // Triangle tip points inward toward the anchor
+    float tip_radius = length - triangle_size;
+    float tip_x = x_anchor + tip_radius * std::cos(alpha);
+    float tip_y = y_anchor + tip_radius * std::sin(alpha);
+
+    // Base vertices beyond the outer edge
+    float base_radius = length + triangle_size;
+    float base1_x = x_anchor + base_radius * std::cos(alpha - angle_spread);
+    float base1_y = y_anchor + base_radius * std::sin(alpha - angle_spread);
+    float base2_x = x_anchor + base_radius * std::cos(alpha + angle_spread);
+    float base2_y = y_anchor + base_radius * std::sin(alpha + angle_spread);
+
+    juce::Path triangle;
+    triangle.startNewSubPath(tip_x, tip_y);
+    triangle.lineTo(base1_x, base1_y);
+    triangle.lineTo(base2_x, base2_y);
+    triangle.closeSubPath();
+
+    g.fillPath(triangle);
 }
 
 void CompressorMeterComponent::resized()
