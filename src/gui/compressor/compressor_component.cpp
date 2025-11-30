@@ -90,7 +90,7 @@ void CompressorComponent::paintMeter(
     float y_anchor = (float)(meter_bounds.getY() + height + offset);
     float length =
         CompressorDimensions::METER_POINTER_LENGTH * (float)height + offset;
-    float marker_length = CompressorDimensions::METER_MARKER_LENGTH;
+    float marker_length = height * CompressorDimensions::METER_MARKER_LENGTH;
 
     g.setColour(ColourCodes::grey0);
     for (int i = 0; i < 6; ++i)
@@ -99,37 +99,79 @@ void CompressorComponent::paintMeter(
             CompressorDimensions::METER_START_ANGLE +
             (float)i / 5.0f * CompressorDimensions::METER_ANGLE_RANGE;
         float alpha = alpha_degrees * 3.14159265359f / 180.0f;
-        float x_end = x_anchor + (length)*std::cos(alpha);
-        float x_start = x_anchor + (length - marker_length) * std::cos(alpha);
-        float y_end = y_anchor + (length)*std::sin(alpha);
-        float y_start = y_anchor + (length - marker_length) * std::sin(alpha);
 
-        juce::Path p;
-        p.startNewSubPath(x_start, y_start);
-        p.lineTo(x_end, y_end);
-        g.strokePath(
-            p, juce::PathStrokeType(
-                   2.0f, juce::PathStrokeType::JointStyle::curved,
-                   juce::PathStrokeType::EndCapStyle::rounded
-               )
-        );
+        // Only draw tick marks for 0 and 20 (i == 0 and i == 5)
+        if (i == 0 || i == 5)
+        {
+            float x_end = x_anchor + (length)*std::cos(alpha);
+            float x_start =
+                x_anchor + (length - marker_length) * std::cos(alpha);
+            float y_end = y_anchor + (length)*std::sin(alpha);
+            float y_start =
+                y_anchor + (length - marker_length) * std::sin(alpha);
 
-        juce::String textToDraw = juce::String(i * 4);
+            juce::Path p;
+            p.startNewSubPath(x_start, y_start);
+            p.lineTo(x_end, y_end);
+            g.strokePath(
+                p, juce::PathStrokeType(
+                       2.0f, juce::PathStrokeType::JointStyle::curved,
+                       juce::PathStrokeType::EndCapStyle::rounded
+                   )
+            );
+        }
+        // Draw number labels for middle values only (i == 1, 2, 3, 4)
+        else
+        {
+            juce::String textToDraw = juce::String(i * 4);
 
-        float textPadding = 15.0f; // 10 pixels padding from the outer tick
-        float textRadius = length - marker_length - textPadding;
-        float x_text_centre = x_anchor + textRadius * std::cos(alpha);
-        float y_text_centre = y_anchor + textRadius * std::sin(alpha);
+            float x_text_centre =
+                x_anchor + (length - marker_length / 2.0f) * std::cos(alpha);
+            float y_text_centre =
+                y_anchor + (length - marker_length / 2.0f) * std::sin(alpha);
 
-        float textBoxWidth = 25.0f;
-        float textBoxHeight = 15.0f;
-        juce::Rectangle<float> textBox(textBoxWidth, textBoxHeight);
-        textBox.setCentre(x_text_centre, y_text_centre);
+            float textBoxWidth = 25.0f;
+            float textBoxHeight = marker_length;
+            juce::Rectangle<float> textBox(textBoxWidth, textBoxHeight);
+            textBox.setCentre(x_text_centre, y_text_centre);
 
-        g.drawFittedText(
-            textToDraw, textBox.toNearestInt(), juce::Justification::centred, 1
-        );
+            g.drawFittedText(
+                textToDraw, textBox.toNearestInt(),
+                juce::Justification::centred, 1
+            );
+        }
     }
+
+    // Draw two arcs connecting the 0 and 20 tick marks
+    float start_angle = (CompressorDimensions::METER_START_ANGLE +
+                         CompressorDimensions::METER_ANGLE_RANGE + 90.0f) *
+                        3.14159265359f / 180.0f;
+    float end_angle = (90.0f + CompressorDimensions::METER_START_ANGLE) *
+                      3.14159265359f / 180.0f;
+
+    juce::Path outer_arc;
+    outer_arc.addCentredArc(
+        x_anchor, y_anchor, length, length, 0.0f, start_angle, end_angle, true
+    );
+    g.strokePath(
+        outer_arc, juce::PathStrokeType(
+                       2.0f, juce::PathStrokeType::JointStyle::curved,
+                       juce::PathStrokeType::EndCapStyle::rounded
+                   )
+    );
+
+    // Inner arc (at the start of tick marks)
+    juce::Path inner_arc;
+    inner_arc.addCentredArc(
+        x_anchor, y_anchor, length - marker_length, length - marker_length,
+        0.0f, start_angle, end_angle, true
+    );
+    g.strokePath(
+        inner_arc, juce::PathStrokeType(
+                       2.0f, juce::PathStrokeType::JointStyle::curved,
+                       juce::PathStrokeType::EndCapStyle::rounded
+                   )
+    );
 }
 
 void CompressorComponent::resized()

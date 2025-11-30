@@ -62,6 +62,7 @@ void CompressorMeterComponent::paint(juce::Graphics& g)
 
     float width = getWidth();
     float height = getHeight();
+    float marker_length = height * CompressorDimensions::METER_MARKER_LENGTH;
     float offset = CompressorDimensions::METER_OFFSET_Y * (float)height;
     float ratio = juce::jlimit(0.0f, 1.0f, (float)(v / max_db));
     float alpha_degrees = CompressorDimensions::METER_START_ANGLE +
@@ -72,12 +73,14 @@ void CompressorMeterComponent::paint(juce::Graphics& g)
         CompressorDimensions::METER_POINTER_LENGTH * (float)height + offset;
     float x_anchor = (float)width * 0.5f;
     float y_anchor = (float)(height + offset);
+    float x_start = x_anchor + (length - marker_length) * std::cos(alpha);
+    float y_start = y_anchor + (length - marker_length) * std::sin(alpha);
     float x_end = x_anchor + length * std::cos(alpha);
     float y_end = y_anchor + length * std::sin(alpha);
 
     g.setColour(colour);
     juce::Path p;
-    p.startNewSubPath(x_anchor, y_anchor);
+    p.startNewSubPath(x_start, y_start);
     p.lineTo(x_end, y_end);
     g.strokePath(
         p, juce::PathStrokeType(
