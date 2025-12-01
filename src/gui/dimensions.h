@@ -22,5 +22,9 @@ constexpr int DEFAULT_SMALL_LABEL_HEIGHT = 30;
 constexpr int PANEL_TITLE_BAR_HEIGHT = 25;
 constexpr int PANEL_BORDER_THICKNESS = 2;
 constexpr int BYPASS_BUTTON_WIDTH = 25;
+constexpr int PANEL_KNOB_PADDING = 10;
+
+constexpr int KNOB_SIZE = 40;
+constexpr int KNOB_LABEL_HEIGHT = 20;
 
 } // namespace GuiDimensions

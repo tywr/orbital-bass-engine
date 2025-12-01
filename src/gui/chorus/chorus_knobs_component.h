@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../colours.h"
+#include "../components/labeled_knob.h"
 #include "../components/solid_tooltip.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -9,8 +10,7 @@
 
 struct ChorusKnob
 {
-    juce::Slider* slider;
-    juce::Label* label;
+    LabeledKnob* knob;
     juce::String parameter_id;
     juce::String label_text;
 };
@@ -33,35 +33,20 @@ class ChorusKnobsComponent : public juce::Component
 
     juce::Colour const default_type_colour = ColourCodes::grey3;
 
-    juce::Slider rate_slider;
-    juce::Label rate_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        rate_slider_attachment;
-
-    juce::Slider depth_slider;
-    juce::Label depth_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        depth_slider_attachment;
-
-    juce::Slider mix_slider;
-    juce::Label mix_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        mix_slider_attachment;
-
-    juce::Slider crossover_slider;
-    juce::Label crossover_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        crossover_slider_attachment;
+    LabeledKnob rate_knob;
+    LabeledKnob depth_knob;
+    LabeledKnob mix_knob;
+    LabeledKnob crossover_knob;
 
     std::vector<
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>>
         slider_attachments;
 
     std::vector<ChorusKnob> knobs = {
-        {&rate_slider,      &rate_label,      "chorus_rate",      "rate"     },
-        {&depth_slider,     &depth_label,     "chorus_depth",     "depth"    },
-        {&crossover_slider, &crossover_label, "chorus_crossover", "freq"},
-        {&mix_slider,       &mix_label,       "chorus_mix",       "mix"      }
+        {&rate_knob,      "chorus_rate",      "rate"  },
+        {&depth_knob,     "chorus_depth",     "depth" },
+        {&crossover_knob, "chorus_crossover", "freq"  },
+        {&mix_knob,       "chorus_mix",       "mix"   }
     };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChorusKnobsComponent)

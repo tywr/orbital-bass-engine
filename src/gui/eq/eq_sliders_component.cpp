@@ -10,23 +10,21 @@ EqSlidersComponent::EqSlidersComponent(
 {
     for (auto slider : sliders)
     {
-        addAndMakeVisible(slider.slider);
-        addAndMakeVisible(slider.label);
-        slider.label->setText(slider.label_text, juce::dontSendNotification);
-        slider.label->setJustificationType(juce::Justification::centred);
-        slider.slider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-        slider.slider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, EqDimensions::LABEL_HEIGHT);
-        slider.label->setColour(
+        addAndMakeVisible(slider.knob);
+        slider.knob->setLabelText(slider.label_text);
+        slider.knob->setKnobSize(EqDimensions::KNOB_SIZE, EqDimensions::KNOB_SIZE);
+        slider.knob->setLabelHeight(EqDimensions::LABEL_HEIGHT);
+        slider.knob->getLabel().setColour(
             juce::Slider::textBoxOutlineColourId,
             juce::Colours::transparentBlack
         );
-        slider.label->setColour(
+        slider.knob->getLabel().setColour(
             juce::Slider::textBoxTextColourId, ColourCodes::grey3
         );
         slider_attachments.push_back(
             std::make_unique<
                 juce::AudioProcessorValueTreeState::SliderAttachment>(
-                parameters, slider.parameter_id, *slider.slider
+                parameters, slider.parameter_id, slider.knob->getSlider()
             )
         );
     }
@@ -43,22 +41,11 @@ void EqSlidersComponent::paint(juce::Graphics& g)
 
 void EqSlidersComponent::resized()
 {
-
     auto bounds = getLocalBounds();
-    auto label_bounds = bounds.removeFromTop(EqDimensions::LABEL_HEIGHT);
     const int slider_box_size = bounds.getWidth() / (int)sliders.size();
     for (auto slider : sliders)
     {
-        slider.label->setBounds(label_bounds.removeFromLeft(slider_box_size)
-                                    .withSizeKeepingCentre(
-                                        EqDimensions::LABEL_WIDTH,
-                                        EqDimensions::LABEL_HEIGHT
-                                    ));
-        slider.slider->setBounds(bounds.removeFromLeft(slider_box_size)
-                                     .withSizeKeepingCentre(
-                                         EqDimensions::KNOB_SIZE,
-                                         EqDimensions::KNOB_SIZE + EqDimensions::LABEL_HEIGHT
-                                     ));
+        slider.knob->setBounds(bounds.removeFromLeft(slider_box_size));
     }
 }
 
@@ -69,7 +56,7 @@ void EqSlidersComponent::switchColour(
     juce::ignoreUnused(colour2);
     for (EqSlider slider : sliders)
     {
-        slider.slider->setColour(
+        slider.knob->getSlider().setColour(
             juce::Slider::rotarySliderFillColourId, colour1
         );
     }

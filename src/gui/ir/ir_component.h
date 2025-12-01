@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../colours.h"
+#include "../components/labeled_knob.h"
 #include "../components/solid_tooltip.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -8,8 +9,7 @@
 
 struct IRKnob
 {
-    juce::Slider* slider;
-    juce::Label* label;
+    LabeledKnob* knob;
     juce::String parameter_id;
     juce::String label_text;
 };
@@ -23,7 +23,7 @@ class IRComponent : public juce::Component
     void resized() override;
     void refreshStatus();
     void switchColour();
-    void setupSliderTooltipHandling(juce::Slider* slider, juce::Label* label);
+    void setupSliderTooltipHandling(LabeledKnob* knob);
 
   private:
     juce::AudioProcessorValueTreeState& parameters;
@@ -39,20 +39,9 @@ class IRComponent : public juce::Component
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>
         bypassButtonAttachment;
 
-    juce::Slider ir_mix_slider;
-    juce::Label ir_mix_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        ir_mix_sliderAttachment;
-
-    juce::Slider gain_slider;
-    juce::Label gain_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        gain_sliderAttachment;
-
-    juce::Label type_label;
-    juce::Slider type_slider;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        type_slider_attachment;
+    LabeledKnob ir_mix_knob;
+    LabeledKnob gain_knob;
+    LabeledKnob type_knob;
 
     juce::DrawableText type_display;
     std::unique_ptr<juce::ParameterAttachment> type_display_attachment;
@@ -62,9 +51,9 @@ class IRComponent : public juce::Component
         slider_attachments;
 
     std::vector<IRKnob> knobs = {
-        {&ir_mix_slider, &ir_mix_label, "ir_mix",   "mix" },
-        {&gain_slider,   &gain_label,   "ir_level", "gain"},
-        {&type_slider,   &type_label,   "ir_type",  "type"},
+        {&ir_mix_knob, "ir_mix",   "mix" },
+        {&gain_knob,   "ir_level", "gain"},
+        {&type_knob,   "ir_type",  "type"},
     };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(IRComponent)

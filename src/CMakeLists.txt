@@ -35,6 +35,7 @@ target_sources(${PROJECT_NAME}
         gui/preset_bar.cpp
         gui/preset_icon_buttons.cpp
         gui/session_name_display.cpp
+        gui/components/labeled_knob.cpp
         gui/compressor/compressor_knobs_component.cpp
         gui/compressor/compressor_meter_component.cpp
         gui/compressor/compressor_component.cpp

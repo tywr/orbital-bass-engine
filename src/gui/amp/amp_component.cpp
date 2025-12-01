@@ -15,7 +15,7 @@ AmpComponent::AmpComponent(juce::AudioProcessorValueTreeState& params)
     addAndMakeVisible(knobs_component);
     addAndMakeVisible(bypass_button);
 
-    title_label.setText("AMP", juce::dontSendNotification);
+    title_label.setText("OVERDRIVE", juce::dontSendNotification);
     title_label.setJustificationType(juce::Justification::centredLeft);
 
     bypass_attachment =
@@ -26,8 +26,7 @@ AmpComponent::AmpComponent(juce::AudioProcessorValueTreeState& params)
         juce::ToggleButton::tickColourId, GuiColours::DEFAULT_INACTIVE_COLOUR
     );
     bypass_button.setColour(
-        juce::ToggleButton::tickDisabledColourId,
-        ColourCodes::helios_yellow
+        juce::ToggleButton::tickDisabledColourId, ColourCodes::helios_yellow
     );
     bypass_button.onClick = [this]()
     {
@@ -76,25 +75,27 @@ void AmpComponent::paintBorder(
 void AmpComponent::paint(juce::Graphics& g)
 {
     bool bypass = bypass_button.getToggleState();
-    juce::Colour colour1, colour2, border_colour;
+    juce::Colour colour1, colour2, colour3, border_colour;
 
     if (!bypass)
     {
-        colour1 = selected_type.colour1;
-        colour2 = selected_type.colour2;
+        colour1 = ColourCodes::orange;
+        colour2 = ColourCodes::orange_light;
+        colour3 = ColourCodes::white0;
         border_colour = ColourCodes::grey0;
     }
     else
     {
         colour1 = GuiColours::DEFAULT_INACTIVE_COLOUR;
         colour2 = ColourCodes::grey0;
+        colour3 = ColourCodes::grey0;
         border_colour = ColourCodes::grey0;
     }
 
     float border_thickness = GuiDimensions::PANEL_BORDER_THICKNESS;
     auto bounds = getLocalBounds();
 
-    title_label.setColour(juce::Label::textColourId, colour2);
+    title_label.setColour(juce::Label::textColourId, colour3);
 
     // Fill background
     g.setColour(GuiColours::AMP_BG_COLOUR);
@@ -105,7 +106,8 @@ void AmpComponent::paint(juce::Graphics& g)
     g.drawRect(bounds, border_thickness);
 
     // Draw title bar background and border
-    auto title_bounds = bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    auto title_bounds =
+        bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
     g.setColour(ColourCodes::bg2);
     g.fillRect(title_bounds);
     g.setColour(border_colour);
@@ -123,10 +125,6 @@ void AmpComponent::paint(juce::Graphics& g)
     }
     g.drawImage(background_cache, design_bounds.toFloat());
 
-    // Draw design area border
-    g.setColour(border_colour);
-    g.drawRect(design_bounds, border_thickness);
-
     // Draw knobs area border
     g.setColour(border_colour);
     g.drawRect(bounds, border_thickness);
@@ -141,7 +139,8 @@ void AmpComponent::resized()
     auto height = bounds.getHeight() - GuiDimensions::PANEL_TITLE_BAR_HEIGHT;
 
     // Title bar with label and bypass button
-    auto title_bounds = bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    auto title_bounds =
+        bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
     title_label.setBounds(title_bounds.removeFromLeft(100.0f));
     bypass_button.setBounds(
         title_bounds.removeFromRight(GuiDimensions::BYPASS_BUTTON_WIDTH)
@@ -154,7 +153,9 @@ void AmpComponent::resized()
     knobs_component.setBounds(bounds);
 }
 
-void AmpComponent::buildCache(float scale, juce::Colour colour1, juce::Colour colour2)
+void AmpComponent::buildCache(
+    float scale, juce::Colour colour1, juce::Colour colour2
+)
 {
     auto bounds = getLocalBounds();
     auto height = bounds.getHeight() - GuiDimensions::PANEL_TITLE_BAR_HEIGHT;
@@ -163,7 +164,8 @@ void AmpComponent::buildCache(float scale, juce::Colour colour1, juce::Colour co
 
     int width = static_cast<int>(scale * design_bounds.getWidth());
     int cache_height = static_cast<int>(scale * design_bounds.getHeight());
-    background_cache = juce::Image(juce::Image::ARGB, width, cache_height, true);
+    background_cache =
+        juce::Image(juce::Image::ARGB, width, cache_height, true);
 
     juce::Graphics cache(background_cache);
     cache.addTransform(juce::AffineTransform::scale(scale));
@@ -173,5 +175,9 @@ void AmpComponent::buildCache(float scale, juce::Colour colour1, juce::Colour co
     current_colour2 = colour2;
 
     // Draw the Helios design into the cache
-    paintDesign(cache, juce::Rectangle<float>(0, 0, design_bounds.getWidth(), design_bounds.getHeight()));
+    paintDesign(
+        cache, juce::Rectangle<float>(
+                   0, 0, design_bounds.getWidth(), design_bounds.getHeight()
+               )
+    );
 }

@@ -54,24 +54,20 @@ IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
 
     for (auto knob : knobs)
     {
-        addAndMakeVisible(knob.slider);
-        addAndMakeVisible(knob.label);
-        knob.slider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-        knob.label->setText(knob.label_text, juce::dontSendNotification);
-        knob.slider->setTextBoxStyle(
-            juce::Slider::NoTextBox, false, IRDimensions::KNOB_SIZE,
-            IRDimensions::KNOB_SIZE
-        );
-        knob.slider->setColour(
+        addAndMakeVisible(knob.knob);
+        knob.knob->setLabelText(knob.label_text);
+        knob.knob->setKnobSize(IRDimensions::KNOB_SIZE, IRDimensions::KNOB_SIZE);
+        knob.knob->setLabelHeight(IRDimensions::LABEL_HEIGHT);
+        knob.knob->getSlider().setColour(
             juce::Slider::rotarySliderFillColourId, ColourCodes::grey3
         );
         slider_attachments.push_back(
             std::make_unique<
                 juce::AudioProcessorValueTreeState::SliderAttachment>(
-                parameters, knob.parameter_id, *knob.slider
+                parameters, knob.parameter_id, knob.knob->getSlider()
             )
         );
-        setupSliderTooltipHandling(knob.slider, knob.label);
+        setupSliderTooltipHandling(knob.knob);
     }
     switchColour();
 }
@@ -166,21 +162,12 @@ void IRComponent::resized()
     auto knob_area = knobs_section.withSizeKeepingCentre(
         knobs_section.getWidth() * 0.8f, IRDimensions::BOX_HEIGHT
     );
-    auto label_bounds = knob_area.removeFromTop(IRDimensions::LABEL_HEIGHT);
 
     const int knob_box_size = knob_area.getWidth() / (int)knobs.size();
     for (size_t i = 0; i < 3; ++i)
     {
         IRKnob knob = knobs[i];
-        knob.label->setBounds(label_bounds.removeFromLeft(knob_box_size)
-                                  .withSizeKeepingCentre(
-                                      knob_box_size, IRDimensions::LABEL_HEIGHT
-                                  ));
-        knob.slider->setBounds(knob_area.removeFromLeft(knob_box_size)
-                                   .withSizeKeepingCentre(
-                                       IRDimensions::KNOB_SIZE,
-                                       IRDimensions::KNOB_SIZE
-                                   ));
+        knob.knob->setBounds(knob_area.removeFromLeft(knob_box_size));
     }
 }
 
@@ -196,7 +183,7 @@ void IRComponent::switchColour()
     }
     for (auto knob : knobs)
     {
-        knob.slider->setColour(
+        knob.knob->getSlider().setColour(
             juce::Slider::rotarySliderFillColourId, current_colour
         );
     }
@@ -204,30 +191,28 @@ void IRComponent::switchColour()
     repaint();
 }
 
-void IRComponent::setupSliderTooltipHandling(
-    juce::Slider* slider, juce::Label* label
-)
+void IRComponent::setupSliderTooltipHandling(LabeledKnob* knob)
 {
+    auto& slider = knob->getSlider();
+    auto& label = knob->getLabel();
 
-    slider->onDragStart = [this, sl = slider, lab = label]()
+    slider.onDragStart = [this, &slider, &label, knob]()
     {
         slider_being_dragged = true;
         drag_tooltip.setVisible(false);
         // delay using a Timer
         juce::Timer::callAfterDelay(
             300,
-            [this, sl, lab]()
+            [this, &slider, &label, knob]()
             {
-                if (sl->isMouseButtonDown())
+                if (slider.isMouseButtonDown())
                 {
                     drag_tooltip.setText(
-                        juce::String(sl->getValue(), 2),
+                        juce::String(slider.getValue(), 2),
                         juce::dontSendNotification
                     );
-                    drag_tooltip.setBounds(
-                        lab->getX(), lab->getY(), lab->getWidth(),
-                        lab->getHeight()
-                    );
+                    auto labelBounds = getLocalArea(knob, label.getBounds());
+                    drag_tooltip.setBounds(labelBounds);
                     drag_tooltip.toFront(true);
                     drag_tooltip.setVisible(true);
                     drag_tooltip.repaint();
@@ -235,16 +220,16 @@ void IRComponent::setupSliderTooltipHandling(
             }
         );
     };
-    slider->onDragEnd = [this]()
+    slider.onDragEnd = [this]()
     {
         slider_being_dragged = false;
         drag_tooltip.setVisible(false);
     };
-    slider->onValueChange = [this, sl = slider]()
+    slider.onValueChange = [this, &slider]()
     {
         if (slider_being_dragged && drag_tooltip.isVisible())
             drag_tooltip.setText(
-                juce::String(sl->getValue(), 2), juce::dontSendNotification
+                juce::String(slider.getValue(), 2), juce::dontSendNotification
             );
     };
 }

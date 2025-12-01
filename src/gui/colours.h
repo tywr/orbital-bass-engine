@@ -23,6 +23,7 @@ juce::Colour const white1 = juce::Colour(229, 233, 240);
 juce::Colour const white2 = juce::Colour(236, 239, 244);
 
 juce::Colour const orange = juce::Colour(0xffff8c00);
+juce::Colour const orange_light = juce::Colour(0xffffd7af);
 
 juce::Colour const aurora_green = juce::Colour(163, 190, 140);
 juce::Colour const aurora_violet = juce::Colour(180, 142, 173);
