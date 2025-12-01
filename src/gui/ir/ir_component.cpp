@@ -145,7 +145,12 @@ void IRComponent::resized()
     auto title_bounds = full_bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
     title_label.setBounds(title_bounds.removeFromLeft(100.0f));
     bypassButton.setBounds(
-        title_bounds.removeFromRight(GuiDimensions::BYPASS_BUTTON_WIDTH)
+        title_bounds
+            .removeFromRight(
+                GuiDimensions::BYPASS_BUTTON_WIDTH +
+                GuiDimensions::BYPASS_BUTTON_PADDING
+            )
+            .reduced(GuiDimensions::PANEL_BORDER_THICKNESS)
     );
 
     // Split remaining bounds into top row (display) and bottom row (knobs)

@@ -65,6 +65,11 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
         float dbv = juce::Decibels::decibelsToGain(bv);
         eq.setLowShelfGain(dbv);
     }
+    else if (parameterID == "eq_low_shelf_freq")
+    {
+        float bv = juce::jlimit(0.0f, 20000.0f, v);
+        eq.setLowShelfFreq(bv);
+    }
     else if (parameterID == "eq_low_mid_freq")
     {
         float bv = juce::jlimit(200.0f, 800.0f, v);
@@ -103,10 +108,15 @@ void PluginAudioProcessor::setParameterValue(juce::String parameterID, float v)
         float dbv = juce::Decibels::decibelsToGain(bv);
         eq.setHighShelfGain(dbv);
     }
+    else if (parameterID == "eq_high_shelf_freq")
+    {
+        float bv = juce::jlimit(0.0f, 20000.0f, v);
+        eq.setHighShelfFreq(bv);
+    }
     else if (parameterID == "eq_lpf")
     {
         float bv = juce::jlimit(1000.0f, 10000.0f, v);
-        eq.setLpfFrequency(bv);
+        eq.setLpfFreq(bv);
     }
     // Chorus
     else if (parameterID == "chorus_mix")

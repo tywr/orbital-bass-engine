@@ -129,6 +129,10 @@ createParameterLayout()
             juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
+            "eq_high_shelf_freq", "EQ Low Shelf Frequency",
+            juce::NormalisableRange<float>(40.0f, 200.0f, 1.0f), 120.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
             "eq_low_mid_freq", "EQ Low-Mid Frequency",
             juce::NormalisableRange<float>(200.0f, 800.0f, 1.0f), 400.0f
         ),
@@ -155,6 +159,10 @@ createParameterLayout()
         std::make_unique<juce::AudioParameterFloat>(
             "eq_high_shelf_gain", "EQ High Shelf Gain",
             juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_high_shelf_freq", "EQ High Shelf Frequency",
+            juce::NormalisableRange<float>(2000.0f, 8000.0f, 1.0f), 5000.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "eq_lpf", "EQ LPF",

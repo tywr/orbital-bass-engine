@@ -143,7 +143,12 @@ void AmpComponent::resized()
         bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
     title_label.setBounds(title_bounds.removeFromLeft(100.0f));
     bypass_button.setBounds(
-        title_bounds.removeFromRight(GuiDimensions::BYPASS_BUTTON_WIDTH)
+        title_bounds
+            .removeFromRight(
+                GuiDimensions::BYPASS_BUTTON_WIDTH +
+                GuiDimensions::BYPASS_BUTTON_PADDING
+            )
+            .reduced(GuiDimensions::PANEL_BORDER_THICKNESS)
     );
 
     // Design area (upper half)

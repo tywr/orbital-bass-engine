@@ -78,12 +78,12 @@ void BaseLookAndFeel::drawToggleButton(
 {
     auto bounds = button.getLocalBounds().toFloat();
 
-    // Define switch dimensions (vertical pill)
-    const float switchWidth =
+    // Define switch dimensions (horizontal slider)
+    const float switchHeight =
         juce::jmin(bounds.getWidth(), bounds.getHeight()) * 0.5f;
-    const float switchHeight = switchWidth * 2.0f;
-    const float thumbSize = switchWidth * 0.8f;
-    const float padding = (switchWidth - thumbSize) / 2.0f;
+    const float switchWidth = switchHeight * 2.0f;
+    const float thumbSize = switchHeight * 0.8f;
+    const float padding = (switchHeight - thumbSize) / 2.0f;
 
     // Center the switch in the button bounds
     auto switchBounds = juce::Rectangle<float>(switchWidth, switchHeight)
@@ -100,27 +100,27 @@ void BaseLookAndFeel::drawToggleButton(
     if (isMouseOverButton)
         trackColour = trackColour.brighter(0.1f);
 
-    // Draw the pill-shaped track
+    // Draw the squared track
     g.setColour(trackColour);
-    g.fillRoundedRectangle(switchBounds, switchWidth / 2.0f);
+    g.fillRect(switchBounds);
 
-    // Calculate thumb position (bottom when on, top when off)
-    float thumbY;
+    // Calculate thumb position (right when on, left when off)
+    float thumbX;
     if (button.getToggleState())
-        thumbY = switchBounds.getBottom() - thumbSize -
-                 padding; // Bottom position (ON)
+        thumbX = switchBounds.getRight() - thumbSize -
+                 padding; // Right position (ON)
     else
-        thumbY = switchBounds.getY() + padding; // Top position (OFF)
+        thumbX = switchBounds.getX() + padding; // Left position (OFF)
 
-    float thumbX = switchBounds.getCentreX() - thumbSize / 2.0f;
+    float thumbY = switchBounds.getCentreY() - thumbSize / 2.0f;
 
-    // Draw the circular thumb
+    // Draw the squared thumb
     juce::Colour thumbColour = juce::Colours::white;
     if (isButtonDown)
         thumbColour = thumbColour.darker(0.1f);
 
     g.setColour(thumbColour);
-    g.fillEllipse(thumbX, thumbY, thumbSize, thumbSize);
+    g.fillRect(thumbX, thumbY, thumbSize, thumbSize);
 }
 
 void BaseLookAndFeel::drawRotarySlider(

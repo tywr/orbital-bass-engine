@@ -42,7 +42,7 @@ void Panels::resized()
 
     // Bottom section: three panels (EQ, Chorus, IR) split horizontally
     int panel_width = bounds.getWidth();
-    eq_component.setBounds(bounds.removeFromLeft(panel_width * 0.7f - GuiDimensions::PANEL_GAP));
+    eq_component.setBounds(bounds.removeFromLeft(panel_width * 0.6f - GuiDimensions::PANEL_GAP));
     bounds.removeFromLeft(GuiDimensions::PANEL_GAP);
     chorus_component.setBounds(bounds.removeFromLeft(panel_width * 0.15f - GuiDimensions::PANEL_GAP / 2));
     bounds.removeFromLeft(GuiDimensions::PANEL_GAP);

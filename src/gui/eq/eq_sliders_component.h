@@ -30,6 +30,7 @@ class EqSlidersComponent : public juce::Component
     juce::Colour const default_type_colour = ColourCodes::grey3;
 
     LabeledKnob low_shelf_gain_knob;
+    LabeledKnob low_shelf_freq_knob;
     LabeledKnob low_mid_freq_knob;
     LabeledKnob low_mid_q_knob;
     LabeledKnob low_mid_gain_knob;
@@ -37,6 +38,7 @@ class EqSlidersComponent : public juce::Component
     LabeledKnob high_mid_q_knob;
     LabeledKnob high_mid_gain_knob;
     LabeledKnob high_shelf_gain_knob;
+    LabeledKnob high_shelf_freq_knob;
     LabeledKnob lpf_knob;
 
     std::vector<
@@ -44,15 +46,17 @@ class EqSlidersComponent : public juce::Component
         slider_attachments;
 
     std::vector<EqSlider> sliders = {
-        {&low_shelf_gain_knob,  "eq_low_shelf_gain",  "low" },
-        {&low_mid_freq_knob,    "eq_low_mid_freq",    "freq"},
-        {&low_mid_q_knob,       "eq_low_mid_q",       "q"   },
-        {&low_mid_gain_knob,    "eq_low_mid_gain",    "gain"},
-        {&high_mid_freq_knob,   "eq_high_mid_freq",   "freq"},
-        {&high_mid_q_knob,      "eq_high_mid_q",      "q"   },
-        {&high_mid_gain_knob,   "eq_high_mid_gain",   "gain"},
+        {&low_shelf_gain_knob,  "eq_low_shelf_gain",  "low"  },
+        {&low_shelf_freq_knob,  "eq_low_shelf_freq",  "freq" },
+        {&low_mid_freq_knob,    "eq_low_mid_freq",    "freq" },
+        {&low_mid_q_knob,       "eq_low_mid_q",       "q"    },
+        {&low_mid_gain_knob,    "eq_low_mid_gain",    "gain" },
+        {&high_mid_freq_knob,   "eq_high_mid_freq",   "freq" },
+        {&high_mid_q_knob,      "eq_high_mid_q",      "q"    },
+        {&high_mid_gain_knob,   "eq_high_mid_gain",   "gain" },
         {&high_shelf_gain_knob, "eq_high_shelf_gain", "highs"},
-        {&lpf_knob,             "eq_lpf",             "lpf" },
+        {&high_shelf_freq_knob, "eq_high_shelf_freq", "freq" },
+        {&lpf_knob,             "eq_lpf",             "lpf"  },
     };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EqSlidersComponent)
