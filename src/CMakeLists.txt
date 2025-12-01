@@ -31,7 +31,6 @@ target_sources(${PROJECT_NAME}
         preset_manager.cpp
         session_manager.cpp
         gui/looks/base_look_and_feel.cpp
-        gui/looks/header_look_and_feel.cpp
         gui/looks/tuner_look_and_feel.cpp
         gui/preset_bar.cpp
         gui/preset_icon_buttons.cpp

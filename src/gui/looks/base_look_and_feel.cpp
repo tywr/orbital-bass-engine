@@ -128,9 +128,12 @@ void BaseLookAndFeel::drawRotarySlider(
     float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider
 )
 {
-    const auto bounds = juce::Rectangle<int>(x, y, width, height).toFloat();
+    const auto full_bounds =
+        juce::Rectangle<int>(x, y, width, height).toFloat();
 
-    auto radius = fmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
+    auto radius = fmin(full_bounds.getWidth(), full_bounds.getHeight()) / 2.0f;
+    const auto bounds =
+        full_bounds.withSizeKeepingCentre(2.0f * radius, 2.0f * radius);
     const auto toAngle =
         rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
     auto lineW = fmin(strokeWidth, radius * 0.5f);

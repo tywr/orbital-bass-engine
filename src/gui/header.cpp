@@ -1,7 +1,6 @@
 #include "header.h"
 
 #include "colours.h"
-#include "looks/header_look_and_feel.h"
 #include "looks/tuner_look_and_feel.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_gui_basics/juce_gui_basics.h>
@@ -13,8 +12,6 @@ Header::Header(
     : parameters(params), inputMeter(vin), outputMeter(vout),
       sessionNameDisplay(sm), presetBar(sm)
 {
-    setLookAndFeel(new HeaderLookAndFeel());
-
     addAndMakeVisible(inputMeter);
     addAndMakeVisible(outputMeter);
     inputMeter.setSliderColour(headerColour);
