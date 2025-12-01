@@ -1,5 +1,6 @@
 #include "amp_component.h"
 #include "../colours.h"
+#include "../dimensions.h"
 #include "amp_dimensions.h"
 #include "amp_knobs_component.h"
 #include "designs/borealis.h"
@@ -10,14 +11,24 @@
 AmpComponent::AmpComponent(juce::AudioProcessorValueTreeState& params)
     : parameters(params), knobs_component(params)
 {
-
+    addAndMakeVisible(title_label);
     addAndMakeVisible(knobs_component);
     addAndMakeVisible(bypass_button);
+
+    title_label.setText("AMP", juce::dontSendNotification);
+    title_label.setJustificationType(juce::Justification::centredLeft);
 
     bypass_attachment =
         std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
             parameters, "amp_bypass", bypass_button
         );
+    bypass_button.setColour(
+        juce::ToggleButton::tickColourId, GuiColours::DEFAULT_INACTIVE_COLOUR
+    );
+    bypass_button.setColour(
+        juce::ToggleButton::tickDisabledColourId,
+        ColourCodes::helios_yellow
+    );
     bypass_button.onClick = [this]()
     {
         is_cache_dirty = true;
@@ -64,135 +75,103 @@ void AmpComponent::paintBorder(
 
 void AmpComponent::paint(juce::Graphics& g)
 {
+    bool bypass = bypass_button.getToggleState();
+    juce::Colour colour1, colour2, border_colour;
+
+    if (!bypass)
+    {
+        colour1 = selected_type.colour1;
+        colour2 = selected_type.colour2;
+        border_colour = ColourCodes::grey0;
+    }
+    else
+    {
+        colour1 = GuiColours::DEFAULT_INACTIVE_COLOUR;
+        colour2 = ColourCodes::grey0;
+        border_colour = ColourCodes::grey0;
+    }
+
+    float border_thickness = GuiDimensions::PANEL_BORDER_THICKNESS;
+    auto bounds = getLocalBounds();
+
+    title_label.setColour(juce::Label::textColourId, colour2);
+
+    // Fill background
+    g.setColour(GuiColours::AMP_BG_COLOUR);
+    g.fillRect(bounds);
+
+    // Draw outer border
+    g.setColour(border_colour);
+    g.drawRect(bounds, border_thickness);
+
+    // Draw title bar background and border
+    auto title_bounds = bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    g.setColour(ColourCodes::bg2);
+    g.fillRect(title_bounds);
+    g.setColour(border_colour);
+    g.drawRect(title_bounds, border_thickness);
+
+    // Get design area bounds
+    auto design_bounds = bounds.removeFromTop(bounds.getHeight() / 2);
+
+    // Draw cached design
     float scale = g.getInternalContext().getPhysicalPixelScaleFactor();
     if (is_cache_dirty)
     {
-        buildCache(scale);
+        buildCache(scale, colour1, colour2);
         is_cache_dirty = false;
     }
+    g.drawImage(background_cache, design_bounds.toFloat());
 
-    g.drawImage(background_cache, getLocalBounds().toFloat());
-    bypass_button.setColour(
-        juce::ToggleButton::tickColourId, GuiColours::DEFAULT_INACTIVE_COLOUR
-    );
-    bypass_button.setColour(
-        juce::ToggleButton::tickDisabledColourId, current_colour1
-    );
-    knobs_component.switchColour(current_colour1, current_colour2);
+    // Draw design area border
+    g.setColour(border_colour);
+    g.drawRect(design_bounds, border_thickness);
+
+    // Draw knobs area border
+    g.setColour(border_colour);
+    g.drawRect(bounds, border_thickness);
+
+    knobs_component.switchColour(colour1, colour2);
 }
 
 void AmpComponent::resized()
 {
     is_cache_dirty = true;
     auto bounds = getLocalBounds();
+    auto height = bounds.getHeight() - GuiDimensions::PANEL_TITLE_BAR_HEIGHT;
 
-    // Type buttons at the top
-    bounds.removeFromTop(AmpDimensions::AMP_TYPE_BUTTONS_HEIGHT);
-
-    // int const type_size =
-    //     type_bounds.getWidth() / static_cast<int>(types.size());
-    // for (auto type : types)
-    // {
-    //     type.button->setBounds(
-    //         type_bounds.removeFromLeft(type_size).withSizeKeepingCentre(
-    //             AmpDimensions::AMP_TYPE_BUTTON_SIZE,
-    //             AmpDimensions::AMP_TYPE_BUTTON_SIZE
-    //         )
-    //     );
-    // }
-
-    // Amp body
-    auto amp_bounds = bounds.withSizeKeepingCentre(
-        AmpDimensions::AMP_WIDTH, AmpDimensions::AMP_HEIGHT
-    );
-
-    // Bottom part with buttons
-    auto bottom_bounds = amp_bounds.reduced(0, AmpDimensions::AMP_FRAME_PADDING)
-                             .removeFromBottom(
-                                 AmpDimensions::AMP_KNOBS_BOTTOM_BOX_HEIGHT +
-                                 AmpDimensions::AMP_INNER_BOTTOM_PADDING
-                             );
+    // Title bar with label and bypass button
+    auto title_bounds = bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    title_label.setBounds(title_bounds.removeFromLeft(100.0f));
     bypass_button.setBounds(
-        bottom_bounds.removeFromLeft(AmpDimensions::AMP_SIDE_WIDTH)
-            .withSizeKeepingCentre(
-                AmpDimensions::AMP_BYPASS_SIZE, AmpDimensions::AMP_BYPASS_SIZE
-            )
+        title_bounds.removeFromRight(GuiDimensions::BYPASS_BUTTON_WIDTH)
     );
-    bottom_bounds.removeFromRight(AmpDimensions::AMP_SIDE_WIDTH);
-    bottom_bounds.removeFromBottom(AmpDimensions::AMP_INNER_BOTTOM_PADDING);
-    knobs_component.setBounds(bottom_bounds);
+
+    // Design area (upper half)
+    auto design_bounds = bounds.removeFromTop(height / 2);
+
+    // Knobs area (lower half)
+    knobs_component.setBounds(bounds);
 }
 
-void AmpComponent::buildCache(float scale)
+void AmpComponent::buildCache(float scale, juce::Colour colour1, juce::Colour colour2)
 {
-    int width = static_cast<int>(scale * getWidth());
-    int height = static_cast<int>(scale * getHeight());
-    background_cache = juce::Image(juce::Image::ARGB, width, height, true);
+    auto bounds = getLocalBounds();
+    auto height = bounds.getHeight() - GuiDimensions::PANEL_TITLE_BAR_HEIGHT;
+    bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    auto design_bounds = bounds.removeFromTop(height / 2);
 
-    juce::Graphics g(background_cache);
+    int width = static_cast<int>(scale * design_bounds.getWidth());
+    int cache_height = static_cast<int>(scale * design_bounds.getHeight());
+    background_cache = juce::Image(juce::Image::ARGB, width, cache_height, true);
+
     juce::Graphics cache(background_cache);
-
     cache.addTransform(juce::AffineTransform::scale(scale));
 
-    bool bypass = bypass_button.getToggleState();
-    juce::Colour colour1, colour2; // Use local colours
-
-    if (!bypass)
-    {
-        colour1 = selected_type.colour1;
-        colour2 = selected_type.colour2;
-    }
-    else
-    {
-        colour1 = GuiColours::DEFAULT_INACTIVE_COLOUR;
-        colour2 = GuiColours::DEFAULT_INACTIVE_COLOUR;
-    }
-    // We update current_colour1/2 members for other components to read
+    // Store colours for paintDesign to use
     current_colour1 = colour1;
     current_colour2 = colour2;
 
-    // Calculate all bounds (same as in old paint())
-    auto outer_bounds =
-        getLocalBounds()
-            .withTrimmedTop(AmpDimensions::AMP_TYPE_BUTTONS_HEIGHT)
-            .withSizeKeepingCentre(
-                AmpDimensions::AMP_WIDTH, AmpDimensions::AMP_HEIGHT
-            )
-            .toFloat();
-
-    auto frame_bounds = outer_bounds.reduced(AmpDimensions::AMP_FRAME_PADDING);
-    auto higher_frame_bounds = frame_bounds.withTrimmedBottom(
-        AmpDimensions::AMP_KNOBS_BOTTOM_BOX_HEIGHT +
-        AmpDimensions::AMP_INNER_TOP_PADDING
-    );
-    auto lower_frame_bounds =
-        frame_bounds.withTrimmedTop(higher_frame_bounds.getHeight());
-
-    // --- All drawing operations ---
-    g.setColour(GuiColours::AMP_BG_COLOUR);
-    g.fillRect(frame_bounds);
-
-    g.setColour(GuiColours::DEFAULT_INACTIVE_COLOUR);
-    g.drawLine(
-        lower_frame_bounds.getX(), lower_frame_bounds.getY(),
-        lower_frame_bounds.getRight(), lower_frame_bounds.getY(), 1.0f
-    );
-
-    // Call the expensive design function
-    paintDesign(g, higher_frame_bounds);
-
-    // Draw the expensive gradient border
-    juce::Path path;
-    path.addRoundedRectangle(outer_bounds, AmpDimensions::AMP_BORDER_RADIUS);
-    path.addRoundedRectangle(
-        frame_bounds,
-        AmpDimensions::AMP_BORDER_RADIUS - AmpDimensions::AMP_FRAME_PADDING
-    );
-    path.setUsingNonZeroWinding(false);
-    juce::ColourGradient gradient(
-        colour1, outer_bounds.getX(), outer_bounds.getY(), colour2,
-        outer_bounds.getX(), outer_bounds.getBottom(), false
-    );
-    g.setGradientFill(gradient);
-    g.fillPath(path);
+    // Draw the Helios design into the cache
+    paintDesign(cache, juce::Rectangle<float>(0, 0, design_bounds.getWidth(), design_bounds.getHeight()));
 }

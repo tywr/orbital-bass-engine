@@ -25,11 +25,14 @@ class AmpComponent : public juce::Component
     void paintBorder(juce::Graphics&, juce::Rectangle<float>, float);
 
   private:
-    void buildCache(float scale);
+    void buildCache(float scale, juce::Colour colour1, juce::Colour colour2);
     juce::Image background_cache;
     bool is_cache_dirty = true;
 
     juce::AudioProcessorValueTreeState& parameters;
+
+    // Sub-components
+    juce::Label title_label;
     AmpKnobsComponent knobs_component;
     juce::ToggleButton bypass_button;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>
