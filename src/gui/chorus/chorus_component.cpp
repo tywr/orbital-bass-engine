@@ -66,7 +66,8 @@ void ChorusComponent::paint(juce::Graphics& g)
     g.drawRect(bounds, border_thickness);
 
     // Draw title bar background and border
-    auto title_bounds = bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    auto title_bounds =
+        bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
     g.setColour(ColourCodes::bg2);
     g.fillRect(title_bounds);
     g.setColour(border_colour);
@@ -84,7 +85,8 @@ void ChorusComponent::resized()
     auto bounds = getLocalBounds();
 
     // Title bar with label and bypass button
-    auto title_bounds = bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    auto title_bounds =
+        bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
     title_label.setBounds(title_bounds.removeFromLeft(100.0f));
     bypass_button.setBounds(
         title_bounds

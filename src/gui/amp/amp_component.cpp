@@ -26,7 +26,7 @@ AmpComponent::AmpComponent(juce::AudioProcessorValueTreeState& params)
         juce::ToggleButton::tickColourId, GuiColours::DEFAULT_INACTIVE_COLOUR
     );
     bypass_button.setColour(
-        juce::ToggleButton::tickDisabledColourId, ColourCodes::helios_yellow
+        juce::ToggleButton::tickDisabledColourId, ColourCodes::orange
     );
     bypass_button.onClick = [this]()
     {

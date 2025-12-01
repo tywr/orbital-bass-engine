@@ -1,7 +1,7 @@
 #include "ir_component.h"
 #include "../colours.h"
-#include "ir_dimensions.h"
 #include "../dimensions.h"
+#include "ir_dimensions.h"
 
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -35,7 +35,10 @@ IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
 
     addAndMakeVisible(type_display);
     type_display.setFont(
-        juce::Font(juce::FontOptions("Fixedsys Core", 24.0f, juce::Font::plain)), true
+        juce::Font(
+            juce::FontOptions("Fixedsys Core", 24.0f, juce::Font::plain)
+        ),
+        true
     );
     type_display.setJustification(juce::Justification::centred);
     type_display.setColour(ColourCodes::grey3);
@@ -56,10 +59,15 @@ IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
     {
         addAndMakeVisible(knob.knob);
         knob.knob->setLabelText(knob.label_text);
-        knob.knob->setKnobSize(IRDimensions::KNOB_SIZE, IRDimensions::KNOB_SIZE);
+        knob.knob->setKnobSize(
+            IRDimensions::KNOB_SIZE, IRDimensions::KNOB_SIZE
+        );
         knob.knob->setLabelHeight(IRDimensions::LABEL_HEIGHT);
         knob.knob->getSlider().setColour(
-            juce::Slider::rotarySliderFillColourId, ColourCodes::grey3
+            juce::Slider::rotarySliderOutlineColourId, ColourCodes::grey3
+        );
+        knob.knob->getSlider().setColour(
+            juce::Slider::rotarySliderFillColourId, juce::Colours::transparentBlack
         );
         slider_attachments.push_back(
             std::make_unique<
@@ -107,14 +115,16 @@ void IRComponent::paint(juce::Graphics& g)
     g.drawRect(full_bounds, border_thickness);
 
     // Draw title bar background and border
-    auto title_bounds = full_bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    auto title_bounds =
+        full_bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
     g.setColour(ColourCodes::bg2);
     g.fillRect(title_bounds);
     g.setColour(border_colour);
     g.drawRect(title_bounds, border_thickness);
 
     // Draw display section border (upper half)
-    auto display_section_bounds = full_bounds.removeFromTop(full_bounds.getHeight() / 2);
+    auto display_section_bounds =
+        full_bounds.removeFromTop(full_bounds.getHeight() / 2);
     g.setColour(border_colour);
     g.drawRect(display_section_bounds, border_thickness);
 
@@ -125,11 +135,15 @@ void IRComponent::paint(juce::Graphics& g)
     // Calculate display bounds to match resized() layout
     auto bounds_for_display = getLocalBounds();
     bounds_for_display.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
-    auto display_section = bounds_for_display.removeFromTop(bounds_for_display.getHeight() / 2);
+    auto display_section =
+        bounds_for_display.removeFromTop(bounds_for_display.getHeight() / 2);
 
-    auto display_bounds = display_section.withSizeKeepingCentre(
-        IRDimensions::IR_LABEL_WIDTH, IRDimensions::IR_LABEL_HEIGHT
-    ).toFloat();
+    auto display_bounds =
+        display_section
+            .withSizeKeepingCentre(
+                IRDimensions::IR_LABEL_WIDTH, IRDimensions::IR_LABEL_HEIGHT
+            )
+            .toFloat();
 
     type_display.setBoundingBox(display_bounds);
     g.setColour(juce::Colours::black);
@@ -142,19 +156,19 @@ void IRComponent::resized()
     auto full_bounds = getLocalBounds();
 
     // Title bar with label and bypass button
-    auto title_bounds = full_bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    auto title_bounds =
+        full_bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
     title_label.setBounds(title_bounds.removeFromLeft(100.0f));
-    bypassButton.setBounds(
-        title_bounds
-            .removeFromRight(
-                GuiDimensions::BYPASS_BUTTON_WIDTH +
-                GuiDimensions::BYPASS_BUTTON_PADDING
-            )
-            .reduced(GuiDimensions::PANEL_BORDER_THICKNESS)
-    );
+    bypassButton.setBounds(title_bounds
+                               .removeFromRight(
+                                   GuiDimensions::BYPASS_BUTTON_WIDTH +
+                                   GuiDimensions::BYPASS_BUTTON_PADDING
+                               )
+                               .reduced(GuiDimensions::PANEL_BORDER_THICKNESS));
 
     // Split remaining bounds into top row (display) and bottom row (knobs)
-    auto display_section = full_bounds.removeFromTop(full_bounds.getHeight() / 2);
+    auto display_section =
+        full_bounds.removeFromTop(full_bounds.getHeight() / 2);
     auto knobs_section = full_bounds;
 
     // Position display centered in top section
@@ -189,7 +203,7 @@ void IRComponent::switchColour()
     for (auto knob : knobs)
     {
         knob.knob->getSlider().setColour(
-            juce::Slider::rotarySliderFillColourId, current_colour
+            juce::Slider::rotarySliderOutlineColourId, current_colour
         );
     }
     type_display.setColour(current_colour);

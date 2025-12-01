@@ -57,7 +57,8 @@ ChorusKnobsComponent::ChorusKnobsComponent(
                             juce::String(slider.getValue(), 2),
                             juce::dontSendNotification
                         );
-                        auto labelBounds = getLocalArea(labeledKnob, label.getBounds());
+                        auto labelBounds =
+                            getLocalArea(labeledKnob, label.getBounds());
                         drag_tooltip.setBounds(labelBounds);
                         drag_tooltip.toFront(true);
                         drag_tooltip.setVisible(true);
@@ -123,7 +124,11 @@ void ChorusKnobsComponent::switchColour(
     for (ChorusKnob knob : knobs)
     {
         knob.knob->getSlider().setColour(
-            juce::Slider::rotarySliderFillColourId, colour1
+            juce::Slider::rotarySliderOutlineColourId, colour1
+        );
+        knob.knob->getSlider().setColour(
+            juce::Slider::rotarySliderFillColourId,
+            juce::Colours::transparentBlack
         );
     }
     repaint();

@@ -1,6 +1,7 @@
 #include "compressor_knobs_component.h"
 #include "../colours.h"
 #include "../components/solid_tooltip.h"
+#include "../dimensions.h"
 #include "compressor_dimensions.h"
 
 CompressorKnobsComponent::CompressorKnobsComponent(
@@ -22,9 +23,9 @@ CompressorKnobsComponent::CompressorKnobsComponent(
         addAndMakeVisible(knob.knob);
         knob.knob->setLabelText(knob.label_text);
         knob.knob->setKnobSize(
-            CompressorDimensions::KNOB_SIZE, CompressorDimensions::KNOB_SIZE
+            GuiDimensions::KNOB_SIZE, GuiDimensions::KNOB_SIZE
         );
-        knob.knob->setLabelHeight(CompressorDimensions::LABEL_HEIGHT);
+        knob.knob->setLabelHeight(GuiDimensions::KNOB_LABEL_HEIGHT);
         knob.knob->getLabel().setColour(
             juce::Slider::textBoxOutlineColourId,
             juce::Colours::transparentBlack
@@ -57,7 +58,8 @@ CompressorKnobsComponent::CompressorKnobsComponent(
                             juce::String(slider.getValue(), 2),
                             juce::dontSendNotification
                         );
-                        auto labelBounds = getLocalArea(labeledKnob, label.getBounds());
+                        auto labelBounds =
+                            getLocalArea(labeledKnob, label.getBounds());
                         drag_tooltip.setBounds(labelBounds);
                         drag_tooltip.toFront(true);
                         drag_tooltip.setVisible(true);
@@ -93,7 +95,7 @@ void CompressorKnobsComponent::paint(juce::Graphics& g)
 
 void CompressorKnobsComponent::resized()
 {
-    auto bounds = getLocalBounds();
+    auto bounds = getLocalBounds().reduced(GuiDimensions::PANEL_KNOB_PADDING);
 
     // Left side: threshold alone
     auto left_bounds = bounds.removeFromLeft(bounds.getWidth() / 4);
@@ -104,7 +106,8 @@ void CompressorKnobsComponent::resized()
     auto right_bounds = bounds;
 
     // Top row: hpf, mix, level
-    auto top_row_bounds = right_bounds.removeFromTop(right_bounds.getHeight() / 2);
+    auto top_row_bounds =
+        right_bounds.removeFromTop(right_bounds.getHeight() / 2);
     const int top_knob_box_size = top_row_bounds.getWidth() / 3;
 
     std::vector<size_t> top_row_indices = {0, 2, 3}; // hpf, mix, level
@@ -117,7 +120,9 @@ void CompressorKnobsComponent::resized()
     // Bottom row: attack, release, ratio
     const int bottom_knob_box_size = right_bounds.getWidth() / 3;
 
-    std::vector<size_t> bottom_row_indices = {5, 6, 4}; // attack, release, ratio
+    std::vector<size_t> bottom_row_indices = {
+        5, 6, 4
+    }; // attack, release, ratio
     for (size_t i : bottom_row_indices)
     {
         CompressorKnob knob = knobs[i];
@@ -133,7 +138,11 @@ void CompressorKnobsComponent::switchColour(
     for (CompressorKnob knob : knobs)
     {
         knob.knob->getSlider().setColour(
-            juce::Slider::rotarySliderFillColourId, colour1
+            juce::Slider::rotarySliderOutlineColourId, colour1
+        );
+        knob.knob->getSlider().setColour(
+            juce::Slider::rotarySliderFillColourId,
+            juce::Colours::transparentBlack
         );
     }
     repaint();

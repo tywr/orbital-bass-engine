@@ -13,7 +13,9 @@ EqSlidersComponent::EqSlidersComponent(
     {
         addAndMakeVisible(slider.knob);
         slider.knob->setLabelText(slider.label_text);
-        slider.knob->setKnobSize(EqDimensions::KNOB_SIZE, EqDimensions::KNOB_SIZE);
+        slider.knob->setKnobSize(
+            EqDimensions::KNOB_SIZE, EqDimensions::KNOB_SIZE
+        );
         slider.knob->setLabelHeight(EqDimensions::LABEL_HEIGHT);
         slider.knob->getLabel().setColour(
             juce::Slider::textBoxOutlineColourId,
@@ -43,54 +45,71 @@ void EqSlidersComponent::paint(juce::Graphics& g)
 void EqSlidersComponent::resized()
 {
     auto bounds = getLocalBounds();
-    const int section_gap = GuiDimensions::PANEL_GAP * 2; // Extra space between sections
+    const int section_gap = GuiDimensions::PANEL_GAP * 2;
 
-    // Split into two rows
-    auto top_row = bounds.removeFromTop(bounds.getHeight() / 2);
+    // Split horizontally: left side for frequency ranges, right side for LPF
+    const float lpf_width_ratio = 0.15f;
+    auto lpf_section = bounds.removeFromRight(bounds.getWidth() * lpf_width_ratio);
+    bounds.removeFromRight(section_gap);
+
+    int total_width = bounds.getWidth();
+    int total_height = bounds.getHeight();
+
+    // Split main section into two rows
+    auto top_row = bounds.removeFromTop(total_height / 2);
     auto bottom_row = bounds;
 
-    // Calculate section widths
-    const int single_knob_width = 80;  // Width for single knob sections
-    const int double_knob_width = 160; // Width for 2-knob sections
+    // BOTTOM ROW: 6 knobs evenly spaced
+    const int num_bottom_knobs = 6;
+    const int bottom_knob_width = total_width / num_bottom_knobs;
 
-    // TOP ROW: [low_shelf_gain low_shelf_freq] | [low_mid_freq low_mid_gain] | [high_mid_freq high_mid_gain] | [high_shelf_gain high_shelf_freq] | [lpf]
+    sliders[1].knob->setBounds(bottom_row.getX() + 0*bottom_knob_width, bottom_row.getY(), bottom_knob_width, bottom_row.getHeight()); // low_shelf_freq
+    sliders[2].knob->setBounds(bottom_row.getX() + 1*bottom_knob_width, bottom_row.getY(), bottom_knob_width, bottom_row.getHeight()); // low_mid_freq
+    sliders[3].knob->setBounds(bottom_row.getX() + 2*bottom_knob_width, bottom_row.getY(), bottom_knob_width, bottom_row.getHeight()); // low_mid_q
+    sliders[5].knob->setBounds(bottom_row.getX() + 3*bottom_knob_width, bottom_row.getY(), bottom_knob_width, bottom_row.getHeight()); // high_mid_freq
+    sliders[6].knob->setBounds(bottom_row.getX() + 4*bottom_knob_width, bottom_row.getY(), bottom_knob_width, bottom_row.getHeight()); // high_mid_q
+    sliders[9].knob->setBounds(bottom_row.getX() + 5*bottom_knob_width, bottom_row.getY(), bottom_knob_width, bottom_row.getHeight()); // high_shelf_freq
 
-    // Section 1: Low Shelf - gain and freq (knobs 0, 1)
-    sliders[0].knob->setBounds(top_row.removeFromLeft(single_knob_width));
-    sliders[1].knob->setBounds(top_row.removeFromLeft(single_knob_width));
-    top_row.removeFromLeft(section_gap);
+    // TOP ROW: 4 knobs centered over gaps between bottom knobs (skip middle gap)
+    // Gap positions are at: 1W/6, 2W/6, skip 3W/6, 4W/6, 5W/6
+    const int top_knob_width = bottom_knob_width;
 
-    // Section 2: Low-Mid parametric - freq and gain on top row (knobs 2, 4)
-    sliders[2].knob->setBounds(top_row.removeFromLeft(single_knob_width));
-    sliders[4].knob->setBounds(top_row.removeFromLeft(single_knob_width));
-    top_row.removeFromLeft(section_gap);
+    // Centered over gap 1 (between bottom knobs 0 and 1)
+    sliders[0].knob->setBounds(
+        top_row.getX() + 1*bottom_knob_width - top_knob_width/2,
+        top_row.getY(),
+        top_knob_width,
+        top_row.getHeight()
+    ); // low_shelf_gain
 
-    // Section 3: High-Mid parametric - freq and gain on top row (knobs 5, 7)
-    sliders[5].knob->setBounds(top_row.removeFromLeft(single_knob_width));
-    sliders[7].knob->setBounds(top_row.removeFromLeft(single_knob_width));
-    top_row.removeFromLeft(section_gap);
+    // Centered over gap 2 (between bottom knobs 1 and 2)
+    sliders[4].knob->setBounds(
+        top_row.getX() + 2*bottom_knob_width - top_knob_width/2,
+        top_row.getY(),
+        top_knob_width,
+        top_row.getHeight()
+    ); // low_mid_gain
 
-    // Section 4: High Shelf - gain and freq (knobs 8, 9)
-    sliders[8].knob->setBounds(top_row.removeFromLeft(single_knob_width));
-    sliders[9].knob->setBounds(top_row.removeFromLeft(single_knob_width));
-    top_row.removeFromLeft(section_gap);
+    // Skip gap 3 (middle gap)
 
-    // Section 5: LPF (knob 10)
-    sliders[10].knob->setBounds(top_row.removeFromLeft(single_knob_width));
+    // Centered over gap 4 (between bottom knobs 3 and 4)
+    sliders[7].knob->setBounds(
+        top_row.getX() + 4*bottom_knob_width - top_knob_width/2,
+        top_row.getY(),
+        top_knob_width,
+        top_row.getHeight()
+    ); // high_mid_gain
 
-    // BOTTOM ROW: empty | [low_mid_q centered] | [high_mid_q centered] | empty | empty
+    // Centered over gap 5 (between bottom knobs 4 and 5)
+    sliders[8].knob->setBounds(
+        top_row.getX() + 5*bottom_knob_width - top_knob_width/2,
+        top_row.getY(),
+        top_knob_width,
+        top_row.getHeight()
+    ); // high_shelf_gain
 
-    // Skip low shelf section
-    bottom_row.removeFromLeft(double_knob_width + section_gap);
-
-    // Low-Mid Q (knob 3) - centered in the low-mid section
-    bottom_row.removeFromLeft(single_knob_width / 2 - EqDimensions::KNOB_SIZE / 2);
-    sliders[3].knob->setBounds(bottom_row.removeFromLeft(single_knob_width));
-    bottom_row.removeFromLeft(single_knob_width / 2 - EqDimensions::KNOB_SIZE / 2 + section_gap);
-
-    // High-Mid Q (knob 6) - centered in the high-mid section
-    bottom_row.removeFromLeft(single_knob_width / 2 - EqDimensions::KNOB_SIZE / 2);
-    sliders[6].knob->setBounds(bottom_row.removeFromLeft(single_knob_width));
+    // LPF section
+    sliders[10].knob->setBounds(lpf_section);
 }
 
 void EqSlidersComponent::switchColour(
@@ -101,7 +120,11 @@ void EqSlidersComponent::switchColour(
     for (EqSlider slider : sliders)
     {
         slider.knob->getSlider().setColour(
-            juce::Slider::rotarySliderFillColourId, colour1
+            juce::Slider::rotarySliderOutlineColourId, colour1
+        );
+        slider.knob->getSlider().setColour(
+            juce::Slider::rotarySliderFillColourId,
+            juce::Colours::transparentBlack
         );
     }
     repaint();

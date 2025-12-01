@@ -22,7 +22,10 @@ Header::Header(
     inputGainSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     inputGainSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 50, 25);
     inputGainSlider.setColour(
-        juce::Slider::rotarySliderFillColourId, headerColour
+        juce::Slider::rotarySliderFillColourId, juce::Colours::black
+    );
+    inputGainSlider.setColour(
+        juce::Slider::rotarySliderOutlineColourId, ColourCodes::white0
     );
     inputGainAttachment =
         std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
@@ -34,7 +37,10 @@ Header::Header(
     outputGainSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     outputGainSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 50, 25);
     outputGainSlider.setColour(
-        juce::Slider::rotarySliderFillColourId, headerColour
+        juce::Slider::rotarySliderFillColourId, juce::Colours::black
+    );
+    outputGainSlider.setColour(
+        juce::Slider::rotarySliderOutlineColourId, ColourCodes::white0
     );
     outputGainAttachment =
         std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
@@ -68,21 +74,30 @@ void Header::paint(juce::Graphics& g)
     int const knob_size = getHeight() - padding * 2;
     int const meter_width = 6;
 
-    float leftSeparatorX = padding + meter_width + padding + knob_size + knob_padding + padding;
-    float rightSeparatorX = getWidth() - padding - meter_width - padding - knob_size - knob_padding - padding;
+    float leftSeparatorX =
+        padding + meter_width + padding + knob_size + knob_padding + padding;
+    float rightSeparatorX = getWidth() - padding - meter_width - padding -
+                            knob_size - knob_padding - padding;
 
     // Draw black background behind input slider section
-    juce::Rectangle<float> inputSection(0.0f, 0.0f, leftSeparatorX, (float)getHeight());
+    juce::Rectangle<float> inputSection(
+        0.0f, 0.0f, leftSeparatorX, (float)getHeight()
+    );
     g.setColour(juce::Colours::black);
     g.fillRect(inputSection);
 
     // Draw grey background behind center section (tuner)
-    juce::Rectangle<float> centerSection(leftSeparatorX, 0.0f, rightSeparatorX - leftSeparatorX, (float)getHeight());
+    juce::Rectangle<float> centerSection(
+        leftSeparatorX, 0.0f, rightSeparatorX - leftSeparatorX,
+        (float)getHeight()
+    );
     g.setColour(ColourCodes::bg2);
     g.fillRect(centerSection);
 
     // Draw black background behind output slider section
-    juce::Rectangle<float> outputSection(rightSeparatorX, 0.0f, getWidth() - rightSeparatorX, (float)getHeight());
+    juce::Rectangle<float> outputSection(
+        rightSeparatorX, 0.0f, getWidth() - rightSeparatorX, (float)getHeight()
+    );
     g.setColour(juce::Colours::black);
     g.fillRect(outputSection);
 
@@ -96,14 +111,18 @@ void Header::paint(juce::Graphics& g)
 
     g.setColour(ColourCodes::grey3);
     g.drawLine(leftSeparatorX, separatorY1, leftSeparatorX, separatorY2, 2.0f);
-    g.drawLine(rightSeparatorX, separatorY1, rightSeparatorX, separatorY2, 2.0f);
+    g.drawLine(
+        rightSeparatorX, separatorY1, rightSeparatorX, separatorY2, 2.0f
+    );
 
     // Draw separator between preset icon buttons and session name
     if (presetIconButtons.isVisible() && sessionNameDisplay.isVisible())
     {
         auto iconButtonsBounds = presetIconButtons.getBounds();
         auto sessionNameBounds = sessionNameDisplay.getBounds();
-        float separator1X = iconButtonsBounds.getRight() + (sessionNameBounds.getX() - iconButtonsBounds.getRight()) / 2.0f;
+        float separator1X =
+            iconButtonsBounds.getRight() +
+            (sessionNameBounds.getX() - iconButtonsBounds.getRight()) / 2.0f;
         g.drawLine(separator1X, separatorY1, separator1X, separatorY2, 2.0f);
     }
 
@@ -112,7 +131,9 @@ void Header::paint(juce::Graphics& g)
     {
         auto sessionNameBounds = sessionNameDisplay.getBounds();
         auto presetBarBounds = presetBar.getBounds();
-        float separator2X = sessionNameBounds.getRight() + (presetBarBounds.getX() - sessionNameBounds.getRight()) / 2.0f;
+        float separator2X =
+            sessionNameBounds.getRight() +
+            (presetBarBounds.getX() - sessionNameBounds.getRight()) / 2.0f;
         g.drawLine(separator2X, separatorY1, separator2X, separatorY2, 2.0f);
     }
 }
@@ -135,7 +156,9 @@ void Header::resized()
     // Right side: output gain and meter
     outputMeter.setBounds(bounds.removeFromRight(meter_width));
     bounds.removeFromRight(padding);
-    outputGainSlider.setBounds(bounds.removeFromRight(knob_size + knob_padding));
+    outputGainSlider.setBounds(
+        bounds.removeFromRight(knob_size + knob_padding)
+    );
     bounds.removeFromRight(padding);
 
     // Center area: tuner button and preset controls

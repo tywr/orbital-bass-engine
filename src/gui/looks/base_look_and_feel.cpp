@@ -139,11 +139,11 @@ void BaseLookAndFeel::drawRotarySlider(
     auto lineW = fmin(strokeWidth, radius * 0.5f);
 
     // Draw background fill
-    g.setColour(juce::Colours::black);
+    g.setColour(slider.findColour(juce::Slider::rotarySliderFillColourId));
     g.fillEllipse(bounds.reduced(lineW));
 
     // Draw circle outline (outside edge)
-    g.setColour(slider.findColour(juce::Slider::rotarySliderFillColourId));
+    g.setColour(slider.findColour(juce::Slider::rotarySliderOutlineColourId));
     g.drawEllipse(bounds.reduced(lineW / 2.0f), lineW);
 
     // Draw marker
@@ -155,7 +155,6 @@ void BaseLookAndFeel::drawRotarySlider(
     juce::Point<float> markerEnd = centre.getPointOnCircumference(
         radius - lineW * 1.5f - markerLength, toAngle
     );
-    g.setColour(slider.findColour(juce::Slider::rotarySliderFillColourId));
     g.drawLine(
         markerStart.getX(), markerStart.getY(), markerEnd.getX(),
         markerEnd.getY(), markerThickness

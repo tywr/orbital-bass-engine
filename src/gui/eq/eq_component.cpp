@@ -10,7 +10,7 @@ EqComponent::EqComponent(juce::AudioProcessorValueTreeState& params)
     : parameters(params), sliders_component(params)
 {
     addAndMakeVisible(title_label);
-    title_label.setText("EQ", juce::dontSendNotification);
+    title_label.setText("EQUALIZER", juce::dontSendNotification);
     title_label.setJustificationType(juce::Justification::centredLeft);
 
     addAndMakeVisible(sliders_component);
@@ -66,15 +66,12 @@ void EqComponent::paint(juce::Graphics& g)
     g.drawRect(full_bounds, border_thickness);
 
     // Draw title bar background and border
-    auto title_bounds = full_bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    auto title_bounds =
+        full_bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
     g.setColour(ColourCodes::bg2);
     g.fillRect(title_bounds);
     g.setColour(border_colour);
     g.drawRect(title_bounds, border_thickness);
-
-    // Draw main content area border
-    g.setColour(border_colour);
-    g.drawRect(full_bounds, border_thickness);
 
     sliders_component.switchColour(colour1, colour2);
 }
@@ -84,7 +81,8 @@ void EqComponent::resized()
     auto full_bounds = getLocalBounds();
 
     // Title bar with label and bypass button
-    auto title_bounds = full_bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    auto title_bounds =
+        full_bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
     title_label.setBounds(title_bounds.removeFromLeft(100.0f));
     bypass_button.setBounds(
         title_bounds

@@ -129,7 +129,7 @@ createParameterLayout()
             juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "eq_high_shelf_freq", "EQ Low Shelf Frequency",
+            "eq_low_shelf_freq", "EQ Low Shelf Frequency",
             juce::NormalisableRange<float>(40.0f, 200.0f, 1.0f), 120.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(

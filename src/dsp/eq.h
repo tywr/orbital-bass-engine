@@ -23,7 +23,7 @@ class EQ : juce::dsp::ProcessorBase
     void setLowShelfFreq(float g)
     {
         float v = juce::jlimit(0.0f, 20000.0f, g);
-        low_shelf_gain.setTargetValue(v);
+        low_shelf_freq.setTargetValue(v);
         raw_low_shelf_freq = v;
     }
 
@@ -79,7 +79,7 @@ class EQ : juce::dsp::ProcessorBase
     void setHighShelfFreq(float g)
     {
         float v = juce::jlimit(0.0f, 20000.0f, g);
-        low_shelf_gain.setTargetValue(v);
+        high_shelf_freq.setTargetValue(v);
         raw_high_shelf_freq = v;
     }
 
@@ -117,7 +117,7 @@ class EQ : juce::dsp::ProcessorBase
     float raw_high_shelf_gain = 1.0f;
     float raw_lpf_frequency = 3000.0f;
     float raw_low_shelf_freq = 120.0f;
-    float raw_high_shelf_freq = 120.0f;
+    float raw_high_shelf_freq = 5000.0f;
 
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>
         low_shelf_gain, low_shelf_freq;
