@@ -1,6 +1,7 @@
 #include "ir_component.h"
 #include "../colours.h"
 #include "ir_dimensions.h"
+#include "../dimensions.h"
 
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -9,6 +10,9 @@
 IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
     : parameters(params)
 {
+    title_label.setText("IMPULSE", juce::dontSendNotification);
+    title_label.setJustificationType(juce::Justification::centredLeft);
+
     addAndMakeVisible(drag_tooltip);
     drag_tooltip.setJustificationType(juce::Justification::centred);
     drag_tooltip.setAlwaysOnTop(true);
@@ -78,15 +82,50 @@ IRComponent::~IRComponent()
 void IRComponent::paint(juce::Graphics& g)
 {
     bool bypass = bypassButton.getToggleState();
-    juce::Colour colour;
+    juce::Colour colour1, colour2, border_colour;
     if (!bypass)
     {
-        colour = ColourCodes::white0;
+        colour1 = ColourCodes::white0;
+        colour2 = ColourCodes::white0;
+        border_colour = ColourCodes::grey0;
     }
     else
     {
-        colour = GuiColours::DEFAULT_INACTIVE_COLOUR;
+        colour1 = GuiColours::DEFAULT_INACTIVE_COLOUR;
+        colour2 = ColourCodes::grey0;
+        border_colour = ColourCodes::grey0;
     }
+
+    float border_thickness = GuiDimensions::PANEL_BORDER_THICKNESS;
+    auto full_bounds = getLocalBounds();
+
+    title_label.setColour(juce::Label::textColourId, colour2);
+
+    // Fill background
+    g.setColour(GuiColours::COMPRESSOR_BG_COLOUR);
+    g.fillRect(full_bounds);
+
+    // Draw outer border
+    g.setColour(border_colour);
+    g.drawRect(full_bounds, border_thickness);
+
+    // Draw title bar background and border
+    auto title_bounds = full_bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    g.setColour(ColourCodes::bg2);
+    g.fillRect(title_bounds);
+    g.setColour(border_colour);
+    g.drawRect(title_bounds, border_thickness);
+
+    // Draw display section border (upper half)
+    auto display_section_bounds = full_bounds.removeFromTop(full_bounds.getHeight() / 2);
+    g.setColour(border_colour);
+    g.drawRect(display_section_bounds, border_thickness);
+
+    // Draw knobs section border (lower half)
+    g.setColour(border_colour);
+    g.drawRect(full_bounds, border_thickness);
+
+    // Keep original display_bounds calculation unchanged
     auto bounds =
         getLocalBounds()
             .withSizeKeepingCentre(IRDimensions::WIDTH, IRDimensions::HEIGHT)
@@ -103,13 +142,23 @@ void IRComponent::paint(juce::Graphics& g)
                 IRDimensions::IR_LABEL_WIDTH, IRDimensions::IR_LABEL_HEIGHT
             );
     type_display.setBoundingBox(display_bounds);
-    type_display.draw(g, 1.0f);
     g.setColour(juce::Colours::black);
     g.fillRoundedRectangle(display_bounds.toFloat(), 5.0f);
+    type_display.draw(g, 1.0f);
 }
 
 void IRComponent::resized()
 {
+    auto full_bounds = getLocalBounds();
+
+    // Title bar with label and bypass button
+    auto title_bounds = full_bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    title_label.setBounds(title_bounds.removeFromLeft(100.0f));
+    bypassButton.setBounds(
+        title_bounds.removeFromRight(GuiDimensions::BYPASS_BUTTON_WIDTH)
+    );
+
+    // Keep original bounds calculation for display and knobs
     auto bounds = getLocalBounds().withSizeKeepingCentre(
         IRDimensions::WIDTH, IRDimensions::HEIGHT
     );
@@ -147,11 +196,6 @@ void IRComponent::resized()
                                        IRDimensions::KNOB_SIZE
                                    ));
     }
-
-    auto left_bounds = bounds.removeFromLeft(IRDimensions::SIDE_WIDTH);
-    bypassButton.setBounds(left_bounds.withSizeKeepingCentre(
-        IRDimensions::BYPASS_SIZE, IRDimensions::BYPASS_SIZE
-    ));
 }
 
 void IRComponent::switchColour()

@@ -33,6 +33,7 @@ class IRComponent : public juce::Component
 
     juce::Colour current_colour = ColourCodes::white0;
 
+    juce::Label title_label;
     juce::ToggleButton bypassButton;
     juce::Label bypassLabel;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>
