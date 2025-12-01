@@ -5,11 +5,14 @@ Panels::Panels(
     juce::Value& compressorGainReductionDb
 )
     : compressor_component(params, compressorGainReductionDb),
-      amp_component(params), post_rack_component(params)
+      amp_component(params), eq_component(params), chorus_component(params),
+      ir_component(params)
 {
     addAndMakeVisible(compressor_component);
     addAndMakeVisible(amp_component);
-    addAndMakeVisible(post_rack_component);
+    addAndMakeVisible(eq_component);
+    addAndMakeVisible(chorus_component);
+    addAndMakeVisible(ir_component);
 }
 
 Panels::~Panels()
@@ -32,6 +35,9 @@ void Panels::resized()
     compressor_component.setBounds(top_section.removeFromLeft(top_half_width));
     amp_component.setBounds(top_section);
 
-    // Bottom section: post effects takes full width
-    post_rack_component.setBounds(bounds);
+    // Bottom section: three panels (EQ, Chorus, IR) split horizontally
+    int panel_width = bounds.getWidth() / 3;
+    eq_component.setBounds(bounds.removeFromLeft(panel_width));
+    chorus_component.setBounds(bounds.removeFromLeft(panel_width));
+    ir_component.setBounds(bounds);
 }
