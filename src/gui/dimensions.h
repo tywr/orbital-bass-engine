@@ -19,6 +19,8 @@ constexpr int DEFAULT_SMALL_KNOB_WIDTH = 50;
 constexpr int DEFAULT_SMALL_KNOB_HEIGHT = 70;
 constexpr int DEFAULT_SMALL_LABEL_HEIGHT = 30;
 
+constexpr int PANEL_GAP = 10;
+
 constexpr int PANEL_TITLE_BAR_HEIGHT = 25;
 constexpr int PANEL_BORDER_THICKNESS = 2;
 constexpr int BYPASS_BUTTON_WIDTH = 25;
