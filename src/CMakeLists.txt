@@ -52,7 +52,6 @@ target_sources(${PROJECT_NAME}
         gui/meter.cpp
         gui/header.cpp
         gui/panels.cpp
-        gui/post_rack.cpp
         gui/tuner.cpp
         dsp/compressor.cpp
         dsp/pitch_detector.cpp
