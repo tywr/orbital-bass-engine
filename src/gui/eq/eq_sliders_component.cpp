@@ -1,7 +1,6 @@
 #include "eq_sliders_component.h"
 #include "../colours.h"
 #include "../components/solid_tooltip.h"
-#include "../looks/eq_look_and_feel.h"
 #include "eq_dimensions.h"
 
 EqSlidersComponent::EqSlidersComponent(

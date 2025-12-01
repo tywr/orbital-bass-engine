@@ -10,6 +10,7 @@
 IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
     : parameters(params)
 {
+    addAndMakeVisible(title_label);
     title_label.setText("IMPULSE", juce::dontSendNotification);
     title_label.setJustificationType(juce::Justification::centredLeft);
 
@@ -125,25 +126,18 @@ void IRComponent::paint(juce::Graphics& g)
     g.setColour(border_colour);
     g.drawRect(full_bounds, border_thickness);
 
-    // Keep original display_bounds calculation unchanged
-    auto bounds =
-        getLocalBounds()
-            .withSizeKeepingCentre(IRDimensions::WIDTH, IRDimensions::HEIGHT)
-            .toFloat();
-    auto middle_bounds = bounds.withSizeKeepingCentre(
-        IRDimensions::WIDTH -
-            2 * (IRDimensions::SIDE_PADDING + IRDimensions::SIDE_WIDTH),
-        IRDimensions::HEIGHT
-    );
+    // Calculate display bounds to match resized() layout
+    auto bounds_for_display = getLocalBounds();
+    bounds_for_display.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    auto display_section = bounds_for_display.removeFromTop(bounds_for_display.getHeight() / 2);
 
-    auto display_bounds =
-        middle_bounds.removeFromRight(IRDimensions::IR_LABEL_WIDTH)
-            .withSizeKeepingCentre(
-                IRDimensions::IR_LABEL_WIDTH, IRDimensions::IR_LABEL_HEIGHT
-            );
+    auto display_bounds = display_section.withSizeKeepingCentre(
+        IRDimensions::IR_LABEL_WIDTH, IRDimensions::IR_LABEL_HEIGHT
+    ).toFloat();
+
     type_display.setBoundingBox(display_bounds);
     g.setColour(juce::Colours::black);
-    g.fillRoundedRectangle(display_bounds.toFloat(), 5.0f);
+    g.fillRoundedRectangle(display_bounds, 5.0f);
     type_display.draw(g, 1.0f);
 }
 
@@ -158,31 +152,23 @@ void IRComponent::resized()
         title_bounds.removeFromRight(GuiDimensions::BYPASS_BUTTON_WIDTH)
     );
 
-    // Keep original bounds calculation for display and knobs
-    auto bounds = getLocalBounds().withSizeKeepingCentre(
-        IRDimensions::WIDTH, IRDimensions::HEIGHT
-    );
-    auto middle_bounds = bounds.withSizeKeepingCentre(
-        IRDimensions::WIDTH -
-            2 * (IRDimensions::SIDE_PADDING + IRDimensions::SIDE_WIDTH),
-        IRDimensions::HEIGHT
-    );
+    // Split remaining bounds into top row (display) and bottom row (knobs)
+    auto display_section = full_bounds.removeFromTop(full_bounds.getHeight() / 2);
+    auto knobs_section = full_bounds;
 
-    auto display_bounds =
-        middle_bounds.removeFromRight(IRDimensions::IR_LABEL_WIDTH)
-            .withSizeKeepingCentre(
-                IRDimensions::IR_LABEL_WIDTH, IRDimensions::IR_LABEL_HEIGHT
-            );
-    type_display.setBounds(display_bounds.withSizeKeepingCentre(
+    // Position display centered in top section
+    auto display_bounds = display_section.withSizeKeepingCentre(
         IRDimensions::IR_LABEL_WIDTH, IRDimensions::IR_LABEL_HEIGHT
-    ));
-
-    auto knob_bounds = middle_bounds.withSizeKeepingCentre(
-        middle_bounds.getWidth(), IRDimensions::BOX_HEIGHT
     );
-    auto label_bounds = knob_bounds.removeFromTop(IRDimensions::LABEL_HEIGHT);
+    type_display.setBounds(display_bounds);
 
-    const int knob_box_size = knob_bounds.getWidth() / (int)knobs.size();
+    // Position 3 knobs horizontally in bottom section
+    auto knob_area = knobs_section.withSizeKeepingCentre(
+        knobs_section.getWidth() * 0.8f, IRDimensions::BOX_HEIGHT
+    );
+    auto label_bounds = knob_area.removeFromTop(IRDimensions::LABEL_HEIGHT);
+
+    const int knob_box_size = knob_area.getWidth() / (int)knobs.size();
     for (size_t i = 0; i < 3; ++i)
     {
         IRKnob knob = knobs[i];
@@ -190,7 +176,7 @@ void IRComponent::resized()
                                   .withSizeKeepingCentre(
                                       knob_box_size, IRDimensions::LABEL_HEIGHT
                                   ));
-        knob.slider->setBounds(knob_bounds.removeFromLeft(knob_box_size)
+        knob.slider->setBounds(knob_area.removeFromLeft(knob_box_size)
                                    .withSizeKeepingCentre(
                                        IRDimensions::KNOB_SIZE,
                                        IRDimensions::KNOB_SIZE

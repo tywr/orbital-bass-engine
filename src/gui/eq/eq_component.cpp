@@ -1,6 +1,5 @@
 #include "eq_component.h"
 #include "../colours.h"
-#include "../looks/eq_look_and_feel.h"
 #include "eq_dimensions.h"
 #include "eq_sliders_component.h"
 #include <juce_audio_basics/juce_audio_basics.h>
