@@ -52,18 +52,14 @@ void ChorusComponent::paint(juce::Graphics& g)
 
 void ChorusComponent::resized()
 {
-    auto bounds = getLocalBounds().withSizeKeepingCentre(
-        ChorusDimensions::WIDTH, ChorusDimensions::HEIGHT
-    );
-    auto middle_bounds = bounds.withSizeKeepingCentre(
-        bounds.getWidth() -
-            (ChorusDimensions::SIDE_PADDING + ChorusDimensions::SIDE_WIDTH) * 2,
-        ChorusDimensions::BOX_HEIGHT
-    );
-    knobs_component.setBounds(middle_bounds);
+    auto bounds = getLocalBounds();
 
+    // Place bypass button on the left
     auto left_bounds = bounds.removeFromLeft(ChorusDimensions::SIDE_WIDTH);
     bypass_button.setBounds(left_bounds.withSizeKeepingCentre(
         ChorusDimensions::BYPASS_SIZE, ChorusDimensions::BYPASS_SIZE
     ));
+
+    // Center knobs in remaining space
+    knobs_component.setBounds(bounds);
 }

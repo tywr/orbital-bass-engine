@@ -36,8 +36,8 @@ void Panels::resized()
     amp_component.setBounds(top_section);
 
     // Bottom section: three panels (EQ, Chorus, IR) split horizontally
-    int panel_width = bounds.getWidth() / 3;
-    eq_component.setBounds(bounds.removeFromLeft(panel_width));
-    chorus_component.setBounds(bounds.removeFromLeft(panel_width));
+    int panel_width = bounds.getWidth();
+    eq_component.setBounds(bounds.removeFromLeft(panel_width * 0.7f));
+    chorus_component.setBounds(bounds.removeFromLeft(panel_width * 0.15f));
     ir_component.setBounds(bounds);
 }

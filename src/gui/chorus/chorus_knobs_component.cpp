@@ -92,18 +92,41 @@ void ChorusKnobsComponent::paint(juce::Graphics& g)
 
 void ChorusKnobsComponent::resized()
 {
-
     auto bounds = getLocalBounds();
-    auto label_bounds = bounds.removeFromTop(ChorusDimensions::LABEL_HEIGHT);
-    const int knob_box_size = bounds.getWidth() / (int)knobs.size();
-    for (auto knob : knobs)
+
+    // Top row: rate, depth
+    auto top_row_bounds = bounds.removeFromTop(bounds.getHeight() / 2);
+    auto top_label_bounds = top_row_bounds.removeFromTop(ChorusDimensions::LABEL_HEIGHT);
+    const int top_knob_box_size = top_row_bounds.getWidth() / 2;
+
+    for (size_t i = 0; i < 2; ++i) // rate, depth
     {
-        knob.label->setBounds(label_bounds.removeFromLeft(knob_box_size)
+        ChorusKnob knob = knobs[i];
+        knob.label->setBounds(top_label_bounds.removeFromLeft(top_knob_box_size)
                                   .withSizeKeepingCentre(
                                       ChorusDimensions::KNOB_SIZE,
                                       ChorusDimensions::LABEL_HEIGHT
                                   ));
-        knob.slider->setBounds(bounds.removeFromLeft(knob_box_size)
+        knob.slider->setBounds(top_row_bounds.removeFromLeft(top_knob_box_size)
+                                   .withSizeKeepingCentre(
+                                       ChorusDimensions::KNOB_SIZE,
+                                       ChorusDimensions::KNOB_SIZE
+                                   ));
+    }
+
+    // Bottom row: crossover, mix
+    auto bottom_label_bounds = bounds.removeFromTop(ChorusDimensions::LABEL_HEIGHT);
+    const int bottom_knob_box_size = bounds.getWidth() / 2;
+
+    for (size_t i = 2; i < 4; ++i) // crossover, mix
+    {
+        ChorusKnob knob = knobs[i];
+        knob.label->setBounds(bottom_label_bounds.removeFromLeft(bottom_knob_box_size)
+                                  .withSizeKeepingCentre(
+                                      ChorusDimensions::KNOB_SIZE,
+                                      ChorusDimensions::LABEL_HEIGHT
+                                  ));
+        knob.slider->setBounds(bounds.removeFromLeft(bottom_knob_box_size)
                                    .withSizeKeepingCentre(
                                        ChorusDimensions::KNOB_SIZE,
                                        ChorusDimensions::KNOB_SIZE
