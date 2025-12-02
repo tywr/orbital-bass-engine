@@ -56,17 +56,28 @@ void EqSlidersComponent::paint(juce::Graphics& g)
     g.setColour(ColourCodes::grey0);
     float line_thickness = 1.0f;
 
+    float height = bounds.getHeight();
+
     // Separator after Low Shelf section (at 1*width/6)
-    float x1 = bounds.getX() + 1*bottom_knob_width;
-    g.drawLine(x1, bounds.getY(), x1, bounds.getBottom(), line_thickness);
+    float x11 = bounds.getX() + 1 * bottom_knob_width;
+    float y11 = bounds.getY() + height / 1.5f;
+    g.drawLine(x11, y11, x11, bounds.getBottom(), line_thickness);
+
+    float x12 = bounds.getX() + 1.5f * bottom_knob_width;
+    float y12 = bounds.getBottom() - height / 1.5f;
+    g.drawLine(x12, bounds.getY(), x12, y12, line_thickness);
+    g.drawLine(x11, y11, x12, y12, line_thickness);
 
     // Separator after Low-Mid section (at 3*width/6)
-    float x2 = bounds.getX() + 3*bottom_knob_width;
-    g.drawLine(x2, bounds.getY(), x2, bounds.getBottom(), line_thickness);
+    float x21 = bounds.getX() + 5 * bottom_knob_width;
+    float y21 = bounds.getY() + height / 1.5f;
+    g.drawLine(x21, y21, x21, bounds.getBottom(), line_thickness);
 
     // Separator after High-Mid section (at 5*width/6)
-    float x3 = bounds.getX() + 5*bottom_knob_width;
-    g.drawLine(x3, bounds.getY(), x3, bounds.getBottom(), line_thickness);
+    float x22 = bounds.getX() + 4.5 * bottom_knob_width;
+    float y22 = bounds.getBottom() - height / 1.5f;
+    g.drawLine(x22, bounds.getY(), x22, y22, line_thickness);
+    g.drawLine(x21, y21, x22, y22, line_thickness);
 }
 
 void EqSlidersComponent::resized()
@@ -76,7 +87,8 @@ void EqSlidersComponent::resized()
 
     // Split horizontally: left side for frequency ranges, right side for LPF
     const float lpf_width_ratio = 0.15f;
-    auto lpf_section = bounds.removeFromRight(bounds.getWidth() * lpf_width_ratio);
+    auto lpf_section =
+        bounds.removeFromRight(bounds.getWidth() * lpf_width_ratio);
     bounds.removeFromRight(section_gap);
 
     int total_width = bounds.getWidth();
@@ -90,30 +102,46 @@ void EqSlidersComponent::resized()
     const int num_bottom_knobs = 6;
     const int bottom_knob_width = total_width / num_bottom_knobs;
 
-    sliders[1].knob->setBounds(bottom_row.getX() + 0*bottom_knob_width, bottom_row.getY(), bottom_knob_width, bottom_row.getHeight()); // low_shelf_freq
-    sliders[2].knob->setBounds(bottom_row.getX() + 1*bottom_knob_width, bottom_row.getY(), bottom_knob_width, bottom_row.getHeight()); // low_mid_freq
-    sliders[3].knob->setBounds(bottom_row.getX() + 2*bottom_knob_width, bottom_row.getY(), bottom_knob_width, bottom_row.getHeight()); // low_mid_q
-    sliders[5].knob->setBounds(bottom_row.getX() + 3*bottom_knob_width, bottom_row.getY(), bottom_knob_width, bottom_row.getHeight()); // high_mid_freq
-    sliders[6].knob->setBounds(bottom_row.getX() + 4*bottom_knob_width, bottom_row.getY(), bottom_knob_width, bottom_row.getHeight()); // high_mid_q
-    sliders[9].knob->setBounds(bottom_row.getX() + 5*bottom_knob_width, bottom_row.getY(), bottom_knob_width, bottom_row.getHeight()); // high_shelf_freq
+    sliders[1].knob->setBounds(
+        bottom_row.getX() + 0 * bottom_knob_width, bottom_row.getY(),
+        bottom_knob_width, bottom_row.getHeight()
+    ); // low_shelf_freq
+    sliders[2].knob->setBounds(
+        bottom_row.getX() + 1 * bottom_knob_width, bottom_row.getY(),
+        bottom_knob_width, bottom_row.getHeight()
+    ); // low_mid_freq
+    sliders[3].knob->setBounds(
+        bottom_row.getX() + 2 * bottom_knob_width, bottom_row.getY(),
+        bottom_knob_width, bottom_row.getHeight()
+    ); // low_mid_q
+    sliders[5].knob->setBounds(
+        bottom_row.getX() + 3 * bottom_knob_width, bottom_row.getY(),
+        bottom_knob_width, bottom_row.getHeight()
+    ); // high_mid_freq
+    sliders[6].knob->setBounds(
+        bottom_row.getX() + 4 * bottom_knob_width, bottom_row.getY(),
+        bottom_knob_width, bottom_row.getHeight()
+    ); // high_mid_q
+    sliders[9].knob->setBounds(
+        bottom_row.getX() + 5 * bottom_knob_width, bottom_row.getY(),
+        bottom_knob_width, bottom_row.getHeight()
+    ); // high_shelf_freq
 
-    // TOP ROW: 4 knobs centered over gaps between bottom knobs (skip middle gap)
-    // Gap positions are at: 1W/6, 2W/6, skip 3W/6, 4W/6, 5W/6
+    // TOP ROW: 4 knobs centered over gaps between bottom knobs (skip middle
+    // gap) Gap positions are at: 1W/6, 2W/6, skip 3W/6, 4W/6, 5W/6
     const int top_knob_width = bottom_knob_width;
 
     // Centered over gap 1 (between bottom knobs 0 and 1)
     sliders[0].knob->setBounds(
-        top_row.getX() + 1*bottom_knob_width - top_knob_width/2,
-        top_row.getY(),
-        top_knob_width,
+        top_row.getX() + 1 * bottom_knob_width - top_knob_width / 2,
+        top_row.getY(), top_knob_width,
         top_row.getHeight()
     ); // low_shelf_gain
 
     // Centered over gap 2 (between bottom knobs 1 and 2)
     sliders[4].knob->setBounds(
-        top_row.getX() + 2*bottom_knob_width - top_knob_width/2,
-        top_row.getY(),
-        top_knob_width,
+        top_row.getX() + 2 * bottom_knob_width - top_knob_width / 2,
+        top_row.getY(), top_knob_width,
         top_row.getHeight()
     ); // low_mid_gain
 
@@ -121,17 +149,15 @@ void EqSlidersComponent::resized()
 
     // Centered over gap 4 (between bottom knobs 3 and 4)
     sliders[7].knob->setBounds(
-        top_row.getX() + 4*bottom_knob_width - top_knob_width/2,
-        top_row.getY(),
-        top_knob_width,
+        top_row.getX() + 4 * bottom_knob_width - top_knob_width / 2,
+        top_row.getY(), top_knob_width,
         top_row.getHeight()
     ); // high_mid_gain
 
     // Centered over gap 5 (between bottom knobs 4 and 5)
     sliders[8].knob->setBounds(
-        top_row.getX() + 5*bottom_knob_width - top_knob_width/2,
-        top_row.getY(),
-        top_knob_width,
+        top_row.getX() + 5 * bottom_knob_width - top_knob_width / 2,
+        top_row.getY(), top_knob_width,
         top_row.getHeight()
     ); // high_shelf_gain
 
