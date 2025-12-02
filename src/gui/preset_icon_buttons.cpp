@@ -71,32 +71,42 @@ void IconButton::paint(juce::Graphics& g)
 
         juce::Path reloadPath;
 
-        // Draw circular arrow (about 270 degrees)
+        // Arrowhead angle and position
+        float arrowheadAngle = juce::MathConstants<float>::pi * 0.25f; // 45 degrees
+        float arrowSize = radius * 0.4f;
+        float arrowWidth = 0.35f;
+
+        // Calculate arrowhead tip position
+        float tipX = centerX + radius * std::cos(arrowheadAngle);
+        float tipY = centerY + radius * std::sin(arrowheadAngle);
+
+        // Draw circular arc that ends at the arrowhead
+        // Go from ~117° counter-clockwise to 45° (the long way = 288° arc)
+        // To go counter-clockwise from 117° to 45°, we go to 45° + 360° = 405°
         reloadPath.addCentredArc(
             centerX, centerY,
             radius, radius,
             0.0f,
-            juce::MathConstants<float>::pi * 0.5f,
-            juce::MathConstants<float>::pi * 2.25f,
-            true
+            juce::MathConstants<float>::pi * 0.65f, // Start at ~117°
+            arrowheadAngle + juce::MathConstants<float>::pi * 2.0f, // End at 45° + 360° = 405°
+            true // Start as new subpath
         );
 
-        // Add arrowhead at the end
-        float arrowSize = radius * 0.4f;
-        float endAngle = juce::MathConstants<float>::pi * 2.25f;
-        float endX = centerX + radius * std::cos(endAngle);
-        float endY = centerY + radius * std::sin(endAngle);
+        // For counter-clockwise motion ending at arrowheadAngle
+        // Tangent is perpendicular: angle + π/2
+        float tangentAngle = arrowheadAngle + juce::MathConstants<float>::pi * 0.5f;
 
-        reloadPath.startNewSubPath(endX, endY);
+        // Draw arrowhead pointing forward (in direction of motion)
+        reloadPath.startNewSubPath(tipX, tipY);
         reloadPath.lineTo(
-            endX - arrowSize * std::cos(endAngle - 0.5f),
-            endY - arrowSize * std::sin(endAngle - 0.5f)
+            tipX + arrowSize * std::cos(tangentAngle - arrowWidth),
+            tipY + arrowSize * std::sin(tangentAngle - arrowWidth)
         );
 
-        reloadPath.startNewSubPath(endX, endY);
+        reloadPath.startNewSubPath(tipX, tipY);
         reloadPath.lineTo(
-            endX - arrowSize * std::cos(endAngle + 0.5f),
-            endY - arrowSize * std::sin(endAngle + 0.5f)
+            tipX + arrowSize * std::cos(tangentAngle + arrowWidth),
+            tipY + arrowSize * std::sin(tangentAngle + arrowWidth)
         );
 
         g.strokePath(reloadPath, juce::PathStrokeType(1.5f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
