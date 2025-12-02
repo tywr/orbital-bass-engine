@@ -25,8 +25,7 @@ ChorusComponent::ChorusComponent(juce::AudioProcessorValueTreeState& params)
         juce::ToggleButton::tickColourId, GuiColours::DEFAULT_INACTIVE_COLOUR
     );
     bypass_button.setColour(
-        juce::ToggleButton::tickDisabledColourId,
-        GuiColours::CHORUS_ACTIVE_COLOUR_1
+        juce::ToggleButton::tickDisabledColourId, ColourCodes::orange
     );
     bypass_button.onClick = [this]() { repaint(); };
 }
@@ -41,8 +40,8 @@ void ChorusComponent::paint(juce::Graphics& g)
     juce::Colour colour1, colour2, border_colour;
     if (!bypass)
     {
-        colour1 = GuiColours::CHORUS_ACTIVE_COLOUR_1;
-        colour2 = GuiColours::CHORUS_ACTIVE_COLOUR_2;
+        colour1 = ColourCodes::orange;
+        colour2 = ColourCodes::white0;
         border_colour = ColourCodes::grey0;
     }
     else

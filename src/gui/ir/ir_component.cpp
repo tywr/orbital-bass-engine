@@ -90,7 +90,7 @@ void IRComponent::paint(juce::Graphics& g)
     juce::Colour colour1, colour2, border_colour;
     if (!bypass)
     {
-        colour1 = ColourCodes::white0;
+        colour1 = ColourCodes::orange;
         colour2 = ColourCodes::white0;
         border_colour = ColourCodes::grey0;
     }
@@ -198,7 +198,7 @@ void IRComponent::switchColour()
     }
     else
     {
-        current_colour = ColourCodes::white0;
+        current_colour = ColourCodes::orange;
     }
     for (auto knob : knobs)
     {
