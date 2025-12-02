@@ -73,8 +73,8 @@ void IconButton::paint(juce::Graphics& g)
 
         // Arrowhead angle and position
         float arrowheadAngle = juce::MathConstants<float>::pi * 0.25f; // 45 degrees
-        float arrowSize = radius * 0.4f;
-        float arrowWidth = 0.35f;
+        float arrowSize = radius * 0.6f;
+        float arrowWidth = 0.7f;
 
         // Calculate arrowhead tip position
         float tipX = centerX + radius * std::cos(arrowheadAngle);
@@ -87,14 +87,14 @@ void IconButton::paint(juce::Graphics& g)
             centerX, centerY,
             radius, radius,
             0.0f,
-            juce::MathConstants<float>::pi * 0.65f, // Start at ~117°
+            juce::MathConstants<float>::pi * 0.75f, // Start at ~117°
             arrowheadAngle + juce::MathConstants<float>::pi * 2.0f, // End at 45° + 360° = 405°
             true // Start as new subpath
         );
 
         // For counter-clockwise motion ending at arrowheadAngle
         // Tangent is perpendicular: angle + π/2
-        float tangentAngle = arrowheadAngle + juce::MathConstants<float>::pi * 0.5f;
+        float tangentAngle = arrowheadAngle + juce::MathConstants<float>::pi * 0.58f;
 
         // Draw arrowhead pointing forward (in direction of motion)
         reloadPath.startNewSubPath(tipX, tipY);
