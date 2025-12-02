@@ -43,15 +43,57 @@ void Compressor::updateHPF()
 
 void Compressor::computeGainReductionFet(float& sample, float sampleRate)
 {
-    float input_level = std::abs(hpf_filter.processSample(sample));
-    float input_level_db = juce::Decibels::gainToDecibels(input_level + 1e-10f);
+    // CALCULATE GAIN (Using previous envelope state)
+    // We determine the gain for THIS sample based on the envelope from the LAST
+    // sample.
+
+    // Convert envelope voltage to dB for the threshold logic
+    // (Optimization: You can do this whole section in linear voltage to save
+    // CPU, but we will keep your threshold/knee logic for now).
+    float env_db = juce::Decibels::gainToDecibels(envelope_state + 1e-10f);
     float current_threshold_db = threshold_db.getNextValue();
-    float current_attack = 0.001f * attack.getNextValue();
-    float current_release = 0.001f * release.getNextValue();
     float current_ratio = static_cast<float>(ratio.getNextValue());
 
+    float output_level_db = env_db;
+
+    if (env_db > current_threshold_db - width)
+    {
+        if (env_db <= current_threshold_db + width)
+        {
+            // Soft Knee
+            float ot = (env_db - current_threshold_db + width);
+            output_level_db = env_db + (1.0f / current_ratio - 1.0f) *
+                                           (ot * ot) / (4.0f * width);
+        }
+        else
+        {
+            // Above Knee (Ratio)
+            output_level_db = current_threshold_db +
+                              (env_db - current_threshold_db) / current_ratio;
+        }
+    }
+
+    // Calculate how much we need to reduce
+    gr_db = output_level_db - env_db;
+    gr = juce::Decibels::decibelsToGain(gr_db);
+
+    // Apply the calculated gain to the input sample
+    float output_sample = sample * gr;
+
+    // Overwrite the input sample (for the host)
+    sample = output_sample;
+
+    // Sidechain High Pass (Optional: standard 1176 doesn't have this, but
+    // modern plugins do)
+    float detector_input = hpf_filter.processSample(output_sample);
+    float rectified_input = std::abs(detector_input);
+
+    // Ballistics (Attack/Release)
+    float current_attack = 0.001f * attack.getNextValue();
+    float current_release = 0.001f * release.getNextValue();
+
     float coef;
-    if (input_level_db > current_level_db)
+    if (rectified_input > envelope_state)
     {
         coef = std::exp(-1.0f / (sampleRate * current_attack));
     }
@@ -59,30 +101,12 @@ void Compressor::computeGainReductionFet(float& sample, float sampleRate)
     {
         coef = std::exp(-1.0f / (sampleRate * current_release));
     }
-    current_level = (coef * current_level) + ((1.0f - coef) * input_level);
-    current_level_db = juce::Decibels::gainToDecibels(current_level);
 
-    float output_level_db;
-    if (current_level_db <= current_threshold_db - width)
-    {
-        output_level_db = current_level_db;
-    }
-    else if (current_level_db <= current_threshold_db + width)
-    {
-        float ot = (current_level_db - current_threshold_db + width);
-        output_level_db = current_level_db + (1.0f / current_ratio - 1.0f) *
-                                                 (ot * ot) / (4.0f * width);
-    }
-    else
-    {
-        output_level_db =
-            current_threshold_db +
-            (current_level_db - current_threshold_db) / current_ratio;
-    }
+    // Update the "Capacitor" (One-pole filter)
+    envelope_state =
+        (coef * envelope_state) + ((1.0f - coef) * rectified_input);
 
-    gr_db = output_level_db - current_level_db;
-    gr = juce::Decibels::decibelsToGain(gr_db);
-    sample *= gr;
+    // Store GR for metering (optional)
 }
 
 void Compressor::process(

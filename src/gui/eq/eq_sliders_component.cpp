@@ -39,7 +39,34 @@ EqSlidersComponent::~EqSlidersComponent()
 
 void EqSlidersComponent::paint(juce::Graphics& g)
 {
-    juce::ignoreUnused(g);
+    auto bounds = getLocalBounds();
+    const int section_gap = GuiDimensions::PANEL_GAP * 2;
+
+    // Calculate the same layout as resized() to position separators correctly
+    const float lpf_width_ratio = 0.15f;
+    int lpf_width = bounds.getWidth() * lpf_width_ratio;
+    bounds.removeFromRight(lpf_width);
+    bounds.removeFromRight(section_gap);
+
+    int total_width = bounds.getWidth();
+    const int num_bottom_knobs = 6;
+    const int bottom_knob_width = total_width / num_bottom_knobs;
+
+    // Draw vertical separators between EQ sections (SSL-style)
+    g.setColour(ColourCodes::grey0);
+    float line_thickness = 1.0f;
+
+    // Separator after Low Shelf section (at 1*width/6)
+    float x1 = bounds.getX() + 1*bottom_knob_width;
+    g.drawLine(x1, bounds.getY(), x1, bounds.getBottom(), line_thickness);
+
+    // Separator after Low-Mid section (at 3*width/6)
+    float x2 = bounds.getX() + 3*bottom_knob_width;
+    g.drawLine(x2, bounds.getY(), x2, bounds.getBottom(), line_thickness);
+
+    // Separator after High-Mid section (at 5*width/6)
+    float x3 = bounds.getX() + 5*bottom_knob_width;
+    g.drawLine(x3, bounds.getY(), x3, bounds.getBottom(), line_thickness);
 }
 
 void EqSlidersComponent::resized()

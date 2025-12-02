@@ -91,8 +91,9 @@ class Compressor : juce::dsp::ProcessorBase
         threshold_db, ratio, attack, release, hpf_freq;
 
     // internal state of compressor
-    float current_level = 1.0f;
-    float current_level_db = 1.0f;
+    float current_level = 0.0f;
+    float current_level_db = 0.0f;
+    float envelope_state = 0.0f;
     float gr_db = 0.0f;
     float gr = 1.0f;
     float width = 6.0f;
