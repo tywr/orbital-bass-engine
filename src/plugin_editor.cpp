@@ -26,6 +26,7 @@ PluginEditor::PluginEditor(
 
     presetIconButtons.onLoadSessionClicked = [this]() { handleLoadSession(); };
     presetIconButtons.onSavePresetClicked = [this]() { handleSavePreset(); };
+    presetIconButtons.onReloadPresetClicked = [this]() { handleReloadPreset(); };
     presetBar.onPresetClicked = [this](int index) { handlePresetClicked(index); };
 
     addChildComponent(tuner);
@@ -240,4 +241,61 @@ void PluginEditor::handleSavePreset()
         }
         delete alertWindow;
     }), true);
+}
+
+void PluginEditor::handleReloadPreset()
+{
+    auto& sessionManager = processorRef.getSessionManager();
+    int currentIndex = sessionManager.getCurrentPresetIndex();
+
+    if (currentIndex < 0 || currentIndex >= SessionManager::MAX_PRESETS)
+    {
+        juce::AlertWindow::showMessageBoxAsync(
+            juce::AlertWindow::WarningIcon,
+            "No Preset Selected",
+            "Please select a preset slot first to reload its saved state."
+        );
+        return;
+    }
+
+    const auto& preset = sessionManager.getPreset(currentIndex);
+
+    if (preset.isEmpty)
+    {
+        juce::AlertWindow::showMessageBoxAsync(
+            juce::AlertWindow::WarningIcon,
+            "Empty Preset",
+            "Cannot reload an empty preset slot."
+        );
+        return;
+    }
+
+    if (!preset.sourceFile.existsAsFile())
+    {
+        juce::AlertWindow::showMessageBoxAsync(
+            juce::AlertWindow::WarningIcon,
+            "File Not Found",
+            "Cannot reload preset - the source file no longer exists."
+        );
+        return;
+    }
+
+    // Reload the preset from the file to ensure we get the saved state
+    Preset reloadedPreset;
+    if (processorRef.getPresetManager().loadPreset(preset.sourceFile, reloadedPreset))
+    {
+        // Apply the reloaded preset state, completely discarding current changes
+        processorRef.getPresetManager().applyPreset(reloadedPreset);
+
+        // Update the session manager with the reloaded preset
+        sessionManager.setPreset(currentIndex, reloadedPreset);
+    }
+    else
+    {
+        juce::AlertWindow::showMessageBoxAsync(
+            juce::AlertWindow::WarningIcon,
+            "Reload Failed",
+            "Failed to reload preset from file."
+        );
+    }
 }

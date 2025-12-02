@@ -63,6 +63,44 @@ void IconButton::paint(juce::Graphics& g)
 
         g.strokePath(arrowPath, juce::PathStrokeType(1.5f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
     }
+    else if (iconType == Reload)
+    {
+        float radius = iconBounds.getWidth() * 0.35f;
+        float centerX = iconBounds.getCentreX();
+        float centerY = iconBounds.getCentreY();
+
+        juce::Path reloadPath;
+
+        // Draw circular arrow (about 270 degrees)
+        reloadPath.addCentredArc(
+            centerX, centerY,
+            radius, radius,
+            0.0f,
+            juce::MathConstants<float>::pi * 0.5f,
+            juce::MathConstants<float>::pi * 2.25f,
+            true
+        );
+
+        // Add arrowhead at the end
+        float arrowSize = radius * 0.4f;
+        float endAngle = juce::MathConstants<float>::pi * 2.25f;
+        float endX = centerX + radius * std::cos(endAngle);
+        float endY = centerY + radius * std::sin(endAngle);
+
+        reloadPath.startNewSubPath(endX, endY);
+        reloadPath.lineTo(
+            endX - arrowSize * std::cos(endAngle - 0.5f),
+            endY - arrowSize * std::sin(endAngle - 0.5f)
+        );
+
+        reloadPath.startNewSubPath(endX, endY);
+        reloadPath.lineTo(
+            endX - arrowSize * std::cos(endAngle + 0.5f),
+            endY - arrowSize * std::sin(endAngle + 0.5f)
+        );
+
+        g.strokePath(reloadPath, juce::PathStrokeType(1.5f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+    }
 }
 
 void IconButton::mouseDown(const juce::MouseEvent&)
@@ -98,6 +136,13 @@ PresetIconButtons::PresetIconButtons()
             onSavePresetClicked();
     };
     addAndMakeVisible(savePresetButton.get());
+
+    reloadPresetButton = std::make_unique<IconButton>(IconButton::Reload);
+    reloadPresetButton->onClick = [this]() {
+        if (onReloadPresetClicked)
+            onReloadPresetClicked();
+    };
+    addAndMakeVisible(reloadPresetButton.get());
 }
 
 PresetIconButtons::~PresetIconButtons()
@@ -116,6 +161,9 @@ void PresetIconButtons::resized()
     bounds.removeFromLeft(spacing);
 
     savePresetButton->setBounds(bounds.removeFromLeft(iconButtonSize));
+    bounds.removeFromLeft(spacing);
+
+    reloadPresetButton->setBounds(bounds.removeFromLeft(iconButtonSize));
 }
 
 void PresetIconButtons::paint(juce::Graphics& g)

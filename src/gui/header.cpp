@@ -169,8 +169,8 @@ void Header::resized()
     tunerButton.setBounds(bounds.removeFromLeft(iconButtonSize));
     bounds.removeFromLeft(spacing);
 
-    // Preset icon buttons
-    int const iconButtonsWidth = (iconButtonSize + spacing) * 2;
+    // Preset icon buttons (now 3 buttons: folder, save, reload)
+    int const iconButtonsWidth = (iconButtonSize + spacing) * 3;
     presetIconButtons.setBounds(bounds.removeFromLeft(iconButtonsWidth));
     bounds.removeFromLeft(spacing);
 

@@ -40,6 +40,7 @@ class PluginEditor final : public juce::AudioProcessorEditor
     void handlePresetClicked(int index);
     void handleLoadSession();
     void handleSavePreset();
+    void handleReloadPreset();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginEditor)
 };
