@@ -9,6 +9,15 @@ EqSlidersComponent::EqSlidersComponent(
 )
     : parameters(params)
 {
+    drag_tooltip.setJustificationType(juce::Justification::centred);
+    drag_tooltip.setAlwaysOnTop(true);
+    drag_tooltip.setColour(
+        juce::Label::backgroundColourId, GuiColours::AMP_BG_COLOUR
+    );
+    addAndMakeVisible(drag_tooltip);
+    slider_being_dragged = false;
+    drag_tooltip.setVisible(false);
+
     for (auto slider : sliders)
     {
         addAndMakeVisible(slider.knob);
@@ -30,6 +39,48 @@ EqSlidersComponent::EqSlidersComponent(
                 parameters, slider.parameter_id, slider.knob->getSlider()
             )
         );
+
+        auto& sliderControl = slider.knob->getSlider();
+        auto& label = slider.knob->getLabel();
+        sliderControl.onDragStart =
+            [this, &sliderControl, &label, labeledKnob = slider.knob]()
+        {
+            slider_being_dragged = true;
+            drag_tooltip.setVisible(false);
+            // delay using a Timer
+            juce::Timer::callAfterDelay(
+                300,
+                [this, &sliderControl, &label, labeledKnob]()
+                {
+                    if (sliderControl.isMouseButtonDown())
+                    {
+                        drag_tooltip.setText(
+                            juce::String(sliderControl.getValue(), 2),
+                            juce::dontSendNotification
+                        );
+                        auto labelBounds =
+                            getLocalArea(labeledKnob, label.getBounds());
+                        drag_tooltip.setBounds(labelBounds);
+                        drag_tooltip.toFront(true);
+                        drag_tooltip.setVisible(true);
+                        drag_tooltip.repaint();
+                    }
+                }
+            );
+        };
+        sliderControl.onDragEnd = [this]()
+        {
+            slider_being_dragged = false;
+            drag_tooltip.setVisible(false);
+        };
+        sliderControl.onValueChange = [this, &sliderControl]()
+        {
+            if (slider_being_dragged && drag_tooltip.isVisible())
+                drag_tooltip.setText(
+                    juce::String(sliderControl.getValue(), 2),
+                    juce::dontSendNotification
+                );
+        };
     }
 }
 

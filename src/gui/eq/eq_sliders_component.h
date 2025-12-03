@@ -2,6 +2,7 @@
 
 #include "../colours.h"
 #include "../components/labeled_knob.h"
+#include "../components/solid_tooltip.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
@@ -44,6 +45,9 @@ class EqSlidersComponent : public juce::Component
     std::vector<
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>>
         slider_attachments;
+
+    SolidTooltip drag_tooltip;
+    bool slider_being_dragged;
 
     std::vector<EqSlider> sliders = {
         {&low_shelf_gain_knob,  "eq_low_shelf_gain",  "low"  },
