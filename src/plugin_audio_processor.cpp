@@ -39,9 +39,6 @@ PluginAudioProcessor::PluginAudioProcessor()
         parameters.getRawParameterValue("compressor_bypass");
     synth_bypass_parameter = parameters.getRawParameterValue("synth_bypass");
 
-    inputLevel.setValue(-48.0f);
-    outputLevel.setValue(-48.0f);
-
     for (auto* p : getParameters())
     {
         if (auto* param = dynamic_cast<juce::RangedAudioParameter*>(p))
@@ -322,14 +319,14 @@ void PluginAudioProcessor::processBlock(
 void PluginAudioProcessor::updateInputLevel(juce::AudioBuffer<float>& buffer)
 {
     // Set inputLevel value for metering
-    double peakInput = buffer.getMagnitude(0, 0, buffer.getNumSamples());
+    double peakInput = buffer.getRMSLevel(0, 0, buffer.getNumSamples());
     inputLevel.setValue(peakInput);
 }
 
 void PluginAudioProcessor::updateOutputLevel(juce::AudioBuffer<float>& buffer)
 {
     // Set outputLevel value for metering
-    double peakOutput = buffer.getMagnitude(0, 0, buffer.getNumSamples());
+    double peakOutput = buffer.getRMSLevel(0, 0, buffer.getNumSamples());
     outputLevel.setValue(peakOutput);
 }
 

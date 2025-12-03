@@ -12,7 +12,7 @@ Meter::Meter(juce::Value& v) : measured_value(v)
     slider.setSliderStyle(juce::Slider::LinearBarVertical);
 
     measured_value.addListener(this);
-    measured_value.setValue(0);
+    measured_value.setValue(-48.0f);
 
     smoothed_value = measured_value.getValue();
     target_value = smoothed_value;
