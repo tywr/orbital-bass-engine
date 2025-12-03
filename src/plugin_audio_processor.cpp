@@ -154,13 +154,19 @@ void PluginAudioProcessor::prepareParameters()
 void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     current_input_gain.reset(sampleRate, smoothing_time);
-    current_input_gain.setCurrentAndTargetValue(
-        juce::Decibels::decibelsToGain(input_gain_parameter->load())
+    float inputGainDb =
+        juce::jlimit(-48.0f, 6.0f, input_gain_parameter->load());
+    current_input_gain.setTargetValue(
+        juce::Decibels::decibelsToGain(inputGainDb)
     );
 
     current_output_gain.reset(sampleRate, smoothing_time);
-    current_output_gain.setCurrentAndTargetValue(
-        juce::Decibels::decibelsToGain(output_gain_parameter->load())
+    float rawOutputGainDb = output_gain_parameter->load();
+    float outputGainDb = juce::jlimit(-48.0f, 12.0f, rawOutputGainDb);
+    std::cout << "[prepareToPlay] Output gain raw: " << rawOutputGainDb
+              << " dB, clamped: " << outputGainDb << " dB" << std::endl;
+    current_output_gain.setTargetValue(
+        juce::Decibels::decibelsToGain(outputGainDb)
     );
 
     current_amp_master_gain.reset(sampleRate, smoothing_time);
@@ -249,8 +255,10 @@ void PluginAudioProcessor::processBlock(
     juce::dsp::AudioBlock<float> block(buffer);
     juce::dsp::ProcessContextReplacing<float> context(block);
 
+    float inputGainDb =
+        juce::jlimit(-48.0f, 6.0f, input_gain_parameter->load());
     current_input_gain.setTargetValue(
-        juce::Decibels::decibelsToGain(input_gain_parameter->load())
+        juce::Decibels::decibelsToGain(inputGainDb)
     );
     current_input_gain.applyGain(buffer, num_samples);
     updateInputLevel(buffer);
@@ -261,13 +269,13 @@ void PluginAudioProcessor::processBlock(
         currentPitch.setValue(pitch);
         std::cout << "Detected Pitch: " << pitch << std::endl;
     }
-    else
-    {
-        currentPitch.setValue(0.0f);
-    }
+    // else
+    // {
+    //     currentPitch.setValue(0.0f);
+    // }
 
-    if (synth_bypass_parameter->load() < 0.5f)
-        synth_voices.process(context);
+    // if (synth_bypass_parameter->load() < 0.5f)
+    //     synth_voices.process(context);
 
     if (compressor_bypass_parameter->load() < 0.5f)
     {
@@ -295,8 +303,10 @@ void PluginAudioProcessor::processBlock(
     if (ir_bypass_parameter->load() < 0.5f)
         irConvolver.process(context);
 
+    float outputGainDb =
+        juce::jlimit(-48.0f, 12.0f, output_gain_parameter->load());
     current_output_gain.setTargetValue(
-        juce::Decibels::decibelsToGain(output_gain_parameter->load())
+        juce::Decibels::decibelsToGain(outputGainDb)
     );
     current_output_gain.applyGain(buffer, num_samples);
     updateOutputLevel(buffer);
@@ -338,7 +348,7 @@ void PluginAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
     juce::String sessionPath =
         state.getProperty("session_folder_path", "").toString();
     std::cout << "Saving state - Session folder path: " << sessionPath
-               << std::endl;
+              << std::endl;
 
     copyXmlToBinary(*xml, destData);
 }
@@ -355,23 +365,27 @@ void PluginAudioProcessor::setStateInformation(
         {
             parameters.replaceState(juce::ValueTree::fromXml(*xmlState));
 
+            std::cout << "[setStateInformation] Output gain after restore: "
+                      << output_gain_parameter->load() << " dB" << std::endl;
+
             juce::String savedSessionPath =
                 parameters.state.getProperty("session_folder_path", "")
                     .toString();
-            DBG("Loading state - Session folder path: " + savedSessionPath);
+            // DBG("Loading state - Session folder path: " + savedSessionPath);
 
             if (savedSessionPath.isNotEmpty())
             {
                 juce::File sessionFolder(savedSessionPath);
                 if (sessionFolder.isDirectory())
                 {
-                    DBG("Loading session from: " +
-                        sessionFolder.getFullPathName());
+                    // DBG("Loading session from: " +
+                    // sessionFolder.getFullPathName());
                     sessionManager.loadSessionFromFolder(sessionFolder);
                 }
                 else
                 {
-                    DBG("Session folder no longer exists: " + savedSessionPath);
+                    // DBG("Session folder no longer exists: " +
+                    // savedSessionPath);
                 }
             }
         }
@@ -384,7 +398,9 @@ bool PluginAudioProcessor::loadSession(const juce::File& folder)
         juce::String folderPath = folder.getFullPathName();
 
         // Save to both the state tree and a properties file
-        parameters.state.setProperty("session_folder_path", folderPath, nullptr);
+        parameters.state.setProperty(
+            "session_folder_path", folderPath, nullptr
+        );
 
         // Also save to properties file for standalone persistence
         juce::PropertiesFile::Options options;
@@ -397,7 +413,7 @@ bool PluginAudioProcessor::loadSession(const juce::File& folder)
         props.setValue("lastSessionFolder", folderPath);
         props.saveIfNeeded();
 
-        DBG("Session loaded and saved: " + folderPath);
+        // DBG("Session loaded and saved: " + folderPath);
         updateHostDisplay();
         return true;
     }
@@ -421,7 +437,7 @@ void PluginAudioProcessor::saveCurrentPresetIndex(int index)
     props.setValue("lastPresetIndex", index);
     props.saveIfNeeded();
 
-    DBG("Saved current preset index: " + juce::String(index));
+    // DBG("Saved current preset index: " + juce::String(index));
 }
 
 juce::String PluginAudioProcessor::getSessionFolderPath() const
@@ -442,38 +458,47 @@ void PluginAudioProcessor::loadSavedSession()
     juce::String savedPath = props.getValue("lastSessionFolder", "");
     int savedPresetIndex = props.getIntValue("lastPresetIndex", -1);
 
-    DBG("Attempting to load saved session from: " + savedPath);
-    DBG("Last preset index: " + juce::String(savedPresetIndex));
+    // DBG("Attempting to load saved session from: " + savedPath);
+    // DBG("Last preset index: " + juce::String(savedPresetIndex));
 
     if (savedPath.isNotEmpty())
     {
         juce::File sessionFolder(savedPath);
         if (sessionFolder.isDirectory())
         {
-            DBG("Loading saved session: " + savedPath);
+            // DBG("Loading saved session: " + savedPath);
             sessionManager.loadSessionFromFolder(sessionFolder);
-            parameters.state.setProperty("session_folder_path", savedPath, nullptr);
+            parameters.state.setProperty(
+                "session_folder_path", savedPath, nullptr
+            );
 
-            // Restore the last selected preset
-            if (savedPresetIndex >= 0 && savedPresetIndex < SessionManager::MAX_PRESETS)
+            // Restore the last selected preset only if audio processing has
+            // been prepared
+            if (savedPresetIndex >= 0 &&
+                savedPresetIndex < SessionManager::MAX_PRESETS)
             {
                 const auto& preset = sessionManager.getPreset(savedPresetIndex);
                 if (!preset.isEmpty)
                 {
-                    DBG("Restoring last preset: " + preset.name + " at index " + juce::String(savedPresetIndex));
-                    presetManager.applyPreset(preset);
+                    // DBG("Restoring last preset: " + preset.name + " at index
+                    // " + juce::String(savedPresetIndex)); Only apply preset if
+                    // sample rate is valid (meaning prepareToPlay was called)
+                    if (getSampleRate() > 0)
+                    {
+                        presetManager.applyPreset(preset);
+                    }
                 }
                 sessionManager.setCurrentPresetIndex(savedPresetIndex);
             }
         }
         else
         {
-            DBG("Saved session folder no longer exists: " + savedPath);
+            // DBG("Saved session folder no longer exists: " + savedPath);
         }
     }
     else
     {
-        DBG("No saved session found");
+        // DBG("No saved session found");
     }
 }
 

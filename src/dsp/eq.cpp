@@ -66,6 +66,7 @@ void EQ::prepare(const juce::dsp::ProcessSpec& spec)
 void EQ::setCoefficients()
 {
     low_shelf_gain.skip((int)processSpec.maximumBlockSize);
+    low_shelf_freq.skip((int)processSpec.maximumBlockSize);
     low_mid_freq.skip((int)processSpec.maximumBlockSize);
     low_mid_q.skip((int)processSpec.maximumBlockSize);
     low_mid_gain.skip((int)processSpec.maximumBlockSize);
@@ -73,6 +74,7 @@ void EQ::setCoefficients()
     high_mid_q.skip((int)processSpec.maximumBlockSize);
     high_mid_gain.skip((int)processSpec.maximumBlockSize);
     high_shelf_gain.skip((int)processSpec.maximumBlockSize);
+    high_shelf_freq.skip((int)processSpec.maximumBlockSize);
     lpf_frequency.skip((int)processSpec.maximumBlockSize);
 
     float current_low_shelf_gain = low_shelf_gain.getCurrentValue();
