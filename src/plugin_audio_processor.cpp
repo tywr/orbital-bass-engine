@@ -39,6 +39,9 @@ PluginAudioProcessor::PluginAudioProcessor()
         parameters.getRawParameterValue("compressor_bypass");
     synth_bypass_parameter = parameters.getRawParameterValue("synth_bypass");
 
+    inputLevel.setValue(-48.0f);
+    outputLevel.setValue(-48.0f);
+
     for (auto* p : getParameters())
     {
         if (auto* param = dynamic_cast<juce::RangedAudioParameter*>(p))
