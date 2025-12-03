@@ -25,7 +25,7 @@ IRComponent::IRComponent(juce::AudioProcessorValueTreeState& params)
         juce::ToggleButton::tickColourId, GuiColours::DEFAULT_INACTIVE_COLOUR
     );
     bypassButton.setColour(
-        juce::ToggleButton::tickDisabledColourId, ColourCodes::white0
+        juce::ToggleButton::tickDisabledColourId, ColourCodes::orange
     );
     bypassButton.onClick = [this]() { switchColour(); };
     bypassButtonAttachment =
@@ -122,11 +122,8 @@ void IRComponent::paint(juce::Graphics& g)
     g.setColour(border_colour);
     g.drawRect(title_bounds, border_thickness);
 
-    // Draw display section border (upper half)
     auto display_section_bounds =
         full_bounds.removeFromTop(full_bounds.getHeight() / 2);
-    g.setColour(border_colour);
-    g.drawRect(display_section_bounds, border_thickness);
 
     // Draw knobs section border (lower half)
     g.setColour(border_colour);

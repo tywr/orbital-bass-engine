@@ -95,7 +95,7 @@ void EqSlidersComponent::paint(juce::Graphics& g)
 
     // Calculate the same layout as resized() to position separators correctly
     const float lpf_width_ratio = 0.15f;
-    int lpf_width = bounds.getWidth() * lpf_width_ratio;
+    int lpf_width = static_cast<int>(bounds.getWidth() * lpf_width_ratio);
     bounds.removeFromRight(lpf_width);
     bounds.removeFromRight(section_gap);
 
@@ -125,7 +125,7 @@ void EqSlidersComponent::paint(juce::Graphics& g)
     g.drawLine(x21, y21, x21, bounds.getBottom(), line_thickness);
 
     // Separator after High-Mid section (at 5*width/6)
-    float x22 = bounds.getX() + 4.5 * bottom_knob_width;
+    float x22 = bounds.getX() + 4.5f * bottom_knob_width;
     float y22 = bounds.getBottom() - height / 1.5f;
     g.drawLine(x22, bounds.getY(), x22, y22, line_thickness);
     g.drawLine(x21, y21, x22, y22, line_thickness);
@@ -139,7 +139,7 @@ void EqSlidersComponent::resized()
     // Split horizontally: left side for frequency ranges, right side for LPF
     const float lpf_width_ratio = 0.15f;
     auto lpf_section =
-        bounds.removeFromRight(bounds.getWidth() * lpf_width_ratio);
+        bounds.removeFromRight(static_cast<int>(bounds.getWidth() * lpf_width_ratio));
     bounds.removeFromRight(section_gap);
 
     int total_width = bounds.getWidth();

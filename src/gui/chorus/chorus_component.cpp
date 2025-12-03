@@ -72,10 +72,6 @@ void ChorusComponent::paint(juce::Graphics& g)
     g.setColour(border_colour);
     g.drawRect(title_bounds, border_thickness);
 
-    // Draw knobs area border
-    g.setColour(border_colour);
-    g.drawRect(bounds, border_thickness);
-
     knobs_component.switchColour(colour1, colour2);
 }
 
