@@ -6,10 +6,10 @@ constexpr int WIDTH = 850;
 constexpr int HEIGHT = 100;
 constexpr int CORNER_RADIUS = 20;
 constexpr int BORDER_THICKNESS = 5;
-constexpr int SIDE_WIDTH = 200;
+constexpr int SIDE_WIDTH = 20;
+constexpr int SIDE_PADDING = 10;
 
-
-constexpr int BYPASS_SIZE = 20;
+constexpr int BYPASS_SIZE = 30;
 
 constexpr int BOX_HEIGHT = 80;
 constexpr int LABEL_HEIGHT = 20;

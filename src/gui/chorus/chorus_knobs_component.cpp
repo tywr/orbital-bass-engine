@@ -1,8 +1,6 @@
 #include "chorus_knobs_component.h"
 #include "../colours.h"
 #include "../components/solid_tooltip.h"
-#include "../looks/compressor_look_and_feel.h"
-#include "../looks/compressor_selector_look_and_feel.h"
 #include "chorus_dimensions.h"
 
 ChorusKnobsComponent::ChorusKnobsComponent(
@@ -21,45 +19,47 @@ ChorusKnobsComponent::ChorusKnobsComponent(
 
     for (auto knob : knobs)
     {
-        addAndMakeVisible(knob.slider);
-        addAndMakeVisible(knob.label);
-        knob.label->setText(knob.label_text, juce::dontSendNotification);
-        knob.label->setJustificationType(juce::Justification::centred);
-        knob.slider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-        knob.slider->setTextBoxStyle(juce::Slider::NoTextBox, false, 1, 1);
-        knob.label->setColour(
+        addAndMakeVisible(knob.knob);
+        knob.knob->setLabelText(knob.label_text);
+        knob.knob->setKnobSize(
+            ChorusDimensions::KNOB_SIZE, ChorusDimensions::KNOB_SIZE
+        );
+        knob.knob->setLabelHeight(ChorusDimensions::LABEL_HEIGHT);
+        knob.knob->getLabel().setColour(
             juce::Slider::textBoxOutlineColourId,
             juce::Colours::transparentBlack
         );
-        knob.label->setColour(
+        knob.knob->getLabel().setColour(
             juce::Slider::textBoxTextColourId, ColourCodes::grey3
         );
+
         slider_attachments.push_back(
             std::make_unique<
                 juce::AudioProcessorValueTreeState::SliderAttachment>(
-                parameters, knob.parameter_id, *knob.slider
+                parameters, knob.parameter_id, knob.knob->getSlider()
             )
         );
-        knob.slider->onDragStart =
-            [this, slider = knob.slider, label = knob.label]()
+
+        auto& slider = knob.knob->getSlider();
+        auto& label = knob.knob->getLabel();
+        slider.onDragStart = [this, &slider, &label, labeledKnob = knob.knob]()
         {
             slider_being_dragged = true;
             drag_tooltip.setVisible(false);
             // delay using a Timer
             juce::Timer::callAfterDelay(
                 300,
-                [this, slider, label]()
+                [this, &slider, &label, labeledKnob]()
                 {
-                    if (slider->isMouseButtonDown())
+                    if (slider.isMouseButtonDown())
                     {
                         drag_tooltip.setText(
-                            juce::String(slider->getValue(), 2),
+                            juce::String(slider.getValue(), 2),
                             juce::dontSendNotification
                         );
-                        drag_tooltip.setBounds(
-                            label->getX(), label->getY(), label->getWidth(),
-                            label->getHeight()
-                        );
+                        auto labelBounds =
+                            getLocalArea(labeledKnob, label.getBounds());
+                        drag_tooltip.setBounds(labelBounds);
                         drag_tooltip.toFront(true);
                         drag_tooltip.setVisible(true);
                         drag_tooltip.repaint();
@@ -67,16 +67,16 @@ ChorusKnobsComponent::ChorusKnobsComponent(
                 }
             );
         };
-        knob.slider->onDragEnd = [this]()
+        slider.onDragEnd = [this]()
         {
             slider_being_dragged = false;
             drag_tooltip.setVisible(false);
         };
-        knob.slider->onValueChange = [this, slider = knob.slider]()
+        slider.onValueChange = [this, &slider]()
         {
             if (slider_being_dragged && drag_tooltip.isVisible())
                 drag_tooltip.setText(
-                    juce::String(slider->getValue(), 2),
+                    juce::String(slider.getValue(), 2),
                     juce::dontSendNotification
                 );
         };
@@ -94,22 +94,25 @@ void ChorusKnobsComponent::paint(juce::Graphics& g)
 
 void ChorusKnobsComponent::resized()
 {
-
     auto bounds = getLocalBounds();
-    auto label_bounds = bounds.removeFromTop(ChorusDimensions::LABEL_HEIGHT);
-    const int knob_box_size = bounds.getWidth() / (int)knobs.size();
-    for (auto knob : knobs)
+
+    // Top row: rate, depth
+    auto top_row_bounds = bounds.removeFromTop(bounds.getHeight() / 2);
+    const int top_knob_box_size = top_row_bounds.getWidth() / 2;
+
+    for (size_t i = 0; i < 2; ++i) // rate, depth
     {
-        knob.label->setBounds(label_bounds.removeFromLeft(knob_box_size)
-                                  .withSizeKeepingCentre(
-                                      ChorusDimensions::KNOB_SIZE,
-                                      ChorusDimensions::LABEL_HEIGHT
-                                  ));
-        knob.slider->setBounds(bounds.removeFromLeft(knob_box_size)
-                                   .withSizeKeepingCentre(
-                                       ChorusDimensions::KNOB_SIZE,
-                                       ChorusDimensions::KNOB_SIZE
-                                   ));
+        ChorusKnob knob = knobs[i];
+        knob.knob->setBounds(top_row_bounds.removeFromLeft(top_knob_box_size));
+    }
+
+    // Bottom row: crossover, mix
+    const int bottom_knob_box_size = bounds.getWidth() / 2;
+
+    for (size_t i = 2; i < 4; ++i) // crossover, mix
+    {
+        ChorusKnob knob = knobs[i];
+        knob.knob->setBounds(bounds.removeFromLeft(bottom_knob_box_size));
     }
 }
 
@@ -120,7 +123,13 @@ void ChorusKnobsComponent::switchColour(
     juce::ignoreUnused(colour2);
     for (ChorusKnob knob : knobs)
     {
-        knob.slider->setColour(juce::Slider::rotarySliderFillColourId, colour1);
+        knob.knob->getSlider().setColour(
+            juce::Slider::rotarySliderOutlineColourId, colour1
+        );
+        knob.knob->getSlider().setColour(
+            juce::Slider::rotarySliderFillColourId,
+            juce::Colours::transparentBlack
+        );
     }
     repaint();
 }

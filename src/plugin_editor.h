@@ -1,7 +1,8 @@
 #pragma once
 
 #include "gui/header.h"
-#include "gui/tabs.h"
+#include "gui/panels.h"
+#include "gui/tuner.h"
 #include "plugin_audio_processor.h"
 
 //==============================================================================
@@ -31,6 +32,15 @@ class PluginEditor final : public juce::AudioProcessorEditor
     PluginAudioProcessor& processorRef;
     juce::AudioProcessorValueTreeState& parameters;
     Header header;
-    Tabs tabs;
+    Panels panels;
+    Tuner tuner;
+
+    void showTuner();
+    void hideTuner();
+    void handlePresetClicked(int index);
+    void handleLoadSession();
+    void handleSavePreset();
+    void handleReloadPreset();
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginEditor)
 };

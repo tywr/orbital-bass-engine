@@ -28,12 +28,14 @@ target_sources(${PROJECT_NAME}
         plugin_editor.cpp
         plugin_audio_processor.cpp
         plugin_audio_process_parameters.cpp
-        gui/looks/amp_small_look_and_feel.cpp
+        preset_manager.cpp
+        session_manager.cpp
         gui/looks/base_look_and_feel.cpp
-        gui/looks/compressor_look_and_feel.cpp
-        gui/looks/header_look_and_feel.cpp
-        gui/looks/eq_look_and_feel.cpp
-        gui/looks/compressor_selector_look_and_feel.cpp
+        gui/looks/tuner_look_and_feel.cpp
+        gui/preset_bar.cpp
+        gui/preset_icon_buttons.cpp
+        gui/session_name_display.cpp
+        gui/components/labeled_knob.cpp
         gui/compressor/compressor_knobs_component.cpp
         gui/compressor/compressor_meter_component.cpp
         gui/compressor/compressor_component.cpp
@@ -48,9 +50,10 @@ target_sources(${PROJECT_NAME}
         gui/ir/ir_component.cpp
         gui/meter.cpp
         gui/header.cpp
-        gui/tabs.cpp
-        gui/post_rack.cpp
+        gui/panels.cpp
+        gui/tuner.cpp
         dsp/compressor.cpp
+        dsp/pitch_detector.cpp
         dsp/ir.cpp
         dsp/overdrives/helios.cpp
         dsp/overdrives/borealis.cpp
@@ -69,6 +72,7 @@ endif()
 
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC
+        JUCE_DISABLE_ASSERTIONS=1
         # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
         JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_plugin` call
         JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_plugin` call

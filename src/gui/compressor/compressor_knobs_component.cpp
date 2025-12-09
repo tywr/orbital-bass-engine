@@ -1,8 +1,7 @@
 #include "compressor_knobs_component.h"
 #include "../colours.h"
 #include "../components/solid_tooltip.h"
-#include "../looks/compressor_look_and_feel.h"
-#include "../looks/compressor_selector_look_and_feel.h"
+#include "../dimensions.h"
 #include "compressor_dimensions.h"
 
 CompressorKnobsComponent::CompressorKnobsComponent(
@@ -19,51 +18,49 @@ CompressorKnobsComponent::CompressorKnobsComponent(
     slider_being_dragged = false;
     drag_tooltip.setVisible(false);
 
-    type_slider.setLookAndFeel(&selector_look_and_feel);
-    ratio_slider.setLookAndFeel(&selector_look_and_feel);
-
     for (auto knob : knobs)
     {
-        addAndMakeVisible(knob.slider);
-        addAndMakeVisible(knob.label);
-        knob.label->setText(knob.label_text, juce::dontSendNotification);
-        knob.label->setJustificationType(juce::Justification::centred);
-        // knob.label->attachToComponent(knob.slider, false);
-        knob.slider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-        knob.slider->setTextBoxStyle(juce::Slider::NoTextBox, false, 1, 1);
-        knob.label->setColour(
+        addAndMakeVisible(knob.knob);
+        knob.knob->setLabelText(knob.label_text);
+        knob.knob->setKnobSize(
+            GuiDimensions::KNOB_SIZE, GuiDimensions::KNOB_SIZE
+        );
+        knob.knob->setLabelHeight(GuiDimensions::KNOB_LABEL_HEIGHT);
+        knob.knob->getLabel().setColour(
             juce::Slider::textBoxOutlineColourId,
             juce::Colours::transparentBlack
         );
-        knob.label->setColour(
+        knob.knob->getLabel().setColour(
             juce::Slider::textBoxTextColourId, ColourCodes::grey3
         );
+
         slider_attachments.push_back(
             std::make_unique<
                 juce::AudioProcessorValueTreeState::SliderAttachment>(
-                parameters, knob.parameter_id, *knob.slider
+                parameters, knob.parameter_id, knob.knob->getSlider()
             )
         );
-        knob.slider->onDragStart =
-            [this, slider = knob.slider, label = knob.label]()
+
+        auto& slider = knob.knob->getSlider();
+        auto& label = knob.knob->getLabel();
+        slider.onDragStart = [this, &slider, &label, labeledKnob = knob.knob]()
         {
             slider_being_dragged = true;
             drag_tooltip.setVisible(false);
             // delay using a Timer
             juce::Timer::callAfterDelay(
                 300,
-                [this, slider, label]()
+                [this, &slider, &label, labeledKnob]()
                 {
-                    if (slider->isMouseButtonDown())
+                    if (slider.isMouseButtonDown())
                     {
                         drag_tooltip.setText(
-                            juce::String(slider->getValue(), 2),
+                            juce::String(slider.getValue(), 2),
                             juce::dontSendNotification
                         );
-                        drag_tooltip.setBounds(
-                            label->getX(), label->getY(), label->getWidth(),
-                            label->getHeight()
-                        );
+                        auto labelBounds =
+                            getLocalArea(labeledKnob, label.getBounds());
+                        drag_tooltip.setBounds(labelBounds);
                         drag_tooltip.toFront(true);
                         drag_tooltip.setVisible(true);
                         drag_tooltip.repaint();
@@ -71,22 +68,20 @@ CompressorKnobsComponent::CompressorKnobsComponent(
                 }
             );
         };
-        knob.slider->onDragEnd = [this]()
+        slider.onDragEnd = [this]()
         {
             slider_being_dragged = false;
             drag_tooltip.setVisible(false);
         };
-        knob.slider->onValueChange = [this, slider = knob.slider]()
+        slider.onValueChange = [this, &slider]()
         {
             if (slider_being_dragged && drag_tooltip.isVisible())
                 drag_tooltip.setText(
-                    juce::String(slider->getValue(), 2),
+                    juce::String(slider.getValue(), 2),
                     juce::dontSendNotification
                 );
         };
     }
-    type_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, 20);
-    ratio_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, 20);
 }
 
 CompressorKnobsComponent::~CompressorKnobsComponent()
@@ -100,47 +95,38 @@ void CompressorKnobsComponent::paint(juce::Graphics& g)
 
 void CompressorKnobsComponent::resized()
 {
+    auto bounds = getLocalBounds().reduced(GuiDimensions::PANEL_KNOB_PADDING);
 
-    auto bounds = getLocalBounds();
-    int left_size = (int)(0.75f * bounds.getWidth());
-    auto left_bounds = bounds.removeFromLeft(left_size).withSizeKeepingCentre(
-        left_size, CompressorDimensions::KNOBS_INNER_BOX_HEIGHT
-    );
-    auto left_label_bounds =
-        left_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT);
-    const int knob_box_size = left_bounds.getWidth() / 3;
+    // Left side: threshold alone
+    auto left_bounds = bounds.removeFromLeft(bounds.getWidth() / 4);
+    CompressorKnob threshold = knobs[1]; // threshold
+    threshold.knob->setBounds(left_bounds);
 
-    for (size_t i = 0; i < 3; ++i)
+    // Right side: two rows of 3 knobs each
+    auto right_bounds = bounds;
+
+    // Top row: hpf, mix, level
+    auto top_row_bounds =
+        right_bounds.removeFromTop(right_bounds.getHeight() / 2);
+    const int top_knob_box_size = top_row_bounds.getWidth() / 3;
+
+    std::vector<size_t> top_row_indices = {0, 2, 3}; // hpf, mix, level
+    for (size_t i : top_row_indices)
     {
         CompressorKnob knob = knobs[i];
-        knob.label->setBounds(left_label_bounds.removeFromLeft(knob_box_size)
-                                  .withSizeKeepingCentre(
-                                      CompressorDimensions::KNOB_SIZE,
-                                      CompressorDimensions::LABEL_HEIGHT
-                                  ));
-        knob.slider->setBounds(left_bounds.removeFromLeft(knob_box_size)
-                                   .withSizeKeepingCentre(
-                                       CompressorDimensions::KNOB_SIZE,
-                                       CompressorDimensions::KNOB_SIZE
-                                   ));
+        knob.knob->setBounds(top_row_bounds.removeFromLeft(top_knob_box_size));
     }
 
-    const int knob_box_height = bounds.getHeight() / 2;
-    for (size_t i = 3; i < 5; ++i)
+    // Bottom row: attack, release, ratio
+    const int bottom_knob_box_size = right_bounds.getWidth() / 3;
+
+    std::vector<size_t> bottom_row_indices = {
+        5, 6, 4
+    }; // attack, release, ratio
+    for (size_t i : bottom_row_indices)
     {
-        auto knob_bounds = bounds.removeFromTop(knob_box_height);
         CompressorKnob knob = knobs[i];
-        knob.label->setBounds(
-            knob_bounds.removeFromTop(CompressorDimensions::LABEL_HEIGHT)
-                .withSizeKeepingCentre(
-                    CompressorDimensions::KNOB_SIZE,
-                    CompressorDimensions::LABEL_HEIGHT
-                )
-        );
-        knob.slider->setBounds(knob_bounds.withSizeKeepingCentre(
-            CompressorDimensions::SMALL_KNOB_SIZE,
-            CompressorDimensions::SMALL_KNOB_SIZE
-        ));
+        knob.knob->setBounds(right_bounds.removeFromLeft(bottom_knob_box_size));
     }
 }
 
@@ -151,7 +137,13 @@ void CompressorKnobsComponent::switchColour(
     juce::ignoreUnused(colour2);
     for (CompressorKnob knob : knobs)
     {
-        knob.slider->setColour(juce::Slider::rotarySliderFillColourId, colour1);
+        knob.knob->getSlider().setColour(
+            juce::Slider::rotarySliderOutlineColourId, colour1
+        );
+        knob.knob->getSlider().setColour(
+            juce::Slider::rotarySliderFillColourId,
+            juce::Colours::transparentBlack
+        );
     }
     repaint();
 }

@@ -19,10 +19,11 @@ juce::Colour const blue2 = juce::Colour(129, 161, 193);
 juce::Colour const blue3 = juce::Colour(94, 129, 172);
 //
 juce::Colour const white0 = juce::Colour(216, 222, 233);
-
 juce::Colour const white1 = juce::Colour(229, 233, 240);
-
 juce::Colour const white2 = juce::Colour(236, 239, 244);
+
+juce::Colour const orange = juce::Colour(0xffff8c00);
+juce::Colour const orange_light = juce::Colour(0xffffd7af);
 
 juce::Colour const aurora_green = juce::Colour(163, 190, 140);
 juce::Colour const aurora_violet = juce::Colour(180, 142, 173);
@@ -56,4 +57,6 @@ juce::Colour const EQ_BG_COLOUR = ColourCodes::bg0;
 juce::Colour const EQ_STYLING_COLOUR = ColourCodes::bg2;
 
 juce::Colour const AMP_BG_COLOUR = ColourCodes::bg0;
+
+juce::Colour const RACK_COLOUR = ColourCodes::grey0;
 } // namespace GuiColours

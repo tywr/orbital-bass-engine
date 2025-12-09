@@ -1,12 +1,15 @@
 #pragma once
 
-#include "dsp/eq.h"
 #include "dsp/chorus.h"
 #include "dsp/compressor.h"
+#include "dsp/eq.h"
 #include "dsp/ir.h"
 #include "dsp/overdrives/helios.h"
 #include "dsp/overdrives/overdrive.h"
+#include "dsp/pitch_detector.h"
 #include "dsp/synth_voices.h"
+#include "preset_manager.h"
+#include "session_manager.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
@@ -40,9 +43,14 @@ class PluginAudioProcessor final
     juce::Value inputLevel;                // in dB
     juce::Value outputLevel;               // in dB
     juce::Value compressorGainReductionDb; // in dB
+    juce::Value currentPitch;              // in Hz
     void updateInputLevel(juce::AudioBuffer<float>& buffer);
     void updateOutputLevel(juce::AudioBuffer<float>& buffer);
     void applyGain(std::atomic<float>*, float&, juce::AudioBuffer<float>&);
+    void setTunerBypass(bool stb)
+    {
+        is_tuner_bypassed = stb;
+    }
 
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
@@ -63,6 +71,15 @@ class PluginAudioProcessor final
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
+    PresetManager& getPresetManager() { return presetManager; }
+    SessionManager& getSessionManager() { return sessionManager; }
+
+    bool loadSession(const juce::File& folder);
+    void saveSessionPath(const juce::String& path);
+    juce::String getSessionFolderPath() const;
+    void loadSavedSession();
+    void saveCurrentPresetIndex(int index);
+
   private:
     juce::AudioProcessorValueTreeState parameters;
     juce::AudioProcessorValueTreeState::ParameterLayout parameterLayout;
@@ -74,14 +91,9 @@ class PluginAudioProcessor final
     IRConvolver irConvolver;
     Chorus chorus;
     SynthVoices synth_voices;
+    PitchDetector pitch_detector;
 
     HeliosOverdrive overdrive;
-    // std::atomic<Overdrive*> current_overdrive = nullptr;
-    // HeliosOverdrive helios_overdrive;
-    // BorealisOverdrive borealis_overdrive;
-    // std::vector<Overdrive*> overdrives = {
-    //     &helios_overdrive, &borealis_overdrive
-    // };
 
     float smoothing_time = 0.05f;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>
@@ -95,7 +107,10 @@ class PluginAudioProcessor final
     std::atomic<float>* chorus_bypass_parameter = nullptr;
     std::atomic<float>* eq_bypass_parameter = nullptr;
     std::atomic<float>* synth_bypass_parameter = nullptr;
-    bool isAmpBypassed = false;
+    bool is_tuner_bypassed = true;
+
+    PresetManager presetManager;
+    SessionManager sessionManager;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginAudioProcessor)
 };

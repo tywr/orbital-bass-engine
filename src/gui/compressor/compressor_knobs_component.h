@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../colours.h"
+#include "../components/labeled_knob.h"
 #include "../components/solid_tooltip.h"
-#include "../looks/compressor_selector_look_and_feel.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
@@ -10,8 +10,7 @@
 
 struct CompressorKnob
 {
-    juce::Slider* slider;
-    juce::Label* label;
+    LabeledKnob* knob;
     juce::String parameter_id;
     juce::String label_text;
 };
@@ -34,32 +33,13 @@ class CompressorKnobsComponent : public juce::Component
 
     juce::Colour const default_type_colour = ColourCodes::grey3;
 
-    CompressorSelectorLookAndFeel selector_look_and_feel;
-
-    juce::Slider threshold_slider;
-    juce::Label threshold_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        threshold_slider_attachment;
-
-    juce::Slider ratio_slider;
-    juce::Label ratio_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        ratio_slider_attachment;
-
-    juce::Slider mix_slider;
-    juce::Label mix_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        mix_slider_attachment;
-
-    juce::Slider level_slider;
-    juce::Label level_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        level_slider_attachment;
-
-    juce::Slider type_slider;
-    juce::Label type_label;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
-        type_slider_attachment;
+    LabeledKnob hpf_knob;
+    LabeledKnob threshold_knob;
+    LabeledKnob ratio_knob;
+    LabeledKnob mix_knob;
+    LabeledKnob level_knob;
+    LabeledKnob attack_knob;
+    LabeledKnob release_knob;
 
     std::vector<
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>>
@@ -67,11 +47,13 @@ class CompressorKnobsComponent : public juce::Component
 
     // Define knobs for easy looping
     std::vector<CompressorKnob> knobs = {
-        {&threshold_slider, &threshold_label, "compressor_threshold", "threshold"  },
-        {&mix_slider,       &mix_label,       "compressor_mix",       "mix"  },
-        {&level_slider,     &level_label,     "compressor_level_db",  "level"},
-        {&ratio_slider,     &ratio_label,     "compressor_ratio",     "ratio"},
-        {&type_slider,      &type_label,      "compressor_type",      "type" }
+        {&hpf_knob,       "compressor_hpf",       "hpf"    },
+        {&threshold_knob, "compressor_threshold", "threshold"},
+        {&mix_knob,       "compressor_mix",       "mix"    },
+        {&level_knob,     "compressor_level_db",  "level"  },
+        {&ratio_knob,     "compressor_ratio",     "ratio"  },
+        {&attack_knob,    "compressor_attack",    "attack" },
+        {&release_knob,   "compressor_release",   "release"},
     };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CompressorKnobsComponent)

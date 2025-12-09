@@ -33,7 +33,6 @@ class HeliosOverdrive : public Overdrive
 
     juce::dsp::IIR::Filter<float> vmt_pre_lpf;
     float pre_lpf_cutoff = 1540.0f;
-    float pre_lpf_q = 1.5f;
 
     juce::dsp::IIR::Filter<float> era_filter;
     juce::dsp::IIR::Filter<float> vmt_drive_filter;
@@ -47,11 +46,11 @@ class HeliosOverdrive : public Overdrive
 
     juce::dsp::IIR::Filter<float> vmt_post_filter_2;
     float vmt_post_lpf_cutoff_2 = 10730.0f;
-    float vmt_post_lpf_q_2 = 1.0f;
+    float vmt_post_lpf_q_2 = 0.46f;
 
     juce::dsp::IIR::Filter<float> vmt_post_filter_3;
     float vmt_post_lpf_cutoff_3 = 2287.0f;
-    float vmt_post_lpf_q_3 = 0.67f;
+    float vmt_post_lpf_q_3 = 0.57f;
 
     CMOS cmos = CMOS();
     juce::dsp::WaveShaper<float> mu_amp{

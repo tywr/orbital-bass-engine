@@ -14,10 +14,19 @@ PluginAudioProcessor::PluginAudioProcessor()
       parameters(
           *this, nullptr, juce::Identifier("PluginParameters"),
           createParameterLayout()
-      )
+      ),
+      presetManager(parameters), sessionManager(presetManager)
 {
-    parameters.state.setProperty("ir_filepath", juce::String(""), nullptr);
+    if (!parameters.state.hasProperty("ir_filepath"))
+        parameters.state.setProperty("ir_filepath", juce::String(""), nullptr);
+    if (!parameters.state.hasProperty("session_folder_path"))
+        parameters.state.setProperty(
+            "session_folder_path", juce::String(""), nullptr
+        );
+
     parameters.state.addListener(this);
+
+    juce::MessageManager::callAsync([this]() { loadSavedSession(); });
 
     input_gain_parameter = parameters.getRawParameterValue("input_gain_db");
     output_gain_parameter = parameters.getRawParameterValue("output_gain_db");
@@ -145,13 +154,19 @@ void PluginAudioProcessor::prepareParameters()
 void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     current_input_gain.reset(sampleRate, smoothing_time);
-    current_input_gain.setCurrentAndTargetValue(
-        juce::Decibels::decibelsToGain(input_gain_parameter->load())
+    float inputGainDb =
+        juce::jlimit(-48.0f, 6.0f, input_gain_parameter->load());
+    current_input_gain.setTargetValue(
+        juce::Decibels::decibelsToGain(inputGainDb)
     );
 
     current_output_gain.reset(sampleRate, smoothing_time);
-    current_output_gain.setCurrentAndTargetValue(
-        juce::Decibels::decibelsToGain(output_gain_parameter->load())
+    float rawOutputGainDb = output_gain_parameter->load();
+    float outputGainDb = juce::jlimit(-48.0f, 12.0f, rawOutputGainDb);
+    std::cout << "[prepareToPlay] Output gain raw: " << rawOutputGainDb
+              << " dB, clamped: " << outputGainDb << " dB" << std::endl;
+    current_output_gain.setTargetValue(
+        juce::Decibels::decibelsToGain(outputGainDb)
     );
 
     current_amp_master_gain.reset(sampleRate, smoothing_time);
@@ -171,6 +186,7 @@ void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     irConvolver.prepare(spec);
     chorus.prepare(spec);
     overdrive.prepare(spec);
+    pitch_detector.prepare(spec);
     prepareParameters();
 }
 
@@ -239,14 +255,27 @@ void PluginAudioProcessor::processBlock(
     juce::dsp::AudioBlock<float> block(buffer);
     juce::dsp::ProcessContextReplacing<float> context(block);
 
+    float inputGainDb =
+        juce::jlimit(-48.0f, 6.0f, input_gain_parameter->load());
     current_input_gain.setTargetValue(
-        juce::Decibels::decibelsToGain(input_gain_parameter->load())
+        juce::Decibels::decibelsToGain(inputGainDb)
     );
     current_input_gain.applyGain(buffer, num_samples);
     updateInputLevel(buffer);
 
-    if (synth_bypass_parameter->load() < 0.5f)
-        synth_voices.process(context);
+    if (!is_tuner_bypassed)
+    {
+        float pitch = pitch_detector.getPitch(context);
+        currentPitch.setValue(pitch);
+        std::cout << "Detected Pitch: " << pitch << std::endl;
+    }
+    // else
+    // {
+    //     currentPitch.setValue(0.0f);
+    // }
+
+    // if (synth_bypass_parameter->load() < 0.5f)
+    //     synth_voices.process(context);
 
     if (compressor_bypass_parameter->load() < 0.5f)
     {
@@ -274,8 +303,10 @@ void PluginAudioProcessor::processBlock(
     if (ir_bypass_parameter->load() < 0.5f)
         irConvolver.process(context);
 
+    float outputGainDb =
+        juce::jlimit(-48.0f, 12.0f, output_gain_parameter->load());
     current_output_gain.setTargetValue(
-        juce::Decibels::decibelsToGain(output_gain_parameter->load())
+        juce::Decibels::decibelsToGain(outputGainDb)
     );
     current_output_gain.applyGain(buffer, num_samples);
     updateOutputLevel(buffer);
@@ -288,14 +319,14 @@ void PluginAudioProcessor::processBlock(
 void PluginAudioProcessor::updateInputLevel(juce::AudioBuffer<float>& buffer)
 {
     // Set inputLevel value for metering
-    double peakInput = buffer.getMagnitude(0, 0, buffer.getNumSamples());
+    double peakInput = buffer.getRMSLevel(0, 0, buffer.getNumSamples());
     inputLevel.setValue(peakInput);
 }
 
 void PluginAudioProcessor::updateOutputLevel(juce::AudioBuffer<float>& buffer)
 {
     // Set outputLevel value for metering
-    double peakOutput = buffer.getMagnitude(0, 0, buffer.getNumSamples());
+    double peakOutput = buffer.getRMSLevel(0, 0, buffer.getNumSamples());
     outputLevel.setValue(peakOutput);
 }
 
@@ -313,6 +344,12 @@ void PluginAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
     auto state = parameters.copyState();
     std::unique_ptr<juce::XmlElement> xml(state.createXml());
+
+    juce::String sessionPath =
+        state.getProperty("session_folder_path", "").toString();
+    std::cout << "Saving state - Session folder path: " << sessionPath
+              << std::endl;
+
     copyXmlToBinary(*xml, destData);
 }
 
@@ -325,7 +362,144 @@ void PluginAudioProcessor::setStateInformation(
     );
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName(parameters.state.getType()))
+        {
             parameters.replaceState(juce::ValueTree::fromXml(*xmlState));
+
+            std::cout << "[setStateInformation] Output gain after restore: "
+                      << output_gain_parameter->load() << " dB" << std::endl;
+
+            juce::String savedSessionPath =
+                parameters.state.getProperty("session_folder_path", "")
+                    .toString();
+            // DBG("Loading state - Session folder path: " + savedSessionPath);
+
+            if (savedSessionPath.isNotEmpty())
+            {
+                juce::File sessionFolder(savedSessionPath);
+                if (sessionFolder.isDirectory())
+                {
+                    // DBG("Loading session from: " +
+                    // sessionFolder.getFullPathName());
+                    sessionManager.loadSessionFromFolder(sessionFolder);
+                }
+                else
+                {
+                    // DBG("Session folder no longer exists: " +
+                    // savedSessionPath);
+                }
+            }
+        }
+}
+
+bool PluginAudioProcessor::loadSession(const juce::File& folder)
+{
+    if (sessionManager.loadSessionFromFolder(folder))
+    {
+        juce::String folderPath = folder.getFullPathName();
+
+        // Save to both the state tree and a properties file
+        parameters.state.setProperty(
+            "session_folder_path", folderPath, nullptr
+        );
+
+        // Also save to properties file for standalone persistence
+        juce::PropertiesFile::Options options;
+        options.applicationName = "OrbitalBassEngine";
+        options.filenameSuffix = ".settings";
+        options.osxLibrarySubFolder = "Application Support";
+        options.folderName = "OrbitalBassEngine";
+
+        juce::PropertiesFile props(options);
+        props.setValue("lastSessionFolder", folderPath);
+        props.saveIfNeeded();
+
+        // DBG("Session loaded and saved: " + folderPath);
+        updateHostDisplay();
+        return true;
+    }
+    return false;
+}
+
+void PluginAudioProcessor::saveSessionPath(const juce::String& path)
+{
+    parameters.state.setProperty("session_folder_path", path, nullptr);
+}
+
+void PluginAudioProcessor::saveCurrentPresetIndex(int index)
+{
+    juce::PropertiesFile::Options options;
+    options.applicationName = "OrbitalBassEngine";
+    options.filenameSuffix = ".settings";
+    options.osxLibrarySubFolder = "Application Support";
+    options.folderName = "OrbitalBassEngine";
+
+    juce::PropertiesFile props(options);
+    props.setValue("lastPresetIndex", index);
+    props.saveIfNeeded();
+
+    // DBG("Saved current preset index: " + juce::String(index));
+}
+
+juce::String PluginAudioProcessor::getSessionFolderPath() const
+{
+    return parameters.state.getProperty("session_folder_path", "").toString();
+}
+
+void PluginAudioProcessor::loadSavedSession()
+{
+    // First try loading from properties file
+    juce::PropertiesFile::Options options;
+    options.applicationName = "OrbitalBassEngine";
+    options.filenameSuffix = ".settings";
+    options.osxLibrarySubFolder = "Application Support";
+    options.folderName = "OrbitalBassEngine";
+
+    juce::PropertiesFile props(options);
+    juce::String savedPath = props.getValue("lastSessionFolder", "");
+    int savedPresetIndex = props.getIntValue("lastPresetIndex", -1);
+
+    // DBG("Attempting to load saved session from: " + savedPath);
+    // DBG("Last preset index: " + juce::String(savedPresetIndex));
+
+    if (savedPath.isNotEmpty())
+    {
+        juce::File sessionFolder(savedPath);
+        if (sessionFolder.isDirectory())
+        {
+            // DBG("Loading saved session: " + savedPath);
+            sessionManager.loadSessionFromFolder(sessionFolder);
+            parameters.state.setProperty(
+                "session_folder_path", savedPath, nullptr
+            );
+
+            // Restore the last selected preset only if audio processing has
+            // been prepared
+            if (savedPresetIndex >= 0 &&
+                savedPresetIndex < SessionManager::MAX_PRESETS)
+            {
+                const auto& preset = sessionManager.getPreset(savedPresetIndex);
+                if (!preset.isEmpty)
+                {
+                    // DBG("Restoring last preset: " + preset.name + " at index
+                    // " + juce::String(savedPresetIndex)); Only apply preset if
+                    // sample rate is valid (meaning prepareToPlay was called)
+                    if (getSampleRate() > 0)
+                    {
+                        presetManager.applyPreset(preset);
+                    }
+                }
+                sessionManager.setCurrentPresetIndex(savedPresetIndex);
+            }
+        }
+        else
+        {
+            // DBG("Saved session folder no longer exists: " + savedPath);
+        }
+    }
+    else
+    {
+        // DBG("No saved session found");
+    }
 }
 
 //==============================================================================

@@ -1,5 +1,6 @@
 #include "compressor_component.h"
 #include "../colours.h"
+#include "../dimensions.h"
 #include "compressor_dimensions.h"
 #include "compressor_knobs_component.h"
 #include "compressor_meter_component.h"
@@ -11,9 +12,13 @@ CompressorComponent::CompressorComponent(
 )
     : parameters(params), knobs_component(params), meter_component(value)
 {
+    addAndMakeVisible(title_label);
     addAndMakeVisible(knobs_component);
     addAndMakeVisible(meter_component);
     addAndMakeVisible(bypass_button);
+
+    title_label.setText("COMPRESSOR", juce::dontSendNotification);
+    title_label.setJustificationType(juce::Justification::centredLeft);
 
     bypass_attachment =
         std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
@@ -24,8 +29,7 @@ CompressorComponent::CompressorComponent(
         juce::ToggleButton::tickColourId, GuiColours::DEFAULT_INACTIVE_COLOUR
     );
     bypass_button.setColour(
-        juce::ToggleButton::tickDisabledColourId,
-        GuiColours::COMPRESSOR_ACTIVE_COLOUR_1
+        juce::ToggleButton::tickDisabledColourId, ColourCodes::orange
     );
     bypass_button.onClick = [this]() { repaint(); };
 }
@@ -39,90 +43,56 @@ void CompressorComponent::paint(juce::Graphics& g)
     bool bypass = bypass_button.getToggleState();
     juce::Colour colour1;
     juce::Colour colour2;
+    juce::Colour border_colour;
     if (!bypass)
     {
-        colour1 = GuiColours::COMPRESSOR_ACTIVE_COLOUR_1;
-        colour2 = GuiColours::COMPRESSOR_ACTIVE_COLOUR_2;
+        colour1 = ColourCodes::orange;
+        colour2 = ColourCodes::white0;
+        border_colour = ColourCodes::grey0;
     }
     else
     {
         colour1 = GuiColours::DEFAULT_INACTIVE_COLOUR;
-        colour2 = GuiColours::DEFAULT_INACTIVE_COLOUR;
+        colour2 = ColourCodes::grey0;
+        border_colour = ColourCodes::grey0;
     }
-    float border_thickness = CompressorDimensions::BORDER_THICKNESS;
-    float border_radius = CompressorDimensions::BORDER_RADIUS;
-
-    auto outer_bounds =
-        getLocalBounds()
-            .withSizeKeepingCentre(
-                CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
-            )
-            .toFloat();
-    auto inner_bounds = outer_bounds.reduced(border_thickness).toFloat();
+    float border_thickness = GuiDimensions::PANEL_BORDER_THICKNESS;
+    auto bounds = getLocalBounds();
+    title_label.setColour(juce::Label::textColourId, colour2);
 
     g.setColour(GuiColours::COMPRESSOR_BG_COLOUR);
-    g.fillRoundedRectangle(inner_bounds, border_radius);
+    g.fillRect(bounds);
 
-    juce::Path border_path;
-    border_path.addRoundedRectangle(
-        outer_bounds, border_radius + border_thickness
-    );
-    border_path.addRoundedRectangle(inner_bounds, border_radius);
-    border_path.setUsingNonZeroWinding(false);
+    g.setColour(border_colour);
+    g.drawRect(bounds, border_thickness);
 
-    juce::ColourGradient border_gradient(
-        colour1, outer_bounds.getTopLeft(), colour2,
-        outer_bounds.getBottomLeft(), false
-    );
-    g.setGradientFill(border_gradient);
-    g.fillPath(border_path);
+    auto title_bounds =
+        bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+
+    g.setColour(ColourCodes::bg2);
+    g.fillRect(title_bounds);
+
+    g.setColour(border_colour);
+    g.drawRect(title_bounds, border_thickness);
+
+    bounds.removeFromTop(bounds.getHeight() / 2.0f);
+    g.drawRect(bounds, border_thickness);
 
     knobs_component.switchColour(colour1, colour2);
     meter_component.switchColour(colour1, colour2);
 
-    paintMeter(g, colour1, colour2);
+    paintMeter(g, colour1, colour1);
 }
 
 void CompressorComponent::paintMeter(
     juce::Graphics& g, juce::Colour colour1, juce::Colour colour2
 )
 {
-    // Draw meter border
-    float meter_border_thickness = CompressorDimensions::METER_BORDER_THICKNESS;
-    float border_radius = CompressorDimensions::BORDER_RADIUS;
-
-    auto bounds = getLocalBounds().withSizeKeepingCentre(
-        CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
-    );
-    bounds.removeFromRight(CompressorDimensions::SIDE_WIDTH / 2);
-    auto meter_bounds =
-        bounds.removeFromRight(CompressorDimensions::GAIN_REDUCTION_WIDTH)
-            .withSizeKeepingCentre(
-                CompressorDimensions::GAIN_REDUCTION_WIDTH,
-                CompressorDimensions::GAIN_REDUCTION_HEIGHT
-            );
-    auto outer_meter_bounds =
-        meter_bounds
-            .expanded((int)meter_border_thickness, (int)meter_border_thickness)
-            .toFloat();
-    juce::Path meter_border_path;
-    meter_border_path.addRoundedRectangle(
-        outer_meter_bounds, border_radius + meter_border_thickness
-    );
-    meter_border_path.addRoundedRectangle(
-        outer_meter_bounds.reduced(
-            meter_border_thickness, meter_border_thickness
-        ),
-        border_radius
-    );
-    meter_border_path.setUsingNonZeroWinding(false);
-
-    juce::ColourGradient meter_border_gradient(
-        colour1, outer_meter_bounds.getTopLeft(), colour2,
-        outer_meter_bounds.getBottomLeft(), false
-    );
-    g.setGradientFill(meter_border_gradient);
-    g.fillPath(meter_border_path);
+    auto bounds = getLocalBounds();
+    auto bounds_height =
+        bounds.getHeight() - GuiDimensions::PANEL_TITLE_BAR_HEIGHT;
+    bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    auto meter_bounds = bounds.removeFromTop(bounds_height / 2);
 
     // Draw meter background
     float height = meter_bounds.getHeight();
@@ -132,7 +102,7 @@ void CompressorComponent::paintMeter(
     float y_anchor = (float)(meter_bounds.getY() + height + offset);
     float length =
         CompressorDimensions::METER_POINTER_LENGTH * (float)height + offset;
-    float marker_length = CompressorDimensions::METER_MARKER_LENGTH;
+    float marker_length = height * CompressorDimensions::METER_MARKER_LENGTH;
 
     g.setColour(ColourCodes::grey0);
     for (int i = 0; i < 6; ++i)
@@ -140,65 +110,98 @@ void CompressorComponent::paintMeter(
         float alpha_degrees =
             CompressorDimensions::METER_START_ANGLE +
             (float)i / 5.0f * CompressorDimensions::METER_ANGLE_RANGE;
-        float alpha = alpha_degrees * juce::MathConstants<float>::pi / 180.0f;
-        float x_end = x_anchor + (length)*std::cos(alpha);
-        float x_start = x_anchor + (length - marker_length) * std::cos(alpha);
-        float y_end = y_anchor + (length)*std::sin(alpha);
-        float y_start = y_anchor + (length - marker_length) * std::sin(alpha);
-        juce::Path p;
-        p.startNewSubPath(x_start, y_start);
-        p.lineTo(x_end, y_end);
-        g.strokePath(
-            p, juce::PathStrokeType(
-                   2.0f, juce::PathStrokeType::JointStyle::curved,
-                   juce::PathStrokeType::EndCapStyle::rounded
-               )
-        );
+        float alpha = alpha_degrees * 3.14159265359f / 180.0f;
 
-        juce::String textToDraw = juce::String(i * 4);
+        // Only draw tick marks for 0 and 20 (i == 0 and i == 5)
+        if (i == 0 || i == 5)
+        {
+            float x_end = x_anchor + (length)*std::cos(alpha);
+            float x_start =
+                x_anchor + (length - marker_length) * std::cos(alpha);
+            float y_end = y_anchor + (length)*std::sin(alpha);
+            float y_start =
+                y_anchor + (length - marker_length) * std::sin(alpha);
 
-        float textPadding = 15.0f; // 10 pixels padding from the outer tick
-        float textRadius = length - marker_length - textPadding;
-        float x_text_centre = x_anchor + textRadius * std::cos(alpha);
-        float y_text_centre = y_anchor + textRadius * std::sin(alpha);
+            juce::Path p;
+            p.startNewSubPath(x_start, y_start);
+            p.lineTo(x_end, y_end);
+            g.strokePath(
+                p, juce::PathStrokeType(
+                       2.0f, juce::PathStrokeType::JointStyle::curved,
+                       juce::PathStrokeType::EndCapStyle::rounded
+                   )
+            );
+        }
+        // Draw number labels for middle values only (i == 1, 2, 3, 4)
+        else
+        {
+            juce::String textToDraw = juce::String(i * 4);
 
-        float textBoxWidth = 25.0f;
-        float textBoxHeight = 15.0f;
-        juce::Rectangle<float> textBox(textBoxWidth, textBoxHeight);
-        textBox.setCentre(x_text_centre, y_text_centre);
+            float x_text_centre =
+                x_anchor + (length - marker_length / 2.0f) * std::cos(alpha);
+            float y_text_centre =
+                y_anchor + (length - marker_length / 2.0f) * std::sin(alpha);
 
-        g.drawFittedText(
-            textToDraw, textBox.toNearestInt(), juce::Justification::centred, 1
-        );
+            float textBoxWidth = 25.0f;
+            float textBoxHeight = marker_length;
+            juce::Rectangle<float> textBox(textBoxWidth, textBoxHeight);
+            textBox.setCentre(x_text_centre, y_text_centre);
+
+            g.drawFittedText(
+                textToDraw, textBox.toNearestInt(),
+                juce::Justification::centred, 1
+            );
+        }
     }
+
+    // Draw two arcs connecting the 0 and 20 tick marks
+    float start_angle = (CompressorDimensions::METER_START_ANGLE +
+                         CompressorDimensions::METER_ANGLE_RANGE + 90.0f) *
+                        3.14159265359f / 180.0f;
+    float end_angle = (90.0f + CompressorDimensions::METER_START_ANGLE) *
+                      3.14159265359f / 180.0f;
+
+    juce::Path outer_arc;
+    outer_arc.addCentredArc(
+        x_anchor, y_anchor, length, length, 0.0f, start_angle, end_angle, true
+    );
+    g.strokePath(
+        outer_arc, juce::PathStrokeType(
+                       2.0f, juce::PathStrokeType::JointStyle::curved,
+                       juce::PathStrokeType::EndCapStyle::rounded
+                   )
+    );
+
+    // Inner arc (at the start of tick marks)
+    juce::Path inner_arc;
+    inner_arc.addCentredArc(
+        x_anchor, y_anchor, length - marker_length, length - marker_length,
+        0.0f, start_angle, end_angle, true
+    );
+    g.strokePath(
+        inner_arc, juce::PathStrokeType(
+                       2.0f, juce::PathStrokeType::JointStyle::curved,
+                       juce::PathStrokeType::EndCapStyle::rounded
+                   )
+    );
 }
 
 void CompressorComponent::resized()
 {
-    auto bounds = getLocalBounds().withSizeKeepingCentre(
-        CompressorDimensions::WIDTH, CompressorDimensions::HEIGHT
-    );
-    bounds.removeFromRight(CompressorDimensions::SIDE_WIDTH / 2);
+    auto bounds = getLocalBounds();
+    auto width = bounds.getWidth();
+    auto height = bounds.getHeight() - GuiDimensions::PANEL_TITLE_BAR_HEIGHT;
+    auto title_bounds =
+        bounds.removeFromTop(GuiDimensions::PANEL_TITLE_BAR_HEIGHT);
+    title_label.setBounds(title_bounds.removeFromLeft(100.0f));
     bypass_button.setBounds(
-        bounds.removeFromLeft(CompressorDimensions::SIDE_WIDTH)
-            .withSizeKeepingCentre(
-                CompressorDimensions::BYPASS_SIZE,
-                CompressorDimensions::BYPASS_SIZE
+        title_bounds
+            .removeFromRight(
+                GuiDimensions::BYPASS_BUTTON_WIDTH +
+                GuiDimensions::BYPASS_BUTTON_PADDING
             )
+            .reduced(GuiDimensions::PANEL_BORDER_THICKNESS)
     );
-    meter_component.setBounds(
-        bounds.removeFromRight(CompressorDimensions::GAIN_REDUCTION_WIDTH)
-            .withSizeKeepingCentre(
-                CompressorDimensions::GAIN_REDUCTION_WIDTH,
-                CompressorDimensions::GAIN_REDUCTION_HEIGHT
-
-            )
-    );
-    knobs_component.setBounds(
-        bounds.removeFromLeft(CompressorDimensions::KNOBS_BOX_WIDTH)
-            .withSizeKeepingCentre(
-                CompressorDimensions::KNOBS_BOX_WIDTH,
-                CompressorDimensions::KNOBS_BOX_HEIGHT
-            )
-    );
+    meter_component.setBounds(bounds.removeFromTop(height / 2));
+    knobs_component.setBounds(bounds);
 }

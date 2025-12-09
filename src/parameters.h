@@ -11,25 +11,39 @@ createParameterLayout()
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "output_gain_db", "Output Gain dB",
-            juce::NormalisableRange<float>(-48.0f, 6.0f, 0.1f, 0.9f), 0.0f
-        ),
-        std::make_unique<juce::AudioParameterChoice>(
-            "compressor_type",                // Parameter ID
-            "Compressor Type",                // Display name
-            juce::StringArray{"OPTO", "FET"}, // Choice options
-            0
+            juce::NormalisableRange<float>(-48.0f, 12.0f, 0.1f, 0.9f), 0.0f
         ),
         std::make_unique<juce::AudioParameterBool>(
             "compressor_bypass", "Compressor Bypass", false
         ),
         std::make_unique<juce::AudioParameterFloat>(
+            "compressor_hpf", "Compressor HPF (Hz)",
+            juce::NormalisableRange<float>(
+                20.0f, 200.0f, 0.1f, 0.2890647108933747f
+            ),
+            20.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
             "compressor_threshold", "Compressor Treshold",
             juce::NormalisableRange<float>(-48.0f, 0.0f, 0.1f), -24.0f
         ),
-        std::make_unique<juce::AudioParameterChoice>(
-            "compressor_ratio", "Ratio",
-            juce::StringArray{"2:1", "4:1", "8:1", "12:1", "20:1"},
-            0 // Default index
+        std::make_unique<juce::AudioParameterFloat>(
+            "compressor_ratio", "Compressor Ratio",
+            juce::NormalisableRange<float>(2.0f, 20.0f, 0.1f), 4.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "compressor_attack", "Compressor Attack Time (ms)",
+            juce::NormalisableRange<float>(
+                0.1f, 100.0f, 0.01f, 0.2890647108933747f
+            ),
+            10.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "compressor_release", "Compressor Release Time (ms)",
+            juce::NormalisableRange<float>(
+                10.0f, 1000.0f, 0.1f, 0.2890647108933747f
+            ),
+            100.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "compressor_level_db", "Compressor Gain dB",
@@ -38,25 +52,6 @@ createParameterLayout()
         std::make_unique<juce::AudioParameterFloat>(
             "compressor_mix", "Compressor Mix",
             juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f
-        ),
-        std::make_unique<juce::AudioParameterBool>(
-            "fuzz_bypass", "Fuzz Bypass", false
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "fuzz_tone", "Fuzz Tone",
-            juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f), 5.0f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "fuzz_sustain", "Fuzz Sustain",
-            juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f), 5.0f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "fuzz_mix", "Fuzz Mix",
-            juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "fuzz_level", "Fuzz Level",
-            juce::NormalisableRange<float>(-24.0f, 12.0f, 0.01f), 5.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "amp_master", "Amp Master Level",
@@ -97,15 +92,15 @@ createParameterLayout()
             juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f), 0.5f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "chorus_rate", "Chorus Rate",
+            "chorus_rate", "Chorus Rate (Hz)",
             juce::NormalisableRange<float>(0.5f, 2.5f, 0.01f), 1.5f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "chorus_depth", "Chorus Depth",
+            "chorus_depth", "Chorus Depth (ms)",
             juce::NormalisableRange<float>(0.0f, 1.5f, 0.01f), 0.75f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "chorus_crossover", "Chorus Crossover",
+            "chorus_crossover", "Chorus Crossover (Hz)",
             juce::NormalisableRange<float>(50.0f, 1000.0f, 0.1f, 0.3755212f),
             200.0f
         ),
@@ -130,28 +125,44 @@ createParameterLayout()
             "eq_bypass", "EQ Bypass", true
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "eq_b80", "EQ Low-band",
+            "eq_low_shelf_gain", "EQ Low Shelf Gain",
             juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "eq_b250", "EQ 250 Hz-Band",
+            "eq_low_shelf_freq", "EQ Low Shelf Frequency",
+            juce::NormalisableRange<float>(40.0f, 200.0f, 1.0f), 120.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_low_mid_freq", "EQ Low-Mid Frequency",
+            juce::NormalisableRange<float>(200.0f, 800.0f, 1.0f), 400.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_low_mid_q", "EQ Low-Mid Q",
+            juce::NormalisableRange<float>(0.1f, 4.0f, 0.01f), 0.7f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_low_mid_gain", "EQ Low-Mid Gain",
             juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "eq_b500", "EQ 500 Hz-Band",
+            "eq_high_mid_freq", "EQ High-Mid Frequency",
+            juce::NormalisableRange<float>(800.0f, 2500.0f, 1.0f), 1500.0f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_high_mid_q", "EQ High-Mid Q",
+            juce::NormalisableRange<float>(0.1f, 4.0f, 0.01f), 0.7f
+        ),
+        std::make_unique<juce::AudioParameterFloat>(
+            "eq_high_mid_gain", "EQ High-Mid Gain",
             juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "eq_b1500", "EQ 1.5 kHz-Band",
+            "eq_high_shelf_gain", "EQ High Shelf Gain",
             juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
-            "eq_b3000", "EQ 3 kHz-Band",
-            juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
-        ),
-        std::make_unique<juce::AudioParameterFloat>(
-            "eq_b5000", "EQ High-band",
-            juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f), 0.0f
+            "eq_high_shelf_freq", "EQ High Shelf Frequency",
+            juce::NormalisableRange<float>(2000.0f, 8000.0f, 1.0f), 5000.0f
         ),
         std::make_unique<juce::AudioParameterFloat>(
             "eq_lpf", "EQ LPF",

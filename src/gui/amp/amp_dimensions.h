@@ -21,5 +21,5 @@ constexpr int AMP_KNOBS_BOTTOM_BOX_HEIGHT = 80;
 constexpr int AMP_SMALL_KNOB_WIDTH = 40;
 constexpr int AMP_SMALL_KNOB_HEIGHT = 40;
 
-constexpr int AMP_BYPASS_SIZE = 20;
+constexpr int AMP_BYPASS_SIZE = 30;
 } // namespace AmpDimensions

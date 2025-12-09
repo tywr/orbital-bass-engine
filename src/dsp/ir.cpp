@@ -64,7 +64,7 @@ void IRConvolver::process(
 
 void IRConvolver::loadIR()
 {
-    DBG("Loading IR type: " + juce::String(type));
+    // DBG("Loading IR type: " + juce::String(type));
     const int size = impulseResponseBinaryWavSizes[type];
     char* data = (char*)impulseResponseBinaryWavFiles[type];
 

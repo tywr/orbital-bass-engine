@@ -1,19 +1,10 @@
 #include "compressor_meter_component.h"
-#include "../looks/compressor_look_and_feel.h"
 #include "compressor_dimensions.h"
 
 CompressorMeterComponent::CompressorMeterComponent(juce::Value& v)
     : gain_reduction_value(v)
 {
-    setLookAndFeel(new CompressorLookAndFeel());
     startTimerHz(refresh_rate);
-    addAndMakeVisible(gain_reduction_slider);
-
-    gain_reduction_slider.setRange(0, 20.0f, 0.5f);
-    gain_reduction_slider.setSkewFactor(1.0);
-    gain_reduction_slider.setValue(0.0);
-    gain_reduction_slider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
-
     gain_reduction_value.addListener(this);
     smoothed_value.reset(refresh_rate, smoothing_time);
 }
@@ -24,19 +15,18 @@ CompressorMeterComponent::~CompressorMeterComponent()
 
 void CompressorMeterComponent::timerCallback()
 {
-    if (raw_value > smoothed_value.getCurrentValue())
+    // Use the peak value captured since last timer callback
+    if (peak_value > smoothed_value.getCurrentValue())
     {
-        smoothed_value.setCurrentAndTargetValue(raw_value);
+        smoothed_value.setCurrentAndTargetValue(peak_value);
     }
     else
     {
-        smoothed_value.setTargetValue(raw_value);
+        smoothed_value.setTargetValue(peak_value);
         smoothed_value.getNextValue();
     }
-    gain_reduction_slider.setValue(
-        smoothed_value.getCurrentValue(), juce::dontSendNotification
-    );
-    // repaint();
+    // Reset peak for next frame
+    peak_value = 0.0f;
 }
 
 void CompressorMeterComponent::visibilityChanged()
@@ -57,20 +47,76 @@ void CompressorMeterComponent::visibilityChanged()
 void CompressorMeterComponent::valueChanged(juce::Value& v)
 {
     raw_value = -1.0f * static_cast<float>(v.getValue());
+    // Track the peak (maximum) value
+    if (raw_value > peak_value)
+    {
+        peak_value = raw_value;
+    }
 }
 
 void CompressorMeterComponent::paint(juce::Graphics& g)
 {
-    ignoreUnused(g);
+    // ignoreUnused(g);
+    float v = smoothed_value.getCurrentValue();
+    float max_db = 20.0f;
+
+    float width = getWidth();
+    float height = getHeight();
+    float marker_length = height * CompressorDimensions::METER_MARKER_LENGTH;
+    float offset = CompressorDimensions::METER_OFFSET_Y * (float)height;
+    float ratio = juce::jlimit(0.0f, 1.0f, (float)(v / max_db));
+    float alpha_degrees = CompressorDimensions::METER_START_ANGLE +
+                          CompressorDimensions::METER_ANGLE_RANGE * ratio;
+    float alpha = alpha_degrees * 3.14159265359f / 180.0f;
+
+    float length =
+        CompressorDimensions::METER_POINTER_LENGTH * (float)height + offset;
+    float x_anchor = (float)width * 0.5f;
+    float y_anchor = (float)(height + offset);
+    float x_start = x_anchor + (length - marker_length) * std::cos(alpha);
+    float y_start = y_anchor + (length - marker_length) * std::sin(alpha);
+    float x_end = x_anchor + length * std::cos(alpha);
+    float y_end = y_anchor + length * std::sin(alpha);
+
+    g.setColour(colour);
+    juce::Path p;
+    p.startNewSubPath(x_start, y_start);
+    p.lineTo(x_end, y_end);
+    g.strokePath(
+        p, juce::PathStrokeType(
+               3.0f, juce::PathStrokeType::JointStyle::curved,
+               juce::PathStrokeType::EndCapStyle::square
+           )
+    );
+
+    // Draw inverted triangle marker at the end
+    float triangle_size = marker_length * 0.15f;
+    float angle_spread = 0.03f;
+
+    // Triangle tip points inward toward the anchor
+    float tip_radius = length - triangle_size;
+    float tip_x = x_anchor + tip_radius * std::cos(alpha);
+    float tip_y = y_anchor + tip_radius * std::sin(alpha);
+
+    // Base vertices beyond the outer edge
+    float base_radius = length + triangle_size;
+    float base1_x = x_anchor + base_radius * std::cos(alpha - angle_spread);
+    float base1_y = y_anchor + base_radius * std::sin(alpha - angle_spread);
+    float base2_x = x_anchor + base_radius * std::cos(alpha + angle_spread);
+    float base2_y = y_anchor + base_radius * std::sin(alpha + angle_spread);
+
+    juce::Path triangle;
+    triangle.startNewSubPath(tip_x, tip_y);
+    triangle.lineTo(base1_x, base1_y);
+    triangle.lineTo(base2_x, base2_y);
+    triangle.closeSubPath();
+
+    g.fillPath(triangle);
 }
 
 void CompressorMeterComponent::resized()
 {
     auto bounds = getLocalBounds();
-    gain_reduction_slider.setBounds(bounds.withSizeKeepingCentre(
-        CompressorDimensions::GAIN_REDUCTION_WIDTH,
-        CompressorDimensions::GAIN_REDUCTION_HEIGHT
-    ));
 }
 
 void CompressorMeterComponent::switchColour(
@@ -78,8 +124,6 @@ void CompressorMeterComponent::switchColour(
 )
 {
     juce::ignoreUnused(colour2);
-    gain_reduction_slider.setColour(
-        juce::Slider::rotarySliderFillColourId, colour1
-    );
+    colour = colour1;
     repaint();
 }

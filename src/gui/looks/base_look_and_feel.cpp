@@ -76,51 +76,51 @@ void BaseLookAndFeel::drawToggleButton(
     bool isButtonDown
 )
 {
-    juce::Colour colour;
+    auto bounds = button.getLocalBounds().toFloat();
+
+    // Define switch dimensions (horizontal slider)
+    const float switchHeight =
+        juce::jmin(bounds.getWidth(), bounds.getHeight()) * 0.5f;
+    const float switchWidth = switchHeight * 2.0f;
+    const float thumbSize = switchHeight * 0.8f;
+    const float padding = (switchHeight - thumbSize) / 2.0f;
+
+    // Center the switch in the button bounds
+    auto switchBounds = juce::Rectangle<float>(switchWidth, switchHeight)
+                            .withCentre(bounds.getCentre());
+
+    // Determine colors based on state
+    juce::Colour trackColour;
     if (button.getToggleState())
-        colour =
-            button.findColour(juce::ToggleButton::tickColourId); // "On" colour
+        trackColour = button.findColour(juce::ToggleButton::tickColourId);
     else
-        colour = button.findColour(
-            juce::ToggleButton::tickDisabledColourId
-        ); // "Off" colour
+        trackColour =
+            button.findColour(juce::ToggleButton::tickDisabledColourId);
 
+    if (isMouseOverButton)
+        trackColour = trackColour.brighter(0.1f);
+
+    // Draw the squared track
+    g.setColour(trackColour);
+    g.fillRect(switchBounds);
+
+    // Calculate thumb position (right when on, left when off)
+    float thumbX;
+    if (button.getToggleState())
+        thumbX = switchBounds.getRight() - thumbSize -
+                 padding; // Right position (ON)
+    else
+        thumbX = switchBounds.getX() + padding; // Left position (OFF)
+
+    float thumbY = switchBounds.getCentreY() - thumbSize / 2.0f;
+
+    // Draw the squared thumb
+    juce::Colour thumbColour = juce::Colours::white;
     if (isButtonDown)
-        colour = button.findColour(juce::ToggleButton::tickDisabledColourId);
-    else if (isMouseOverButton)
-        colour = colour.brighter(0.2f);
+        thumbColour = thumbColour.darker(0.1f);
 
-    g.setColour(colour);
-
-    const float buttonStrokeWidth = 2.0f;
-    auto bounds =
-        button.getLocalBounds().toFloat().reduced(buttonStrokeWidth / 2.0f);
-
-    auto size = juce::jmin(bounds.getWidth(), bounds.getHeight());
-    auto area = bounds.withSizeKeepingCentre(size, size);
-
-    auto centerX = area.getCentreX();
-    auto centerY = area.getCentreY();
-    auto radius = size / 2.0f;
-
-    juce::Path powerSymbol;
-
-    powerSymbol.addCentredArc(
-        centerX, centerY, radius, radius, 0.0f,
-        juce::MathConstants<float>::pi * 0.15f, // Start angle
-        juce::MathConstants<float>::pi * 1.85f, // End angle
-        true
-    ); // Draw clockwise
-
-    powerSymbol.startNewSubPath(centerX, centerY);
-    powerSymbol.lineTo(centerX, area.getY());
-
-    g.strokePath(
-        powerSymbol, juce::PathStrokeType(
-                         buttonStrokeWidth, juce::PathStrokeType::curved,
-                         juce::PathStrokeType::rounded
-                     )
-    ); // Rounded ends look nicer
+    g.setColour(thumbColour);
+    g.fillRect(thumbX, thumbY, thumbSize, thumbSize);
 }
 
 void BaseLookAndFeel::drawRotarySlider(
@@ -128,61 +128,33 @@ void BaseLookAndFeel::drawRotarySlider(
     float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider
 )
 {
-    const auto bounds = juce::Rectangle<int>(x, y, width, height).toFloat();
+    const auto full_bounds =
+        juce::Rectangle<int>(x, y, width, height).toFloat();
 
-    auto radius = fmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
+    auto radius = fmin(full_bounds.getWidth(), full_bounds.getHeight()) / 2.0f;
+    const auto bounds =
+        full_bounds.withSizeKeepingCentre(2.0f * radius, 2.0f * radius);
     const auto toAngle =
         rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
     auto lineW = fmin(strokeWidth, radius * 0.5f);
-    auto arcRadius = radius - lineW * 0.5f;
 
-    juce::Path backgroundArc;
-    backgroundArc.addCentredArc(
-        bounds.getCentreX(), bounds.getCentreY(), arcRadius, arcRadius, 0.0f,
-        rotaryStartAngle, rotaryEndAngle, true
-    );
+    // Draw background fill
+    g.setColour(slider.findColour(juce::Slider::rotarySliderFillColourId));
+    g.fillEllipse(bounds.reduced(lineW));
 
-    g.setColour(ColourCodes::grey0);
-    g.strokePath(
-        backgroundArc,
-        juce::PathStrokeType(
-            lineW, juce::PathStrokeType::mitered, juce::PathStrokeType::square
-        )
-    );
+    // Draw circle outline (outside edge)
+    g.setColour(slider.findColour(juce::Slider::rotarySliderOutlineColourId));
+    g.drawEllipse(bounds.reduced(lineW / 2.0f), lineW);
 
-    if (slider.isEnabled())
-    {
-        juce::Path valueArc;
-        valueArc.addCentredArc(
-            bounds.getCentreX(), bounds.getCentreY(), arcRadius, arcRadius,
-            0.0f, rotaryStartAngle, toAngle, true
-        );
-
-        g.setColour(slider.findColour(juce::Slider::rotarySliderFillColourId));
-        g.strokePath(
-            valueArc, juce::PathStrokeType(
-                          lineW, juce::PathStrokeType::mitered,
-                          juce::PathStrokeType::square
-                      )
-        );
-    }
-    // draw background
-    g.setColour(juce::Colours::black);
-    g.fillEllipse(
-        bounds.getCentreX() - (radius - lineW) + strokeWidth / 2.0f,
-        bounds.getCentreY() - (radius - lineW) + strokeWidth / 2.0f,
-        (radius - lineW) * 2 - strokeWidth, (radius - lineW) * 2 - strokeWidth
-    );
-    // draw marker
-    const float markerLength = radius * 0.2f;
-    const float markerThickness = lineW * 0.5f;
+    // Draw marker
+    const float markerLength = radius * 0.4f;
+    const float markerThickness = strokeWidth;
     const auto centre = bounds.getCentre();
     juce::Point<float> markerStart =
-        centre.getPointOnCircumference(arcRadius - 2 * lineW, toAngle);
+        centre.getPointOnCircumference(radius - strokeWidth / 2, toAngle);
     juce::Point<float> markerEnd = centre.getPointOnCircumference(
-        arcRadius - markerLength - 2 * lineW, toAngle
+        radius - lineW * 1.5f - markerLength, toAngle
     );
-    g.setColour(slider.findColour(juce::Slider::rotarySliderFillColourId));
     g.drawLine(
         markerStart.getX(), markerStart.getY(), markerEnd.getX(),
         markerEnd.getY(), markerThickness
