@@ -96,8 +96,10 @@ class PluginAudioProcessor final
     HeliosOverdrive overdrive;
 
     float smoothing_time = 0.05f;
+    float startup_fade_time = 0.03f;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>
-        current_input_gain, current_output_gain, current_amp_master_gain;
+        current_input_gain, current_output_gain, current_amp_master_gain,
+        startup_fade;
     std::atomic<float>* input_gain_parameter = nullptr;
     std::atomic<float>* output_gain_parameter = nullptr;
     std::atomic<float>* amp_master_gain_parameter = nullptr;

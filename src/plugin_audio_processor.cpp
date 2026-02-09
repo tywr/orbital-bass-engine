@@ -179,6 +179,11 @@ void PluginAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     spec.maximumBlockSize = (juce::uint32)samplesPerBlock;
     spec.numChannels = (juce::uint32)getTotalNumOutputChannels();
 
+    // Add a fade when starting up to avoid clicks
+    startup_fade.reset(sampleRate, startup_fade_time);
+    startup_fade.setCurrentAndTargetValue(0.0f);
+    startup_fade.setTargetValue(1.0f);
+
     synth_voices.prepare(spec);
 
     compressor.prepare(spec);
@@ -309,6 +314,9 @@ void PluginAudioProcessor::processBlock(
         juce::Decibels::decibelsToGain(outputGainDb)
     );
     current_output_gain.applyGain(buffer, num_samples);
+
+    startup_fade.applyGain(buffer, num_samples);
+
     updateOutputLevel(buffer);
 }
 
