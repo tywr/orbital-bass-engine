@@ -41,28 +41,21 @@ FET-style compression with fast attack and aggressive character, using JFET circ
 - Level (makeup gain, 0dB to 24dB)
 - Mix (parallel compression, 0% to 100%)
 
-### Amp / Dual-Drive
-
-Two selectable overdrive models with CMOS circuit modeling and oversampling for aliasing-free distortion:
-
-- **Helios** - Dual parallel signal paths (VMT and B3K) blended for complex harmonic saturation. Features multiple pre/post-filtering stages and up to 8x oversampling.
-- **Borealis** - High/low band split overdrive with independent filtering per band and 4x oversampling.
+### Overdrive
 
 **Controls:**
 - Drive (0-10)
-- Grunt - low-frequency shelf (0-10)
-- Attack - high-frequency shelf (0-10)
 - Era - tone/voice shaping (0-10)
+- Grunt - amount of low-frequency content sent to overdrive (0-10)
+- Attack - amount of high-frequency content sent to overdrive (0-10)
 - Mix (0% to 100%)
 - Master (-24dB to 12dB)
 
 ### EQ
 
-A 6-band parametric equalizer with frequencies chosen for bass guitar, plus a variable low-pass filter.
+A 4-band parametric equalizer, includuing two fully parametric mid peak filters, a low-shelf and a high-shelf.
 
-**Bands:** 80 Hz, 250 Hz, 500 Hz, 1.5 kHz, 3 kHz, 5 kHz
-
-Each band offers +/-12dB of gain. A low-pass filter (1kHz to 10kHz) tames excessive high-end.
+Each band offers +/-12dB of gain.
 
 ### Chorus
 
@@ -71,12 +64,12 @@ Stereo chorus with multiband processing to preserve low-end focus.
 **Controls:**
 - Rate (0.5Hz to 2.5Hz)
 - Depth
-- Crossover (50Hz to 1kHz - frequencies below remain mono)
+- Crossover (50Hz to 1kHz - frequencies below remain untouched to avoid phase-issues)
 - Mix (0% to 100%)
 
 ### IR Convolver
 
-Cabinet simulation using built-in impulse responses with parallel processing for preserving low-end punch.
+Cabinet simulation using built-in impulse responses with parallel processing. It uses the IR from the Shift-Line free pack available there: `https://shift-line.com/irpackbass`
 
 **Controls:**
 - IR Type (selectable)
