@@ -2,6 +2,8 @@
 
 "Bass tone open-source optimization protocol: launch sequence initiated."
 
+![Orbital Bass Engine](assets/screenshot.png)
+
 ## Overview
 
 Orbital Bass Engine is an open-source bass guitar audio plugin built with the JUCE framework. It provides a complete signal processing chain designed specifically for bass guitar, featuring analog-modeled compression, dual-drive amplification, and a post-amp effects rack.
@@ -13,20 +15,25 @@ The plugin processes bass signals through a carefully crafted signal chain that 
 The audio processing flows through the following stages:
 
 1. **Input Gain** - Initial level control
-3. **Compressor** - Dynamics control with analog-modeled circuits
-4. **Amp/Dual-Drive** - Overdrive and distortion with parallel signal paths
-5. **EQ** - Multi-band tone shaping
-6. **Chorus** - Stereo width and modulation (post-stereo conversion)
+2. **Tuner** - Chromatic tuner with YIN pitch detection
+3. **Compressor** - Dynamics control with analog-modeled FET circuit
+4. **Amp/Dual-Drive** - Overdrive and distortion (Helios or Borealis models)
+5. **EQ** - 6-band tone shaping with low-pass filter
+6. **Chorus** - Stereo width and modulation (post mono-to-stereo conversion)
 7. **IR Convolver** - Cabinet simulation using impulse responses
 8. **Output Gain** - Final level control
 
+Each stage can be individually bypassed.
+
 ## Components
+
+### Tuner
+
+A chromatic tuner powered by a YIN pitch detection algorithm. Optimized for bass guitar frequencies down to low E (~41Hz) with an 8192-sample buffer for accurate low-frequency detection.
 
 ### Compressor
 
-The compressor features two distinct analog-modeled compression circuits:
-
-- **FET**: Models JFET-based compression with fast attack and aggressive character. Uses custom JFET circuit modeling for punchy, colorful compression ideal for adding sustain and presence.
+FET-style compression with fast attack and aggressive character, using JFET circuit modeling for punchy, colorful dynamics control.
 
 **Controls:**
 - Threshold (-48dB to 0dB)
@@ -34,70 +41,74 @@ The compressor features two distinct analog-modeled compression circuits:
 - Level (makeup gain, 0dB to 24dB)
 - Mix (parallel compression, 0% to 100%)
 
-### Amp Dual-Drive (HeliosOverdrive)
+### Amp / Dual-Drive
 
-The heart of the tone engine features a sophisticated dual-drive architecture that processes the signal through two parallel paths (VMT and B3K), then blends them for complex harmonic saturation.
+Two selectable overdrive models with CMOS circuit modeling and oversampling for aliasing-free distortion:
 
-**Key Features:**
-- Dual parallel signal paths with independent filtering and saturation
-- CMOS circuit modeling for authentic analog overdrive characteristics
-- 2x oversampling for aliasing-free distortion
-- Multiple pre and post-filtering stages for precise tone sculpting
+- **Helios** - Dual parallel signal paths (VMT and B3K) blended for complex harmonic saturation. Features multiple pre/post-filtering stages and up to 8x oversampling.
+- **Borealis** - High/low band split overdrive with independent filtering per band and 4x oversampling.
 
 **Controls:**
-- **Drive**: Controls the amount of overdrive and gain staging (0-10)
-- **Grunt**: Low-frequency shelf filter for bottom-end thickness and growl (0-10)
-- **Attack**: High-frequency shelf filter for presence and articulation (0-10)
-- **Era**: Tone filter that shapes the overall voice and character (0-10)
-- **Mix**: Blend between clean and driven signals (0% to 100%)
-- **Master**: Final output level control (-24dB to 12dB)
+- Drive (0-10)
+- Grunt - low-frequency shelf (0-10)
+- Attack - high-frequency shelf (0-10)
+- Era - tone/voice shaping (0-10)
+- Mix (0% to 100%)
+- Master (-24dB to 12dB)
 
-### Post-Amp Rack
+### EQ
 
-After amplification, the signal passes through an effects rack:
+A 6-band parametric equalizer with frequencies chosen for bass guitar, plus a variable low-pass filter.
 
-#### EQ (Equalizer)
+**Bands:** 80 Hz, 250 Hz, 500 Hz, 1.5 kHz, 3 kHz, 5 kHz
 
-A 6-band parametric equalizer with carefully chosen frequencies for bass guitar, plus a variable low-pass filter.
+Each band offers +/-12dB of gain. A low-pass filter (1kHz to 10kHz) tames excessive high-end.
 
-**Bands:**
-- 80 Hz (low-band)
-- 250 Hz
-- 500 Hz
-- 1.5 kHz
-- 3 kHz
-- 5 kHz (high-band)
+### Chorus
 
-**Additional:**
-- Low-pass filter (1kHz to 10kHz) for taming excessive high-end
-
-Each band offers ±12dB of gain control with optimized Q values for musical results.
-
-#### Chorus
-
-A stereo chorus effect that adds width and dimension to the bass tone without losing low-end focus.
-
-**Features:**
-- Multiband processing with crossover control (prevents chorusing of sub-bass frequencies)
-- Stereo LFO modulation with independent left/right channels
-- Lagrange interpolation for smooth, artifact-free modulation
+Stereo chorus with multiband processing to preserve low-end focus.
 
 **Controls:**
 - Rate (0.5Hz to 2.5Hz)
-- Depth (modulation amount)
-- Crossover (50Hz to 1kHz - frequencies below this remain mono)
+- Depth
+- Crossover (50Hz to 1kHz - frequencies below remain mono)
 - Mix (0% to 100%)
 
-#### IR Convolver (Cabinet Simulation)
+### IR Convolver
 
-High-quality cabinet simulation using impulse responses for realistic speaker cabinet and microphone modeling.
-
-**Features:**
-- Multiple impulse response options
-- Parallel processing for preserving low-end punch
-- Variable mix for blending direct and processed signals
+Cabinet simulation using built-in impulse responses with parallel processing for preserving low-end punch.
 
 **Controls:**
-- IR Type (selectable from built-in impulse responses)
+- IR Type (selectable)
 - Level (-36dB to 12dB)
 - Mix (0% to 100%)
+
+### Sessions & Presets
+
+The plugin supports sessions containing up to 5 presets. Sessions are saved to disk and automatically restored on startup.
+
+## Building
+
+### Requirements
+
+- CMake 3.24+
+- C++17 compiler
+- JUCE (included as a git submodule)
+
+### macOS
+
+```sh
+git submodule update --init --recursive
+make init-release
+make build-release
+```
+
+### Windows (GitHub Actions)
+
+A manually-triggered GitHub Actions workflow is available to build on Windows. Go to **Actions > Build Windows > Run workflow**.
+
+### Windows (cross-compile via Docker)
+
+```sh
+make build-windows
+```
