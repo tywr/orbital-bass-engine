@@ -26,8 +26,6 @@ The audio processing flows through the following stages:
 
 The compressor features two distinct analog-modeled compression circuits:
 
-- **OPTO (Optometric)**: Simulates optical compression with smooth, musical gain reduction. Features slow attack and dual-stage release characteristics for natural-sounding dynamic control that preserves transient detail.
-
 - **FET**: Models JFET-based compression with fast attack and aggressive character. Uses custom JFET circuit modeling for punchy, colorful compression ideal for adding sustain and presence.
 
 **Controls:**
