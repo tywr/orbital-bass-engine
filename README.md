@@ -17,7 +17,7 @@ The audio processing flows through the following stages:
 1. **Input Gain** - Initial level control
 2. **Tuner** - Chromatic tuner with YIN pitch detection
 3. **Compressor** - Dynamics control with analog-modeled FET circuit
-4. **Amp/Dual-Drive** - Overdrive and distortion (Helios or Borealis models)
+4. **Overdrive** - Overdrive with a vintage microtubes vibe
 5. **EQ** - 6-band tone shaping with low-pass filter
 6. **Chorus** - Stereo width and modulation (post mono-to-stereo conversion)
 7. **IR Convolver** - Cabinet simulation using impulse responses
@@ -42,6 +42,8 @@ FET-style compression with fast attack and aggressive character, using JFET circ
 - Mix (parallel compression, 0% to 100%)
 
 ### Overdrive
+
+The overdrive tries to emulate the famous Darkglass Vintage Microtubes pedal by modeling the circuit components of the original circuit using digital filters and a saturation curve directly taken from the following research paper: `https://www.dafx.de/paper-archive/2020/proceedings/papers/DAFx2020_paper_21.pdf`
 
 **Controls:**
 - Drive (0-10)
