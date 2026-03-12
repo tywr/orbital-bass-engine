@@ -578,6 +578,12 @@ bool PluginAudioProcessor::selectCollection(const juce::String& name)
             nullptr
         );
 
+        const auto& firstPreset = sessionManager.getPreset(0);
+        sessionManager.setCurrentPresetIndex(0);
+        saveCurrentPresetIndex(0);
+        if (!firstPreset.isEmpty)
+            presetManager.applyPreset(firstPreset);
+
         updateHostDisplay();
         return true;
     }
