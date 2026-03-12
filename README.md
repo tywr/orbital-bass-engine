@@ -6,7 +6,7 @@
 
 ## Overview
 
-Orbital Bass Engine is an open-source bass guitar audio plugin built with the JUCE framework. It provides a complete signal processing chain designed specifically for bass guitar, featuring analog-modeled compression, dual-drive amplification, and a post-amp effects rack.
+Orbital Bass Engine is an open-source bass guitar audio plugin built with the JUCE framework. It provides a complete signal processing chain designed specifically for bass guitar, featuring analog-modeled compression, vintage-style drive amplification, and a post-amp effects rack.
 
 The plugin processes bass signals through a carefully crafted signal chain that preserves low-end clarity while adding character, punch, and presence. All components are designed with bass frequencies in mind, ensuring tight, powerful tones without muddiness.
 
@@ -17,7 +17,7 @@ The audio processing flows through the following stages:
 1. **Input Gain** - Initial level control
 2. **Tuner** - Chromatic tuner with YIN pitch detection
 3. **Compressor** - Dynamics control with analog-modeled FET circuit
-4. **Overdrive** - Overdrive with a vintage microtubes vibe
+4. **Overdrive** - Overdrive with a vintage vibe
 5. **EQ** - 4-band parametric tone shaping with low-pass filter
 6. **Chorus** - Stereo width and modulation (post mono-to-stereo conversion)
 7. **IR Convolver** - Cabinet simulation using impulse responses
