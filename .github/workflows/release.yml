@@ -23,8 +23,9 @@ jobs:
 
       - name: Package
         run: |
-          cd build/src/orbital-bass-engine_artefacts/Release/Standalone
-          zip -r "$GITHUB_WORKSPACE/orbital-bass-engine-macos.zip" *.app
+          ditto -c -k --sequesterRsrc --keepParent \
+            build/src/orbital-bass-engine_artefacts/Release/Standalone/orbital-bass-engine.app \
+            orbital-bass-engine-macos.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
