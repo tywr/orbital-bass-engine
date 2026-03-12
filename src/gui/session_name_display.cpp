@@ -4,7 +4,22 @@ SessionNameDisplay::SessionNameDisplay(SessionManager& sm)
     : sessionManager(sm)
 {
     sessionManager.addListener(this);
-    updateSessionName();
+
+    collectionComboBox.setTextWhenNothingSelected("No Collection");
+    collectionComboBox.setColour(juce::ComboBox::backgroundColourId, ColourCodes::bg2);
+    collectionComboBox.setColour(juce::ComboBox::textColourId, ColourCodes::white0);
+    collectionComboBox.setColour(juce::ComboBox::outlineColourId, ColourCodes::grey3);
+    collectionComboBox.setColour(juce::ComboBox::arrowColourId, ColourCodes::white0);
+
+    collectionComboBox.onChange = [this]()
+    {
+        auto selectedText = collectionComboBox.getText();
+        if (selectedText.isNotEmpty() && onCollectionSelected)
+            onCollectionSelected(selectedText);
+    };
+
+    addAndMakeVisible(collectionComboBox);
+    updateCollectionList();
 }
 
 SessionNameDisplay::~SessionNameDisplay()
@@ -15,29 +30,16 @@ SessionNameDisplay::~SessionNameDisplay()
 void SessionNameDisplay::paint(juce::Graphics& g)
 {
     g.fillAll(juce::Colours::transparentBlack);
-
-    g.setColour(ColourCodes::white0);
-    g.setFont(juce::Font(juce::FontOptions("Typestar", 13.0f, juce::Font::plain)));
-
-    auto bounds = getLocalBounds();
-    if (sessionName.isEmpty())
-    {
-        g.setColour(ColourCodes::grey2);
-        g.drawText("No Session", bounds, juce::Justification::centred);
-    }
-    else
-    {
-        g.drawText(sessionName, bounds, juce::Justification::centred);
-    }
 }
 
 void SessionNameDisplay::resized()
 {
+    collectionComboBox.setBounds(getLocalBounds().reduced(2));
 }
 
 void SessionNameDisplay::sessionChanged()
 {
-    updateSessionName();
+    updateCollectionList();
     repaint();
 }
 
@@ -46,15 +48,22 @@ void SessionNameDisplay::currentPresetChanged(int newIndex)
     juce::ignoreUnused(newIndex);
 }
 
-void SessionNameDisplay::updateSessionName()
+void SessionNameDisplay::updateCollectionList()
 {
-    if (sessionManager.hasSessionFolder())
+    collectionComboBox.clear(juce::dontSendNotification);
+
+    auto collections = sessionManager.getCollectionNames();
+    juce::String currentCollection = sessionManager.getCurrentCollectionName();
+
+    int selectedId = 0;
+    for (int i = 0; i < collections.size(); ++i)
     {
-        auto sessionFolder = sessionManager.getSessionFolder();
-        sessionName = sessionFolder.getFileName();
+        int itemId = i + 1;
+        collectionComboBox.addItem(collections[i], itemId);
+        if (collections[i] == currentCollection)
+            selectedId = itemId;
     }
-    else
-    {
-        sessionName = "";
-    }
+
+    if (selectedId > 0)
+        collectionComboBox.setSelectedId(selectedId, juce::dontSendNotification);
 }

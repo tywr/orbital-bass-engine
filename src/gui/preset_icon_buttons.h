@@ -6,7 +6,7 @@
 class IconButton : public juce::Component
 {
 public:
-    enum IconType { Folder, Save, Reload };
+    enum IconType { Folder, Save, Reload, NewCollection };
 
     IconButton(IconType type);
 
@@ -36,11 +36,13 @@ public:
     std::function<void()> onLoadSessionClicked;
     std::function<void()> onSavePresetClicked;
     std::function<void()> onReloadPresetClicked;
+    std::function<void()> onNewCollectionClicked;
 
 private:
     std::unique_ptr<IconButton> loadSessionButton;
     std::unique_ptr<IconButton> savePresetButton;
     std::unique_ptr<IconButton> reloadPresetButton;
+    std::unique_ptr<IconButton> newCollectionButton;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PresetIconButtons)
 };

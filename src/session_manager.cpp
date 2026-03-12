@@ -136,3 +136,48 @@ void SessionManager::notifyCurrentPresetChanged()
 {
     listeners.call(&Listener::currentPresetChanged, currentPresetIndex);
 }
+
+void SessionManager::setRootFolder(const juce::File& folder)
+{
+    rootFolder = folder;
+}
+
+juce::StringArray SessionManager::getCollectionNames() const
+{
+    juce::StringArray names;
+    if (!rootFolder.isDirectory())
+        return names;
+
+    for (const auto& entry : juce::RangedDirectoryIterator(rootFolder, false, "*", juce::File::findDirectories))
+        names.add(entry.getFile().getFileName());
+
+    names.sort(true);
+    return names;
+}
+
+bool SessionManager::selectCollection(const juce::String& collectionName)
+{
+    if (!rootFolder.isDirectory())
+        return false;
+
+    juce::File collectionFolder = rootFolder.getChildFile(collectionName);
+    if (!collectionFolder.isDirectory())
+        return false;
+
+    return loadSessionFromFolder(collectionFolder);
+}
+
+bool SessionManager::createCollection(const juce::String& collectionName)
+{
+    if (!rootFolder.isDirectory())
+        return false;
+
+    juce::File collectionFolder = rootFolder.getChildFile(collectionName);
+    if (collectionFolder.exists())
+        return false;
+
+    if (!collectionFolder.createDirectory())
+        return false;
+
+    return loadSessionFromFolder(collectionFolder);
+}

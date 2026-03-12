@@ -34,6 +34,16 @@ public:
 
     void setCurrentPresetIndex(int index);
 
+    // Root folder & collection management
+    void setRootFolder(const juce::File& folder);
+    juce::File getRootFolder() const { return rootFolder; }
+    bool hasRootFolder() const { return rootFolder != juce::File(); }
+
+    juce::StringArray getCollectionNames() const;
+    juce::String getCurrentCollectionName() const { return sessionName; }
+    bool selectCollection(const juce::String& collectionName);
+    bool createCollection(const juce::String& collectionName);
+
     class Listener {
     public:
         virtual ~Listener() = default;
@@ -49,6 +59,7 @@ private:
     std::array<Preset, MAX_PRESETS> presets;
     juce::String sessionName;
     juce::File sessionFolder;
+    juce::File rootFolder;
     int currentPresetIndex = -1;
     juce::ListenerList<Listener> listeners;
 

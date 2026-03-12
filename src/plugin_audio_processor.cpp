@@ -23,6 +23,10 @@ PluginAudioProcessor::PluginAudioProcessor()
         parameters.state.setProperty(
             "session_folder_path", juce::String(""), nullptr
         );
+    if (!parameters.state.hasProperty("root_folder_path"))
+        parameters.state.setProperty(
+            "root_folder_path", juce::String(""), nullptr
+        );
 
     parameters.state.addListener(this);
 
@@ -455,7 +459,6 @@ juce::String PluginAudioProcessor::getSessionFolderPath() const
 
 void PluginAudioProcessor::loadSavedSession()
 {
-    // First try loading from properties file
     juce::PropertiesFile::Options options;
     options.applicationName = "OrbitalBassEngine";
     options.filenameSuffix = ".settings";
@@ -463,51 +466,153 @@ void PluginAudioProcessor::loadSavedSession()
     options.folderName = "OrbitalBassEngine";
 
     juce::PropertiesFile props(options);
-    juce::String savedPath = props.getValue("lastSessionFolder", "");
     int savedPresetIndex = props.getIntValue("lastPresetIndex", -1);
 
-    // DBG("Attempting to load saved session from: " + savedPath);
-    // DBG("Last preset index: " + juce::String(savedPresetIndex));
+    // Try root folder approach first
+    juce::String rootPath = props.getValue("rootFolderPath", "");
+    if (rootPath.isNotEmpty())
+    {
+        juce::File rootDir(rootPath);
+        if (rootDir.isDirectory())
+        {
+            sessionManager.setRootFolder(rootDir);
+            parameters.state.setProperty("root_folder_path", rootPath, nullptr);
 
+            juce::String lastCollection = props.getValue("lastCollectionName", "");
+            auto collections = sessionManager.getCollectionNames();
+
+            if (lastCollection.isNotEmpty() && collections.contains(lastCollection))
+                sessionManager.selectCollection(lastCollection);
+            else if (collections.size() > 0)
+                sessionManager.selectCollection(collections[0]);
+
+            if (savedPresetIndex >= 0 && savedPresetIndex < SessionManager::MAX_PRESETS)
+            {
+                const auto& preset = sessionManager.getPreset(savedPresetIndex);
+                if (!preset.isEmpty && getSampleRate() > 0)
+                    presetManager.applyPreset(preset);
+                sessionManager.setCurrentPresetIndex(savedPresetIndex);
+            }
+            return;
+        }
+    }
+
+    // Fallback: legacy session folder path
+    juce::String savedPath = props.getValue("lastSessionFolder", "");
     if (savedPath.isNotEmpty())
     {
         juce::File sessionFolder(savedPath);
         if (sessionFolder.isDirectory())
         {
-            // DBG("Loading saved session: " + savedPath);
             sessionManager.loadSessionFromFolder(sessionFolder);
-            parameters.state.setProperty(
-                "session_folder_path", savedPath, nullptr
-            );
+            parameters.state.setProperty("session_folder_path", savedPath, nullptr);
 
-            // Restore the last selected preset only if audio processing has
-            // been prepared
-            if (savedPresetIndex >= 0 &&
-                savedPresetIndex < SessionManager::MAX_PRESETS)
+            if (savedPresetIndex >= 0 && savedPresetIndex < SessionManager::MAX_PRESETS)
             {
                 const auto& preset = sessionManager.getPreset(savedPresetIndex);
-                if (!preset.isEmpty)
-                {
-                    // DBG("Restoring last preset: " + preset.name + " at index
-                    // " + juce::String(savedPresetIndex)); Only apply preset if
-                    // sample rate is valid (meaning prepareToPlay was called)
-                    if (getSampleRate() > 0)
-                    {
-                        presetManager.applyPreset(preset);
-                    }
-                }
+                if (!preset.isEmpty && getSampleRate() > 0)
+                    presetManager.applyPreset(preset);
                 sessionManager.setCurrentPresetIndex(savedPresetIndex);
             }
         }
+    }
+}
+
+bool PluginAudioProcessor::setRootFolder(const juce::File& folder)
+{
+    if (!folder.isDirectory())
+        return false;
+
+    sessionManager.setRootFolder(folder);
+
+    juce::String folderPath = folder.getFullPathName();
+    parameters.state.setProperty("root_folder_path", folderPath, nullptr);
+
+    juce::PropertiesFile::Options options;
+    options.applicationName = "OrbitalBassEngine";
+    options.filenameSuffix = ".settings";
+    options.osxLibrarySubFolder = "Application Support";
+    options.folderName = "OrbitalBassEngine";
+
+    juce::PropertiesFile props(options);
+    props.setValue("rootFolderPath", folderPath);
+    props.saveIfNeeded();
+
+    auto collections = sessionManager.getCollectionNames();
+    if (collections.size() > 0)
+    {
+        juce::String lastCollection = props.getValue("lastCollectionName", "");
+        if (lastCollection.isNotEmpty() && collections.contains(lastCollection))
+            sessionManager.selectCollection(lastCollection);
         else
-        {
-            // DBG("Saved session folder no longer exists: " + savedPath);
-        }
+            sessionManager.selectCollection(collections[0]);
     }
     else
     {
-        // DBG("No saved session found");
+        sessionManager.clearSession();
     }
+
+    updateHostDisplay();
+    return true;
+}
+
+void PluginAudioProcessor::saveRootFolderPath(const juce::String& path)
+{
+    parameters.state.setProperty("root_folder_path", path, nullptr);
+}
+
+juce::String PluginAudioProcessor::getRootFolderPath() const
+{
+    return parameters.state.getProperty("root_folder_path", "").toString();
+}
+
+bool PluginAudioProcessor::selectCollection(const juce::String& name)
+{
+    if (sessionManager.selectCollection(name))
+    {
+        saveCurrentCollectionName(name);
+
+        parameters.state.setProperty(
+            "session_folder_path",
+            sessionManager.getSessionFolder().getFullPathName(),
+            nullptr
+        );
+
+        updateHostDisplay();
+        return true;
+    }
+    return false;
+}
+
+bool PluginAudioProcessor::createCollection(const juce::String& name)
+{
+    if (sessionManager.createCollection(name))
+    {
+        saveCurrentCollectionName(name);
+
+        parameters.state.setProperty(
+            "session_folder_path",
+            sessionManager.getSessionFolder().getFullPathName(),
+            nullptr
+        );
+
+        updateHostDisplay();
+        return true;
+    }
+    return false;
+}
+
+void PluginAudioProcessor::saveCurrentCollectionName(const juce::String& name)
+{
+    juce::PropertiesFile::Options options;
+    options.applicationName = "OrbitalBassEngine";
+    options.filenameSuffix = ".settings";
+    options.osxLibrarySubFolder = "Application Support";
+    options.folderName = "OrbitalBassEngine";
+
+    juce::PropertiesFile props(options);
+    props.setValue("lastCollectionName", name);
+    props.saveIfNeeded();
 }
 
 //==============================================================================

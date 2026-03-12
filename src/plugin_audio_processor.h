@@ -80,6 +80,13 @@ class PluginAudioProcessor final
     void loadSavedSession();
     void saveCurrentPresetIndex(int index);
 
+    bool setRootFolder(const juce::File& folder);
+    void saveRootFolderPath(const juce::String& path);
+    juce::String getRootFolderPath() const;
+    bool selectCollection(const juce::String& name);
+    bool createCollection(const juce::String& name);
+    void saveCurrentCollectionName(const juce::String& name);
+
   private:
     juce::AudioProcessorValueTreeState parameters;
     juce::AudioProcessorValueTreeState::ParameterLayout parameterLayout;

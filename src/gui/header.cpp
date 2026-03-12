@@ -169,13 +169,13 @@ void Header::resized()
     tunerButton.setBounds(bounds.removeFromLeft(iconButtonSize));
     bounds.removeFromLeft(spacing);
 
-    // Preset icon buttons (now 3 buttons: folder, save, reload)
-    int const iconButtonsWidth = (iconButtonSize + spacing) * 3;
+    // Preset icon buttons (4 buttons: folder, new collection, save, reload)
+    int const iconButtonsWidth = (iconButtonSize + spacing) * 4;
     presetIconButtons.setBounds(bounds.removeFromLeft(iconButtonsWidth));
     bounds.removeFromLeft(spacing);
 
-    // Session name display
-    int const sessionNameWidth = 120;
+    // Collection selector dropdown
+    int const sessionNameWidth = 140;
     sessionNameDisplay.setBounds(bounds.removeFromLeft(sessionNameWidth));
     bounds.removeFromLeft(spacing);
 

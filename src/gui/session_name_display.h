@@ -16,11 +16,13 @@ public:
     void sessionChanged() override;
     void currentPresetChanged(int newIndex) override;
 
+    std::function<void(const juce::String&)> onCollectionSelected;
+
 private:
     SessionManager& sessionManager;
-    juce::String sessionName;
+    juce::ComboBox collectionComboBox;
 
-    void updateSessionName();
+    void updateCollectionList();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SessionNameDisplay)
 };

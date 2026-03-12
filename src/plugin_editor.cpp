@@ -23,11 +23,14 @@ PluginEditor::PluginEditor(
 
     auto& presetIconButtons = header.getPresetIconButtons();
     auto& presetBar = header.getPresetBar();
+    auto& sessionNameDisplay = header.getSessionNameDisplay();
 
     presetIconButtons.onLoadSessionClicked = [this]() { handleLoadSession(); };
     presetIconButtons.onSavePresetClicked = [this]() { handleSavePreset(); };
     presetIconButtons.onReloadPresetClicked = [this]() { handleReloadPreset(); };
+    presetIconButtons.onNewCollectionClicked = [this]() { handleNewCollection(); };
     presetBar.onPresetClicked = [this](int index) { handlePresetClicked(index); };
+    sessionNameDisplay.onCollectionSelected = [this](const juce::String& name) { handleCollectionSelected(name); };
 
     addChildComponent(tuner);
     tuner.onClose = [this]() { hideTuner(); };
@@ -130,9 +133,14 @@ void PluginEditor::handlePresetClicked(int index)
 
 void PluginEditor::handleLoadSession()
 {
+    auto& sessionManager = processorRef.getSessionManager();
+    juce::File startDir = sessionManager.hasRootFolder()
+        ? sessionManager.getRootFolder()
+        : juce::File::getSpecialLocation(juce::File::userDocumentsDirectory);
+
     auto chooser = std::make_shared<juce::FileChooser>(
-        "Select a session folder",
-        juce::File::getSpecialLocation(juce::File::userDocumentsDirectory)
+        "Select your preset collections root folder",
+        startDir
     );
 
     auto chooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectDirectories;
@@ -143,33 +151,20 @@ void PluginEditor::handleLoadSession()
         if (selectedFolder == juce::File())
             return;
 
-        if (processorRef.loadSession(selectedFolder))
+        if (processorRef.setRootFolder(selectedFolder))
         {
-            auto& sessionManager = processorRef.getSessionManager();
-            int numLoaded = 0;
-            for (int i = 0; i < SessionManager::MAX_PRESETS; ++i)
-            {
-                if (!sessionManager.getPreset(i).isEmpty)
-                    numLoaded++;
-            }
+            auto collections = processorRef.getSessionManager().getCollectionNames();
 
-            juce::String message;
-            if (numLoaded == 0)
-            {
-                message = "Session folder set to: " + selectedFolder.getFullPathName() +
-                         "\n\nNo presets found. Presets you save will be stored as preset_1.xml through preset_5.xml." +
-                         "\n\nThis session will be automatically loaded next time you open the plugin.";
-            }
-            else
-            {
-                message = "Session loaded from: " + selectedFolder.getFullPathName() +
-                         "\n\nLoaded " + juce::String(numLoaded) + " preset" + (numLoaded == 1 ? "" : "s") + "." +
-                         "\n\nThis session will be automatically loaded next time you open the plugin.";
-            }
+            juce::String message = "Root folder set to: " + selectedFolder.getFullPathName() +
+                "\n\nFound " + juce::String(collections.size()) + " collection" +
+                (collections.size() == 1 ? "" : "s") + ".";
+
+            if (collections.size() == 0)
+                message += "\n\nUse the + button to create a new preset collection.";
 
             juce::AlertWindow::showMessageBoxAsync(
                 juce::AlertWindow::InfoIcon,
-                "Session Ready",
+                "Root Folder Set",
                 message
             );
         }
@@ -177,8 +172,8 @@ void PluginEditor::handleLoadSession()
         {
             juce::AlertWindow::showMessageBoxAsync(
                 juce::AlertWindow::WarningIcon,
-                "Load Failed",
-                "Failed to load session from: " + selectedFolder.getFullPathName()
+                "Invalid Folder",
+                "Could not set root folder: " + selectedFolder.getFullPathName()
             );
         }
     });
@@ -280,14 +275,10 @@ void PluginEditor::handleReloadPreset()
         return;
     }
 
-    // Reload the preset from the file to ensure we get the saved state
     Preset reloadedPreset;
     if (processorRef.getPresetManager().loadPreset(preset.sourceFile, reloadedPreset))
     {
-        // Apply the reloaded preset state, completely discarding current changes
         processorRef.getPresetManager().applyPreset(reloadedPreset);
-
-        // Update the session manager with the reloaded preset
         sessionManager.setPreset(currentIndex, reloadedPreset);
     }
     else
@@ -296,6 +287,78 @@ void PluginEditor::handleReloadPreset()
             juce::AlertWindow::WarningIcon,
             "Reload Failed",
             "Failed to reload preset from file."
+        );
+    }
+}
+
+void PluginEditor::handleNewCollection()
+{
+    auto& sessionManager = processorRef.getSessionManager();
+
+    if (!sessionManager.hasRootFolder())
+    {
+        juce::AlertWindow::showMessageBoxAsync(
+            juce::AlertWindow::WarningIcon,
+            "No Root Folder",
+            "Please select a root folder first using the folder icon."
+        );
+        return;
+    }
+
+    auto* alertWindow = new juce::AlertWindow("New Collection",
+                                              "Enter collection name:",
+                                              juce::AlertWindow::NoIcon);
+
+    alertWindow->addTextEditor("collectionName", "", "Collection Name:");
+    alertWindow->addButton("Create", 1, juce::KeyPress(juce::KeyPress::returnKey));
+    alertWindow->addButton("Cancel", 0, juce::KeyPress(juce::KeyPress::escapeKey));
+
+    alertWindow->enterModalState(true, juce::ModalCallbackFunction::create([this, alertWindow](int result)
+    {
+        if (result == 1)
+        {
+            juce::String collectionName = alertWindow->getTextEditorContents("collectionName").trim();
+
+            if (collectionName.isEmpty())
+            {
+                juce::AlertWindow::showMessageBoxAsync(
+                    juce::AlertWindow::WarningIcon,
+                    "Invalid Name",
+                    "Collection name cannot be empty."
+                );
+                delete alertWindow;
+                return;
+            }
+
+            if (processorRef.createCollection(collectionName))
+            {
+                juce::AlertWindow::showMessageBoxAsync(
+                    juce::AlertWindow::InfoIcon,
+                    "Collection Created",
+                    "Collection \"" + collectionName + "\" created and selected."
+                );
+            }
+            else
+            {
+                juce::AlertWindow::showMessageBoxAsync(
+                    juce::AlertWindow::WarningIcon,
+                    "Creation Failed",
+                    "Could not create collection \"" + collectionName + "\". It may already exist."
+                );
+            }
+        }
+        delete alertWindow;
+    }), true);
+}
+
+void PluginEditor::handleCollectionSelected(const juce::String& name)
+{
+    if (!processorRef.selectCollection(name))
+    {
+        juce::AlertWindow::showMessageBoxAsync(
+            juce::AlertWindow::WarningIcon,
+            "Switch Failed",
+            "Could not switch to collection \"" + name + "\"."
         );
     }
 }

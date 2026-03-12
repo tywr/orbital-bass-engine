@@ -71,32 +71,24 @@ void IconButton::paint(juce::Graphics& g)
 
         juce::Path reloadPath;
 
-        // Arrowhead angle and position
-        float arrowheadAngle = juce::MathConstants<float>::pi * 0.25f; // 45 degrees
+        float arrowheadAngle = juce::MathConstants<float>::pi * 0.25f;
         float arrowSize = radius * 0.6f;
         float arrowWidth = 0.7f;
 
-        // Calculate arrowhead tip position
         float tipX = centerX + radius * std::cos(arrowheadAngle);
         float tipY = centerY + radius * std::sin(arrowheadAngle);
 
-        // Draw circular arc that ends at the arrowhead
-        // Go from ~117° counter-clockwise to 45° (the long way = 288° arc)
-        // To go counter-clockwise from 117° to 45°, we go to 45° + 360° = 405°
         reloadPath.addCentredArc(
             centerX, centerY,
             radius, radius,
             0.0f,
-            juce::MathConstants<float>::pi * 0.75f, // Start at ~117°
-            arrowheadAngle + juce::MathConstants<float>::pi * 2.0f, // End at 45° + 360° = 405°
-            true // Start as new subpath
+            juce::MathConstants<float>::pi * 0.75f,
+            arrowheadAngle + juce::MathConstants<float>::pi * 2.0f,
+            true
         );
 
-        // For counter-clockwise motion ending at arrowheadAngle
-        // Tangent is perpendicular: angle + π/2
         float tangentAngle = arrowheadAngle + juce::MathConstants<float>::pi * 0.58f;
 
-        // Draw arrowhead pointing forward (in direction of motion)
         reloadPath.startNewSubPath(tipX, tipY);
         reloadPath.lineTo(
             tipX + arrowSize * std::cos(tangentAngle - arrowWidth),
@@ -110,6 +102,20 @@ void IconButton::paint(juce::Graphics& g)
         );
 
         g.strokePath(reloadPath, juce::PathStrokeType(1.5f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+    }
+    else if (iconType == NewCollection)
+    {
+        float lineLength = iconBounds.getWidth() * 0.4f;
+        float centerX = iconBounds.getCentreX();
+        float centerY = iconBounds.getCentreY();
+
+        juce::Path plusPath;
+        plusPath.startNewSubPath(centerX - lineLength / 2.0f, centerY);
+        plusPath.lineTo(centerX + lineLength / 2.0f, centerY);
+        plusPath.startNewSubPath(centerX, centerY - lineLength / 2.0f);
+        plusPath.lineTo(centerX, centerY + lineLength / 2.0f);
+
+        g.strokePath(plusPath, juce::PathStrokeType(1.5f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
     }
 }
 
@@ -140,6 +146,13 @@ PresetIconButtons::PresetIconButtons()
     };
     addAndMakeVisible(loadSessionButton.get());
 
+    newCollectionButton = std::make_unique<IconButton>(IconButton::NewCollection);
+    newCollectionButton->onClick = [this]() {
+        if (onNewCollectionClicked)
+            onNewCollectionClicked();
+    };
+    addAndMakeVisible(newCollectionButton.get());
+
     savePresetButton = std::make_unique<IconButton>(IconButton::Save);
     savePresetButton->onClick = [this]() {
         if (onSavePresetClicked)
@@ -168,6 +181,9 @@ void PresetIconButtons::resized()
     bounds.removeFromLeft(2);
 
     loadSessionButton->setBounds(bounds.removeFromLeft(iconButtonSize));
+    bounds.removeFromLeft(spacing);
+
+    newCollectionButton->setBounds(bounds.removeFromLeft(iconButtonSize));
     bounds.removeFromLeft(spacing);
 
     savePresetButton->setBounds(bounds.removeFromLeft(iconButtonSize));
