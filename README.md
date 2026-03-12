@@ -18,7 +18,7 @@ The audio processing flows through the following stages:
 2. **Tuner** - Chromatic tuner with YIN pitch detection
 3. **Compressor** - Dynamics control with analog-modeled FET circuit
 4. **Overdrive** - Overdrive with a vintage microtubes vibe
-5. **EQ** - 6-band tone shaping with low-pass filter
+5. **EQ** - 4-band parametric tone shaping with low-pass filter
 6. **Chorus** - Stereo width and modulation (post mono-to-stereo conversion)
 7. **IR Convolver** - Cabinet simulation using impulse responses
 8. **Output Gain** - Final level control
@@ -43,7 +43,7 @@ FET-style compression with fast attack and aggressive character, using JFET circ
 
 ### Overdrive
 
-The overdrive tries to emulate the famous Darkglass Vintage Microtubes pedal by modeling the circuit components of the original circuit using digital filters and a saturation curve directly taken from the following research paper: `https://www.dafx.de/paper-archive/2020/proceedings/papers/DAFx2020_paper_21.pdf`
+The overdrive tries to emulate the famous Darkglass Vintage Microtubes pedal by modeling the circuit components of the original circuit using digital filters and a saturation curve directly taken from the following research paper: https://www.dafx.de/paper-archive/2020/proceedings/papers/DAFx2020_paper_21.pdf
 
 **Controls:**
 - Drive (0-10)
@@ -55,7 +55,7 @@ The overdrive tries to emulate the famous Darkglass Vintage Microtubes pedal by 
 
 ### EQ
 
-A 4-band parametric equalizer, includuing two fully parametric mid peak filters, a low-shelf and a high-shelf.
+A 4-band parametric equalizer, including two fully parametric mid peak filters, a low-shelf and a high-shelf.
 
 Each band offers +/-12dB of gain.
 
@@ -71,16 +71,39 @@ Stereo chorus with multiband processing to preserve low-end focus.
 
 ### IR Convolver
 
-Cabinet simulation using built-in impulse responses with parallel processing. It uses the IR from the Shift-Line free pack available there: `https://shift-line.com/irpackbass`
+Cabinet simulation using built-in impulse responses with parallel processing. It uses the IR from the [Shift-Line free pack](https://shift-line.com/irpackbass).
 
 **Controls:**
-- IR Type (selectable)
+- IR Type (B15, SVT810, EBS410, XL410, PPC212, TC410)
 - Level (-36dB to 12dB)
 - Mix (0% to 100%)
 
-### Sessions & Presets
+### Preset Collections
 
-The plugin supports sessions containing up to 5 presets. Sessions are saved to disk and automatically restored on startup.
+Presets are organized into **collections** within a user-chosen root folder. Each collection is a subdirectory containing up to 5 presets.
+
+- Click the **folder icon** to select a root folder
+- Click the **+ button** to create a new collection
+- Use the **dropdown** to switch between collections
+- Click a **preset slot** to load a preset, use the **save icon** to save the current state, and the **reload icon** to revert to the saved state
+
+The root folder, last selected collection, and last selected preset are all persisted and automatically restored on startup.
+
+## Download
+
+Pre-built binaries for macOS and Windows are available on the [Releases](../../releases) page.
+
+### macOS
+
+The app is not code-signed, so macOS Gatekeeper will quarantine it after download. To open it:
+
+- **Right-click** (or Control-click) the app and choose **Open** from the context menu, then click **Open** in the dialog.
+
+Alternatively, remove the quarantine attribute via Terminal:
+
+```sh
+xattr -cr /path/to/orbital-bass-engine.app
+```
 
 ## Building
 
@@ -98,12 +121,17 @@ make init-release
 make build-release
 ```
 
-### Windows (GitHub Actions)
-
-A manually-triggered GitHub Actions workflow is available to build on Windows. Go to **Actions > Build Windows > Run workflow**.
-
 ### Windows (cross-compile via Docker)
 
 ```sh
 make build-windows
+```
+
+## Releasing
+
+Pushing a version tag triggers a GitHub Actions workflow that builds both macOS and Windows, then creates a GitHub Release with the artifacts attached:
+
+```sh
+git tag v1.0.0
+git push <remote> v1.0.0
 ```
