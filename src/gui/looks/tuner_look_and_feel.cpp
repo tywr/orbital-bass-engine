@@ -12,7 +12,7 @@ void TunerLookAndFeel::drawToggleButton(
     bool isButtonDown
 )
 {
-    juce::Colour colour = ColourCodes::white0; // Always white like other icons
+    juce::Colour colour = ColourCodes::white0;
 
     if (isButtonDown)
         colour = ColourCodes::grey3;
@@ -21,51 +21,44 @@ void TunerLookAndFeel::drawToggleButton(
 
     g.setColour(colour);
 
-    const float buttonStrokeWidth = 1.3f;
-    auto bounds = button.getLocalBounds().toFloat().reduced(10.5f);
+    auto bounds = button.getLocalBounds().toFloat();
+    float iconSize = juce::jmin(bounds.getWidth(), bounds.getHeight()) * 0.5f;
+    auto iconBounds = bounds.withSizeKeepingCentre(iconSize, iconSize);
+    float centerX = iconBounds.getCentreX();
+    float centerY = iconBounds.getCentreY();
 
-    auto centerX = bounds.getCentreX();
-    auto centerY = bounds.getCentreY();
+    float stroke = 1.4f;
+    juce::PathStrokeType strokeType(stroke, juce::PathStrokeType::curved, juce::PathStrokeType::rounded);
 
-    // Tuning fork shape - scaled to match other icons
-    juce::Path tuningFork;
+    float forkWidth = iconSize * 0.5f;
+    float forkHeight = iconSize * 0.5f;
+    float handleLength = iconSize * 0.35f;
+    float dotRadius = 1.8f;
+    float dotGap = stroke + dotRadius;
 
-    float forkWidth = bounds.getWidth() * 0.3f;
-    float forkHeight = bounds.getHeight() * 0.22f;
-    float handleLength = bounds.getHeight() * 0.18f;
+    // Total height from prong tops to dot bottom, used to vertically center the whole shape
+    float totalHeight = forkHeight + handleLength + dotGap + dotRadius;
+    float offsetY = centerY - totalHeight / 2.0f;
 
     float leftProngX = centerX - forkWidth / 2.0f;
     float rightProngX = centerX + forkWidth / 2.0f;
-    float topY = centerY - forkHeight - handleLength / 2.0f;
+    float topY = offsetY;
     float curveY = topY + forkHeight;
     float handleEndY = curveY + handleLength;
 
-    // Left prong
+    juce::Path tuningFork;
+
     tuningFork.startNewSubPath(leftProngX, topY);
     tuningFork.lineTo(leftProngX, curveY);
-
-    // Curve at bottom connecting to handle
-    tuningFork.quadraticTo(leftProngX, curveY + handleLength * 0.2f, centerX, curveY + handleLength * 0.2f);
-
-    // Handle (tail)
+    tuningFork.quadraticTo(leftProngX, curveY + handleLength * 0.25f, centerX, curveY + handleLength * 0.25f);
     tuningFork.lineTo(centerX, handleEndY);
 
-    // Back up to curve
-    tuningFork.startNewSubPath(centerX, curveY + handleLength * 0.2f);
-    tuningFork.quadraticTo(rightProngX, curveY + handleLength * 0.2f, rightProngX, curveY);
-
-    // Right prong
+    tuningFork.startNewSubPath(centerX, curveY + handleLength * 0.25f);
+    tuningFork.quadraticTo(rightProngX, curveY + handleLength * 0.25f, rightProngX, curveY);
     tuningFork.lineTo(rightProngX, topY);
 
-    g.strokePath(
-        tuningFork, juce::PathStrokeType(
-                        buttonStrokeWidth, juce::PathStrokeType::curved,
-                        juce::PathStrokeType::rounded
-                    )
-    );
+    g.strokePath(tuningFork, strokeType);
 
-    // Small dot at the bottom of the handle
-    float dotRadius = 1.4f;
-    float dotY = handleEndY + 1.8f;
+    float dotY = handleEndY + dotGap;
     g.fillEllipse(centerX - dotRadius, dotY - dotRadius, dotRadius * 2.0f, dotRadius * 2.0f);
 }
