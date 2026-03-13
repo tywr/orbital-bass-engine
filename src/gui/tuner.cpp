@@ -2,6 +2,47 @@
 #include <cmath>
 #include <juce_gui_basics/juce_gui_basics.h>
 
+CloseButton::CloseButton() {}
+
+void CloseButton::paint(juce::Graphics& g)
+{
+    auto bounds = getLocalBounds().toFloat();
+    float iconSize = juce::jmin(bounds.getWidth(), bounds.getHeight()) * 0.5f;
+    auto iconBounds = bounds.withSizeKeepingCentre(iconSize, iconSize);
+    float cx = iconBounds.getCentreX();
+    float cy = iconBounds.getCentreY();
+    float arm = iconSize * 0.4f;
+
+    juce::Colour colour = isHovered ? ColourCodes::orange : ColourCodes::white0;
+    g.setColour(colour);
+
+    juce::Path path;
+    path.startNewSubPath(cx - arm, cy - arm);
+    path.lineTo(cx + arm, cy + arm);
+    path.startNewSubPath(cx + arm, cy - arm);
+    path.lineTo(cx - arm, cy + arm);
+
+    g.strokePath(path, juce::PathStrokeType(1.4f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+}
+
+void CloseButton::mouseDown(const juce::MouseEvent&)
+{
+    if (onClick)
+        onClick();
+}
+
+void CloseButton::mouseEnter(const juce::MouseEvent&)
+{
+    isHovered = true;
+    repaint();
+}
+
+void CloseButton::mouseExit(const juce::MouseEvent&)
+{
+    isHovered = false;
+    repaint();
+}
+
 Tuner::Tuner(juce::Value& v) : pitch_value(v)
 {
     startTimerHz(60);
@@ -11,7 +52,6 @@ Tuner::Tuner(juce::Value& v) : pitch_value(v)
     pitch_value.setValue(0.0f);
 
     addAndMakeVisible(closeButton);
-    closeButton.setButtonText("X");
     closeButton.onClick = [this]()
     {
         if (onClose)
@@ -27,66 +67,78 @@ Tuner::~Tuner()
 void Tuner::paint(juce::Graphics& g)
 {
     g.fillAll(juce::Colours::black);
+
+    bool inTune = currentFreq > 0.0f && std::abs(centsDeviation) < inTuneThreshold;
+    juce::Colour accentColour = inTune ? ColourCodes::orange : ColourCodes::grey3;
+
     auto bounds = getLocalBounds().reduced(100).toFloat();
-    g.setColour(ColourCodes::white0.withAlpha(0.3f));
-    g.drawRoundedRectangle(bounds, 20.0f, 5.0f);
+    g.setColour(accentColour.withAlpha(0.4f));
+    g.drawRect(bounds, 2.0f);
 
     auto innerBounds = bounds.reduced(40.0f);
 
-    // Draw note label
-    g.setColour(ColourCodes::white0);
+    // Note label
+    g.setColour(inTune ? ColourCodes::orange : ColourCodes::white0);
     g.setFont(48.0f);
     g.drawText(
         noteLabel, innerBounds.removeFromTop(60.0f),
         juce::Justification::centred
     );
 
-    // Draw pitch slider
+    // Pitch bar
     auto sliderArea = innerBounds.reduced(20.0f, 40.0f);
-    float sliderHeight = 20.0f;
+    float sliderHeight = 12.0f;
     auto sliderBounds =
         sliderArea.withHeight(sliderHeight).withCentre(innerBounds.getCentre());
 
-    // Slider background
-    g.setColour(ColourCodes::white0.withAlpha(0.2f));
-    g.fillRoundedRectangle(sliderBounds, 10.0f);
+    // Bar background
+    g.setColour(ColourCodes::bg2);
+    g.fillRect(sliderBounds);
+
+    // Tick marks
+    float centerX = sliderBounds.getCentreX();
+    float tickTop = sliderBounds.getY() - 4.0f;
+    float tickBottom = sliderBounds.getBottom() + 4.0f;
+    g.setColour(ColourCodes::grey2);
+    for (int i = -4; i <= 4; ++i)
+    {
+        float tickX = centerX + i * (sliderBounds.getWidth() / 10.0f);
+        float h = (i == 0) ? 0.0f : 2.0f;
+        g.drawLine(tickX, tickTop + h, tickX, tickBottom - h, 1.0f);
+    }
 
     // Center marker
-    float centerX = sliderBounds.getCentreX();
-    g.setColour(ColourCodes::white0.withAlpha(0.5f));
-    g.drawLine(
-        centerX, sliderBounds.getY() - 5.0f, centerX,
-        sliderBounds.getBottom() + 5.0f, 2.0f
-    );
+    g.setColour(accentColour);
+    g.drawLine(centerX, tickTop, centerX, tickBottom, 2.0f);
 
     // Pitch indicator
     if (currentFreq > 0.0f)
     {
-        bool inTune = std::abs(centsDeviation) < inTuneThreshold;
-        g.setColour(inTune ? juce::Colours::green : ColourCodes::white0);
-
         float normalizedPos = juce::jlimit(-1.0f, 1.0f, centsDeviation / 50.0f);
         float indicatorX =
-            centerX + normalizedPos * (sliderBounds.getWidth() / 2.0f - 10.0f);
-        float indicatorSize = 16.0f;
+            centerX + normalizedPos * (sliderBounds.getWidth() / 2.0f - 8.0f);
+        float indicatorW = 6.0f;
+        float indicatorH = sliderHeight + 10.0f;
 
-        g.fillEllipse(
-            indicatorX - indicatorSize / 2.0f,
-            sliderBounds.getCentreY() - indicatorSize / 2.0f, indicatorSize,
-            indicatorSize
+        g.setColour(inTune ? ColourCodes::orange : ColourCodes::white0);
+        g.fillRect(
+            indicatorX - indicatorW / 2.0f,
+            sliderBounds.getCentreY() - indicatorH / 2.0f,
+            indicatorW, indicatorH
         );
     }
 }
 
 void Tuner::resized()
 {
-    auto bounds = getLocalBounds();
-    int const buttonSize = 40;
-    int const padding = 20;
+    auto frameBounds = getLocalBounds().reduced(100);
+    int const buttonSize = 32;
+    int const margin = 10;
 
     closeButton.setBounds(
-        bounds.getWidth() - buttonSize - padding, padding, buttonSize,
-        buttonSize
+        frameBounds.getRight() - buttonSize - margin,
+        frameBounds.getY() + margin,
+        buttonSize, buttonSize
     );
 }
 

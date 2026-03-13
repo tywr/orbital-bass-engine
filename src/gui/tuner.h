@@ -6,6 +6,22 @@
 #include <juce_dsp/juce_dsp.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
+class CloseButton : public juce::Component
+{
+  public:
+    CloseButton();
+    void paint(juce::Graphics& g) override;
+    void mouseDown(const juce::MouseEvent&) override;
+    void mouseEnter(const juce::MouseEvent&) override;
+    void mouseExit(const juce::MouseEvent&) override;
+
+    std::function<void()> onClick;
+
+  private:
+    bool isHovered = false;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CloseButton)
+};
+
 class Tuner : public juce::Component,
               public juce::Timer,
               public juce::Value::Listener
@@ -29,7 +45,7 @@ class Tuner : public juce::Component,
     juce::String getNoteLabel(int noteIndex) const;
     juce::Value& pitch_value;
 
-    juce::TextButton closeButton;
+    CloseButton closeButton;
 
     std::atomic<float> targetFreq{0.0f};
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear> smoothedFreq{
