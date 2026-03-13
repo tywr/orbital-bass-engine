@@ -59,7 +59,8 @@ EqSlidersComponent::EqSlidersComponent(
                             juce::dontSendNotification
                         );
                         auto labelBounds =
-                            getLocalArea(labeledKnob, label.getBounds());
+                            getLocalArea(labeledKnob, label.getBounds())
+                                .reduced(10, 0);
                         drag_tooltip.setBounds(labelBounds);
                         drag_tooltip.toFront(true);
                         drag_tooltip.setVisible(true);
@@ -138,8 +139,9 @@ void EqSlidersComponent::resized()
 
     // Split horizontally: left side for frequency ranges, right side for LPF
     const float lpf_width_ratio = 0.15f;
-    auto lpf_section =
-        bounds.removeFromRight(static_cast<int>(bounds.getWidth() * lpf_width_ratio));
+    auto lpf_section = bounds.removeFromRight(
+        static_cast<int>(bounds.getWidth() * lpf_width_ratio)
+    );
     bounds.removeFromRight(section_gap);
 
     int total_width = bounds.getWidth();
