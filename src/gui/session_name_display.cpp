@@ -6,10 +6,6 @@ SessionNameDisplay::SessionNameDisplay(SessionManager& sm)
     sessionManager.addListener(this);
 
     collectionComboBox.setTextWhenNothingSelected("No Collection");
-    collectionComboBox.setColour(juce::ComboBox::backgroundColourId, ColourCodes::bg2);
-    collectionComboBox.setColour(juce::ComboBox::textColourId, ColourCodes::white0);
-    collectionComboBox.setColour(juce::ComboBox::outlineColourId, ColourCodes::grey3);
-    collectionComboBox.setColour(juce::ComboBox::arrowColourId, ColourCodes::white0);
 
     collectionComboBox.onChange = [this]()
     {

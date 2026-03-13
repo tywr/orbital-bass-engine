@@ -22,8 +22,8 @@ class BaseLookAndFeel : public juce::LookAndFeel_V4
             ColourCodes::bg,     // outline
             ColourCodes::grey3,  // defaultText
             ColourCodes::bg,     // defaultFill
-            ColourCodes::white2, // highlightedText
-            ColourCodes::blue0,  // highlightedFill
+            juce::Colours::black, // highlightedText
+            ColourCodes::orange,  // highlightedFill
             ColourCodes::white0  // menuText
         );
     }

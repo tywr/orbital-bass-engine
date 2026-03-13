@@ -6,6 +6,18 @@
 BaseLookAndFeel::BaseLookAndFeel()
 {
     setColourScheme(getColourScheme());
+
+    setColour(juce::PopupMenu::backgroundColourId, ColourCodes::bg1);
+    setColour(juce::PopupMenu::textColourId, ColourCodes::white0);
+    setColour(juce::PopupMenu::highlightedBackgroundColourId, ColourCodes::orange);
+    setColour(juce::PopupMenu::highlightedTextColourId, juce::Colours::black);
+    setColour(juce::PopupMenu::headerTextColourId, ColourCodes::white0);
+
+    setColour(juce::ComboBox::backgroundColourId, ColourCodes::bg2);
+    setColour(juce::ComboBox::textColourId, ColourCodes::white0);
+    setColour(juce::ComboBox::outlineColourId, ColourCodes::grey3);
+    setColour(juce::ComboBox::arrowColourId, ColourCodes::white0);
+    setColour(juce::ComboBox::focusedOutlineColourId, ColourCodes::orange);
 }
 
 void BaseLookAndFeel::drawButtonBackground(
