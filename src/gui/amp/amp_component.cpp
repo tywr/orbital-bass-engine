@@ -116,14 +116,15 @@ void AmpComponent::paint(juce::Graphics& g)
     // Get design area bounds
     auto design_bounds = bounds.removeFromTop(bounds.getHeight() / 2);
 
-    // Draw cached design
+    // Draw cached design inset by border thickness so it doesn't overlap
     float scale = g.getInternalContext().getPhysicalPixelScaleFactor();
     if (is_cache_dirty)
     {
         buildCache(scale, colour1, colour2);
         is_cache_dirty = false;
     }
-    g.drawImage(background_cache, design_bounds.toFloat());
+    auto insetDesign = design_bounds.reduced(border_thickness).toFloat();
+    g.drawImage(background_cache, insetDesign);
 
     // Draw knobs area border
     g.setColour(border_colour);

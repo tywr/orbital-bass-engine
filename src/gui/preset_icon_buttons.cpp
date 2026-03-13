@@ -41,7 +41,7 @@ void IconButton::paint(juce::Graphics& g)
     }
     else if (iconType == NewCollection)
     {
-        float arm = iconSize * 0.45f;
+        float arm = iconSize * 0.3f;
 
         juce::Path path;
         path.startNewSubPath(centerX - arm, centerY);

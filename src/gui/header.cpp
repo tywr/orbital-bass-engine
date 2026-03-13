@@ -164,21 +164,24 @@ void Header::resized()
     // Center area: tuner button and preset controls
     int const iconButtonSize = bounds.getHeight() - 4;
     int const spacing = 10;
+    int const iconButtonsWidth = iconButtonSize * 4 + spacing * 3;
+    int const sessionNameWidth = 140;
 
-    // Tuner button on the left
+    // Total width of: tuner + spacing + icon buttons + spacing + selector
+    int const controlsWidth = iconButtonSize + spacing + iconButtonsWidth
+                            + spacing + sessionNameWidth;
+
+    // Preset bar takes remaining space on the right
+    int const presetBarWidth = bounds.getWidth() - controlsWidth - spacing;
+    presetBar.setBounds(bounds.removeFromRight(presetBarWidth));
+
+    // Center tuner + icon buttons + selector in remaining area
+    int const horizontalOffset = (bounds.getWidth() - controlsWidth) / 2;
+    bounds.removeFromLeft(horizontalOffset);
+
     tunerButton.setBounds(bounds.removeFromLeft(iconButtonSize));
     bounds.removeFromLeft(spacing);
-
-    // Preset icon buttons (4 buttons: folder, new collection, save, reload)
-    int const iconButtonsWidth = (iconButtonSize + spacing) * 4;
     presetIconButtons.setBounds(bounds.removeFromLeft(iconButtonsWidth));
     bounds.removeFromLeft(spacing);
-
-    // Collection selector dropdown
-    int const sessionNameWidth = 140;
     sessionNameDisplay.setBounds(bounds.removeFromLeft(sessionNameWidth));
-    bounds.removeFromLeft(spacing);
-
-    // Preset bar takes remaining space
-    presetBar.setBounds(bounds);
 }
