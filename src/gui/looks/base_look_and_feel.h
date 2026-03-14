@@ -95,4 +95,10 @@ class BaseLookAndFeel : public juce::LookAndFeel_V4
     {
         return mainFont;
     }
+
+    void drawComboBox(
+        juce::Graphics& g, int width, int height, bool isButtonDown,
+        int buttonX, int buttonY, int buttonW, int buttonH,
+        juce::ComboBox& box
+    ) override;
 };

@@ -13,11 +13,11 @@ BaseLookAndFeel::BaseLookAndFeel()
     setColour(juce::PopupMenu::highlightedTextColourId, juce::Colours::black);
     setColour(juce::PopupMenu::headerTextColourId, ColourCodes::white0);
 
-    setColour(juce::ComboBox::backgroundColourId, ColourCodes::bg2);
+    setColour(juce::ComboBox::backgroundColourId, ColourCodes::bg1);
     setColour(juce::ComboBox::textColourId, ColourCodes::white0);
-    setColour(juce::ComboBox::outlineColourId, ColourCodes::grey3);
+    setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
     setColour(juce::ComboBox::arrowColourId, ColourCodes::white0);
-    setColour(juce::ComboBox::focusedOutlineColourId, ColourCodes::orange);
+    setColour(juce::ComboBox::focusedOutlineColourId, juce::Colours::transparentBlack);
 }
 
 void BaseLookAndFeel::drawButtonBackground(
@@ -244,4 +244,37 @@ void BaseLookAndFeel::drawLabel(juce::Graphics& g, juce::Label& label)
     g.setFont(mainFont);
     g.setColour(label.findColour(juce::Label::textColourId));
     g.drawFittedText(text, bounds, juce::Justification::centred, 1);
+}
+
+void BaseLookAndFeel::drawComboBox(
+    juce::Graphics& g, int width, int height, bool isButtonDown,
+    int buttonX, int buttonY, int buttonW, int buttonH,
+    juce::ComboBox& box
+)
+{
+    juce::ignoreUnused(buttonX, buttonY, buttonW, buttonH);
+
+    auto bounds = juce::Rectangle<float>(0, 0, (float)width, (float)height);
+
+    g.setColour(box.findColour(juce::ComboBox::backgroundColourId));
+    g.fillRect(bounds);
+
+    g.setColour(ColourCodes::grey3);
+    g.drawRect(bounds, 1.0f);
+
+    // Arrow
+    float arrowSize = height * 0.3f;
+    float arrowX = width - height * 0.6f;
+    float arrowY = height * 0.5f;
+
+    juce::Path arrow;
+    arrow.addTriangle(
+        arrowX - arrowSize * 0.5f, arrowY - arrowSize * 0.25f,
+        arrowX + arrowSize * 0.5f, arrowY - arrowSize * 0.25f,
+        arrowX, arrowY + arrowSize * 0.25f
+    );
+
+    g.setColour(box.findColour(juce::ComboBox::arrowColourId)
+                    .withAlpha(isButtonDown ? 1.0f : 0.7f));
+    g.fillPath(arrow);
 }
