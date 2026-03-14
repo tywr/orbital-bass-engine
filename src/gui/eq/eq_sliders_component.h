@@ -21,7 +21,7 @@ class EqSlidersComponent : public juce::Component
     EqSlidersComponent(juce::AudioProcessorValueTreeState&);
     ~EqSlidersComponent() override;
 
-    void paint(juce::Graphics&) override;
+    void paintOverChildren(juce::Graphics&) override;
     void resized() override;
     void switchColour(juce::Colour, juce::Colour);
 

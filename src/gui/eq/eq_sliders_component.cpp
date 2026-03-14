@@ -89,7 +89,7 @@ EqSlidersComponent::~EqSlidersComponent()
 {
 }
 
-void EqSlidersComponent::paint(juce::Graphics& g)
+void EqSlidersComponent::paintOverChildren(juce::Graphics& g)
 {
     auto bounds = getLocalBounds();
     const int section_gap = GuiDimensions::PANEL_GAP * 2;
