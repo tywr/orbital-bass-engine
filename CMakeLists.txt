@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(orbital-bass-engine VERSION 0.0.1)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "12.0" CACHE STRING "Minimum macOS version")
+project(orbital-bass-engine VERSION 1.5.0)
 add_subdirectory(modules/JUCE)
 add_subdirectory(src)
