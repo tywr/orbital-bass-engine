@@ -21,6 +21,13 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
+      - name: Codesign
+        run: |
+          ARTEFACTS=build/src/orbital-bass-engine_artefacts/Release
+          codesign --force --deep -s - "$ARTEFACTS/Standalone/orbital-bass-engine.app"
+          codesign --force --deep -s - "$ARTEFACTS/AU/orbital-bass-engine.component"
+          codesign --force --deep -s - "$ARTEFACTS/VST3/orbital-bass-engine.vst3"
+
       - name: Package
         run: |
           ARTEFACTS=build/src/orbital-bass-engine_artefacts/Release
