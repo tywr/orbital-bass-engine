@@ -1,7 +1,6 @@
 #include "preset_icon_buttons.h"
 
-IconButton::IconButton(IconType type)
-    : iconType(type)
+IconButton::IconButton(IconType type) : iconType(type)
 {
 }
 
@@ -9,7 +8,8 @@ void IconButton::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds().toFloat();
 
-    juce::Colour iconColour = isHovered ? ColourCodes::white1 : ColourCodes::white0;
+    juce::Colour iconColour =
+        isHovered ? ColourCodes::white1 : ColourCodes::white0;
     g.setColour(iconColour);
 
     float iconSize = juce::jmin(bounds.getWidth(), bounds.getHeight()) * 0.5f;
@@ -17,7 +17,9 @@ void IconButton::paint(juce::Graphics& g)
     float centerX = iconBounds.getCentreX();
     float centerY = iconBounds.getCentreY();
     float stroke = 1.4f;
-    juce::PathStrokeType strokeType(stroke, juce::PathStrokeType::curved, juce::PathStrokeType::rounded);
+    juce::PathStrokeType strokeType(
+        stroke, juce::PathStrokeType::curved, juce::PathStrokeType::rounded
+    );
 
     if (iconType == Folder)
     {
@@ -62,7 +64,9 @@ void IconButton::paint(juce::Graphics& g)
         path.startNewSubPath(centerX, centerY - halfH);
         path.lineTo(centerX, centerY + halfH);
         // Chevron
-        path.startNewSubPath(centerX - halfW * 0.6f, centerY + halfH - chevronH);
+        path.startNewSubPath(
+            centerX - halfW * 0.6f, centerY + halfH - chevronH
+        );
         path.lineTo(centerX, centerY + halfH);
         path.lineTo(centerX + halfW * 0.6f, centerY + halfH - chevronH);
         // Base line
@@ -86,12 +90,9 @@ void IconButton::paint(juce::Graphics& g)
         float tipY = centerY + radius * std::sin(arrowheadAngle);
 
         path.addCentredArc(
-            centerX, centerY,
-            radius, radius,
-            0.0f,
+            centerX, centerY, radius, radius, 0.0f,
             juce::MathConstants<float>::pi * 0.75f,
-            arrowheadAngle + juce::MathConstants<float>::pi * 2.0f,
-            true
+            arrowheadAngle + juce::MathConstants<float>::pi * 2.0f, true
         );
 
         float tangent = arrowheadAngle + juce::MathConstants<float>::pi * 0.58f;
@@ -132,28 +133,33 @@ void IconButton::mouseExit(const juce::MouseEvent&)
 PresetIconButtons::PresetIconButtons()
 {
     loadSessionButton = std::make_unique<IconButton>(IconButton::Folder);
-    loadSessionButton->onClick = [this]() {
+    loadSessionButton->onClick = [this]()
+    {
         if (onLoadSessionClicked)
             onLoadSessionClicked();
     };
     addAndMakeVisible(loadSessionButton.get());
 
-    newCollectionButton = std::make_unique<IconButton>(IconButton::NewCollection);
-    newCollectionButton->onClick = [this]() {
+    newCollectionButton =
+        std::make_unique<IconButton>(IconButton::NewCollection);
+    newCollectionButton->onClick = [this]()
+    {
         if (onNewCollectionClicked)
             onNewCollectionClicked();
     };
     addAndMakeVisible(newCollectionButton.get());
 
     savePresetButton = std::make_unique<IconButton>(IconButton::Save);
-    savePresetButton->onClick = [this]() {
+    savePresetButton->onClick = [this]()
+    {
         if (onSavePresetClicked)
             onSavePresetClicked();
     };
     addAndMakeVisible(savePresetButton.get());
 
     reloadPresetButton = std::make_unique<IconButton>(IconButton::Reload);
-    reloadPresetButton->onClick = [this]() {
+    reloadPresetButton->onClick = [this]()
+    {
         if (onReloadPresetClicked)
             onReloadPresetClicked();
     };
@@ -167,20 +173,11 @@ PresetIconButtons::~PresetIconButtons()
 void PresetIconButtons::resized()
 {
     auto bounds = getLocalBounds();
-    auto iconButtonSize = bounds.getHeight() - 4;
-    auto spacing = 6;
-
-    bounds.removeFromLeft(2);
+    auto iconButtonSize = bounds.getWidth() / 4;
 
     loadSessionButton->setBounds(bounds.removeFromLeft(iconButtonSize));
-    bounds.removeFromLeft(spacing);
-
     newCollectionButton->setBounds(bounds.removeFromLeft(iconButtonSize));
-    bounds.removeFromLeft(spacing);
-
     savePresetButton->setBounds(bounds.removeFromLeft(iconButtonSize));
-    bounds.removeFromLeft(spacing);
-
     reloadPresetButton->setBounds(bounds.removeFromLeft(iconButtonSize));
 }
 

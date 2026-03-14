@@ -26,7 +26,7 @@ void PresetSlot::paint(juce::Graphics& g)
     {
         // Selected: orange square background
         g.setColour(ColourCodes::orange); // Orange
-        g.fillRect(bounds.reduced(2.0f));
+        g.fillRect(bounds);
 
         g.setColour(juce::Colours::black);
     }
@@ -103,17 +103,11 @@ PresetBar::~PresetBar()
 void PresetBar::resized()
 {
     auto bounds = getLocalBounds();
-    auto spacing = 6;
-
-    int slotWidth =
-        (bounds.getWidth() - (SessionManager::MAX_PRESETS - 1) * spacing) /
-        SessionManager::MAX_PRESETS;
+    int slotWidth = bounds.getWidth() / SessionManager::MAX_PRESETS;
 
     for (int i = 0; i < SessionManager::MAX_PRESETS; ++i)
     {
         presetSlots[i]->setBounds(bounds.removeFromLeft(slotWidth));
-        if (i < SessionManager::MAX_PRESETS - 1)
-            bounds.removeFromLeft(spacing);
     }
 }
 
@@ -121,27 +115,6 @@ void PresetBar::paint(juce::Graphics& g)
 {
     // Transparent background
     g.fillAll(juce::Colours::transparentBlack);
-
-    // Draw a single white border around all preset slots
-    if (!presetSlots.empty() && presetSlots[0] &&
-        presetSlots[SessionManager::MAX_PRESETS - 1])
-    {
-        auto firstSlot = presetSlots[0]->getBounds();
-        auto lastSlot =
-            presetSlots[SessionManager::MAX_PRESETS - 1]->getBounds();
-
-        // Calculate bounds that encompass all slots
-        int x = firstSlot.getX();
-        int y = firstSlot.getY();
-        int right = lastSlot.getRight();
-        int bottom = lastSlot.getBottom();
-
-        juce::Rectangle<int> allSlotsBounds(x, y, right - x, bottom - y);
-        allSlotsBounds = allSlotsBounds.expanded(4, 4);
-
-        g.setColour(ColourCodes::white0);
-        g.drawRect(allSlotsBounds.toFloat(), 2.0f);
-    }
 }
 
 void PresetBar::sessionChanged()

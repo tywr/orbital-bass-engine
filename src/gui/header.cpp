@@ -114,28 +114,6 @@ void Header::paint(juce::Graphics& g)
     g.drawLine(
         rightSeparatorX, separatorY1, rightSeparatorX, separatorY2, 2.0f
     );
-
-    // Draw separator between preset icon buttons and session name
-    if (presetIconButtons.isVisible() && sessionNameDisplay.isVisible())
-    {
-        auto iconButtonsBounds = presetIconButtons.getBounds();
-        auto sessionNameBounds = sessionNameDisplay.getBounds();
-        float separator1X =
-            iconButtonsBounds.getRight() +
-            (sessionNameBounds.getX() - iconButtonsBounds.getRight()) / 2.0f;
-        g.drawLine(separator1X, separatorY1, separator1X, separatorY2, 2.0f);
-    }
-
-    // Draw separator between session name and preset bar
-    if (sessionNameDisplay.isVisible() && presetBar.isVisible())
-    {
-        auto sessionNameBounds = sessionNameDisplay.getBounds();
-        auto presetBarBounds = presetBar.getBounds();
-        float separator2X =
-            sessionNameBounds.getRight() +
-            (presetBarBounds.getX() - sessionNameBounds.getRight()) / 2.0f;
-        g.drawLine(separator2X, separatorY1, separator2X, separatorY2, 2.0f);
-    }
 }
 
 void Header::resized()
@@ -162,26 +140,26 @@ void Header::resized()
     bounds.removeFromRight(padding);
 
     // Center area: tuner button and preset controls
-    int const iconButtonSize = bounds.getHeight() - 4;
-    int const spacing = 10;
-    int const iconButtonsWidth = iconButtonSize * 4 + spacing * 3;
+    int const iconButtonSize = 42;
+    int const iconButtonsWidth = iconButtonSize * 4;
     int const sessionNameWidth = 140;
+    int const innerPadding = 5;
 
-    // Total width of: tuner + spacing + icon buttons + spacing + selector
-    int const controlsWidth = iconButtonSize + spacing + iconButtonsWidth
-                            + spacing + sessionNameWidth;
+    int const controlsWidth = 5 * iconButtonSize + sessionNameWidth;
 
     // Preset bar takes remaining space on the right
-    int const presetBarWidth = bounds.getWidth() - controlsWidth - spacing;
-    presetBar.setBounds(bounds.removeFromRight(presetBarWidth));
+    int const presetBarWidth = bounds.getWidth() - controlsWidth;
+    presetBar.setBounds(
+        bounds.removeFromRight(presetBarWidth).reduced(innerPadding, 0)
+    );
 
     // Center tuner + icon buttons + selector in remaining area
     int const horizontalOffset = (bounds.getWidth() - controlsWidth) / 2;
     bounds.removeFromLeft(horizontalOffset);
 
     tunerButton.setBounds(bounds.removeFromLeft(iconButtonSize));
-    bounds.removeFromLeft(spacing);
     presetIconButtons.setBounds(bounds.removeFromLeft(iconButtonsWidth));
-    bounds.removeFromLeft(spacing);
-    sessionNameDisplay.setBounds(bounds.removeFromLeft(sessionNameWidth));
+    sessionNameDisplay.setBounds(
+        bounds.removeFromLeft(sessionNameWidth).reduced(innerPadding, 0)
+    );
 }

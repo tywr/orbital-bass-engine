@@ -1,7 +1,6 @@
 #include "session_name_display.h"
 
-SessionNameDisplay::SessionNameDisplay(SessionManager& sm)
-    : sessionManager(sm)
+SessionNameDisplay::SessionNameDisplay(SessionManager& sm) : sessionManager(sm)
 {
     sessionManager.addListener(this);
 
@@ -30,7 +29,7 @@ void SessionNameDisplay::paint(juce::Graphics& g)
 
 void SessionNameDisplay::resized()
 {
-    collectionComboBox.setBounds(getLocalBounds().reduced(2));
+    collectionComboBox.setBounds(getLocalBounds());
 }
 
 void SessionNameDisplay::sessionChanged()
@@ -61,5 +60,7 @@ void SessionNameDisplay::updateCollectionList()
     }
 
     if (selectedId > 0)
-        collectionComboBox.setSelectedId(selectedId, juce::dontSendNotification);
+        collectionComboBox.setSelectedId(
+            selectedId, juce::dontSendNotification
+        );
 }
