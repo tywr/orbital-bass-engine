@@ -202,6 +202,7 @@ void PluginEditor::handleSavePreset()
     auto* alertWindow = new juce::AlertWindow("Save Preset",
                                               "Enter preset name:",
                                               juce::AlertWindow::NoIcon);
+    alertWindow->setLookAndFeel(&getLookAndFeel());
 
     alertWindow->addTextEditor("presetName", defaultName, "Preset Name:");
     alertWindow->addButton("Save", 1, juce::KeyPress(juce::KeyPress::returnKey));
@@ -308,6 +309,7 @@ void PluginEditor::handleNewCollection()
     auto* alertWindow = new juce::AlertWindow("New Collection",
                                               "Enter collection name:",
                                               juce::AlertWindow::NoIcon);
+    alertWindow->setLookAndFeel(&getLookAndFeel());
 
     alertWindow->addTextEditor("collectionName", "", "Collection Name:");
     alertWindow->addButton("Create", 1, juce::KeyPress(juce::KeyPress::returnKey));

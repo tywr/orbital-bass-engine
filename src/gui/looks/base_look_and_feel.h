@@ -101,4 +101,10 @@ class BaseLookAndFeel : public juce::LookAndFeel_V4
         int buttonX, int buttonY, int buttonW, int buttonH,
         juce::ComboBox& box
     ) override;
+
+    void drawAlertBox(
+        juce::Graphics& g, juce::AlertWindow& alert,
+        const juce::Rectangle<int>& textArea,
+        juce::TextLayout& textLayout
+    ) override;
 };

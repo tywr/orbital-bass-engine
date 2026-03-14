@@ -9,7 +9,9 @@ BaseLookAndFeel::BaseLookAndFeel()
 
     setColour(juce::PopupMenu::backgroundColourId, ColourCodes::bg1);
     setColour(juce::PopupMenu::textColourId, ColourCodes::white0);
-    setColour(juce::PopupMenu::highlightedBackgroundColourId, ColourCodes::orange);
+    setColour(
+        juce::PopupMenu::highlightedBackgroundColourId, ColourCodes::orange
+    );
     setColour(juce::PopupMenu::highlightedTextColourId, juce::Colours::black);
     setColour(juce::PopupMenu::headerTextColourId, ColourCodes::white0);
 
@@ -17,7 +19,26 @@ BaseLookAndFeel::BaseLookAndFeel()
     setColour(juce::ComboBox::textColourId, ColourCodes::white0);
     setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
     setColour(juce::ComboBox::arrowColourId, ColourCodes::white0);
-    setColour(juce::ComboBox::focusedOutlineColourId, juce::Colours::transparentBlack);
+    setColour(
+        juce::ComboBox::focusedOutlineColourId, juce::Colours::transparentBlack
+    );
+
+    setColour(juce::AlertWindow::backgroundColourId, ColourCodes::bg1);
+    setColour(juce::AlertWindow::textColourId, ColourCodes::white0);
+    setColour(juce::AlertWindow::outlineColourId, ColourCodes::grey3);
+
+    setColour(juce::TextEditor::backgroundColourId, ColourCodes::bg2);
+    setColour(juce::TextEditor::textColourId, ColourCodes::white0);
+    setColour(juce::TextEditor::highlightColourId, ColourCodes::orange);
+    setColour(juce::TextEditor::highlightedTextColourId, juce::Colours::black);
+    setColour(juce::TextEditor::outlineColourId, ColourCodes::bg);
+    setColour(juce::TextEditor::focusedOutlineColourId, ColourCodes::orange);
+    setColour(juce::CaretComponent::caretColourId, ColourCodes::white0);
+
+    setColour(juce::TextButton::buttonColourId, ColourCodes::bg1);
+    setColour(juce::TextButton::buttonOnColourId, ColourCodes::orange);
+    setColour(juce::TextButton::textColourOffId, ColourCodes::white0);
+    setColour(juce::TextButton::textColourOnId, juce::Colours::black);
 }
 
 void BaseLookAndFeel::drawButtonBackground(
@@ -27,11 +48,8 @@ void BaseLookAndFeel::drawButtonBackground(
 )
 {
     auto bounds = button.getLocalBounds().toFloat();
-
-    // Get appropriate colour based on button state
     juce::Colour colour = backgroundColour;
 
-    // For toggle-style behavior, check if it's a TextButton with toggle state
     auto* textButton = dynamic_cast<juce::TextButton*>(&button);
     if (textButton && textButton->getClickingTogglesState() &&
         textButton->getToggleState())
@@ -43,14 +61,25 @@ void BaseLookAndFeel::drawButtonBackground(
         colour = button.findColour(juce::TextButton::buttonColourId);
     }
 
-    // Apply interaction states
     if (isButtonDown)
         colour = colour.darker(0.2f);
     else if (isMouseOverButton)
         colour = colour.brighter(0.2f);
 
     g.setColour(colour);
-    g.drawEllipse(bounds.reduced(strokeWidth), strokeWidth);
+
+    bool isInsideAlertWindow =
+        (button.findParentComponentOfClass<juce::AlertWindow>() != nullptr);
+    if (isInsideAlertWindow)
+    {
+        g.fillRect(bounds);
+        g.setColour(ColourCodes::grey3);
+        g.drawRect(bounds, 1.0f);
+    }
+    else
+    {
+        g.drawEllipse(bounds.reduced(strokeWidth), strokeWidth);
+    }
 }
 
 void BaseLookAndFeel::drawButtonText(
@@ -247,9 +276,8 @@ void BaseLookAndFeel::drawLabel(juce::Graphics& g, juce::Label& label)
 }
 
 void BaseLookAndFeel::drawComboBox(
-    juce::Graphics& g, int width, int height, bool isButtonDown,
-    int buttonX, int buttonY, int buttonW, int buttonH,
-    juce::ComboBox& box
+    juce::Graphics& g, int width, int height, bool isButtonDown, int buttonX,
+    int buttonY, int buttonW, int buttonH, juce::ComboBox& box
 )
 {
     juce::ignoreUnused(buttonX, buttonY, buttonW, buttonH);
@@ -270,11 +298,28 @@ void BaseLookAndFeel::drawComboBox(
     juce::Path arrow;
     arrow.addTriangle(
         arrowX - arrowSize * 0.5f, arrowY - arrowSize * 0.25f,
-        arrowX + arrowSize * 0.5f, arrowY - arrowSize * 0.25f,
-        arrowX, arrowY + arrowSize * 0.25f
+        arrowX + arrowSize * 0.5f, arrowY - arrowSize * 0.25f, arrowX,
+        arrowY + arrowSize * 0.25f
     );
 
     g.setColour(box.findColour(juce::ComboBox::arrowColourId)
                     .withAlpha(isButtonDown ? 1.0f : 0.7f));
     g.fillPath(arrow);
+}
+
+void BaseLookAndFeel::drawAlertBox(
+    juce::Graphics& g, juce::AlertWindow& alert,
+    const juce::Rectangle<int>& textArea, juce::TextLayout& textLayout
+)
+{
+    auto bounds = alert.getLocalBounds().toFloat();
+
+    g.setColour(alert.findColour(juce::AlertWindow::backgroundColourId));
+    g.fillRect(bounds);
+
+    g.setColour(alert.findColour(juce::AlertWindow::outlineColourId));
+    g.drawRect(bounds, 2.0f);
+
+    g.setColour(alert.findColour(juce::AlertWindow::textColourId));
+    textLayout.draw(g, textArea.toFloat());
 }
