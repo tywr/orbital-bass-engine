@@ -20,7 +20,7 @@ The plugin processes bass signals through a carefully crafted signal chain that 
 4. Now you should be able to see the file `orbital-bass-engine.app`, `orbital-bass-engine.component` or `orbital-bass-engine.vst3`
 5. Right-click on the file and click on "Copy as filepath".
 6. Open the terminal app and type the command from 7.
-7. `xattr -cr <filepath_copied_from_above>`
+7. Either right-click and open to bypass the apple warning (or `xattr -cr <filepath_copied_from_above>`)
 8. Open the app if it's standalone, or copy the vst/au file inside your DAW plugin folder.
 
 ### Windows
