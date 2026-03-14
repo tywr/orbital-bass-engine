@@ -10,6 +10,27 @@ Orbital Bass Engine is an open-source bass guitar audio plugin built with the JU
 
 The plugin processes bass signals through a carefully crafted signal chain that preserves low-end clarity while adding character, punch, and presence. All components are designed with bass frequencies in mind, ensuring tight, powerful tones without muddiness.
 
+## Installation
+
+### MacOS
+
+1. Click on "Releases" on the right of the repository screen.
+2. Download the corresponding zip file (Standalone, VST3, AU).
+3. Unzip the file.
+4. Now you should be able to see the file `orbital-bass-engine.app`, `orbital-bass-engine.component` or `orbital-bass-engine.vst3`
+5. Right-click on the file and click on "Copy as filepath".
+6. Open the terminal app and type the command from 7.
+7. `xattr -cr <filepath_copied_from_above>`
+8. Open the app if it's standalone, or copy the vst/au file inside your DAW plugin folder.
+
+### Windows
+
+1. Click on "Releases" on the right of the repository screen.
+2. Download the corresponding zip file (Standalone, VST3, AU)
+3. Unzip the file
+4. Now you should be able to see the file `orbital-bass-engine.exe`, `orbital-bass-engine.component` or `orbital-bass-engine.vst3`
+5. Open the app if it's standalone, or copy the vst/au file inside your DAW plugin folder.
+
 ## Signal Chain
 
 The audio processing flows through the following stages:
