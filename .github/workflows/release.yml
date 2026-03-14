@@ -63,30 +63,28 @@ jobs:
             --install-location "/Library/Audio/Plug-Ins/VST3" \
             vst3.pkg
 
-          cat > distribution.xml << 'DIST'
-          <?xml version="1.0" encoding="utf-8"?>
-          <installer-gui-script minSpecVersion="2">
-              <title>Orbital Bass Engine</title>
-              <options customize="allow" require-scripts="false"/>
-              <choices-outline>
-                  <line choice="standalone"/>
-                  <line choice="au"/>
-                  <line choice="vst3"/>
-              </choices-outline>
-              <choice id="standalone" title="Standalone App" description="Install to /Applications">
-                  <pkg-ref id="com.tywr.orbital-bass-engine.standalone"/>
-              </choice>
-              <choice id="au" title="AU Plugin" description="Install to /Library/Audio/Plug-Ins/Components">
-                  <pkg-ref id="com.tywr.orbital-bass-engine.au"/>
-              </choice>
-              <choice id="vst3" title="VST3 Plugin" description="Install to /Library/Audio/Plug-Ins/VST3">
-                  <pkg-ref id="com.tywr.orbital-bass-engine.vst3"/>
-              </choice>
-              <pkg-ref id="com.tywr.orbital-bass-engine.standalone">standalone.pkg</pkg-ref>
-              <pkg-ref id="com.tywr.orbital-bass-engine.au">au.pkg</pkg-ref>
-              <pkg-ref id="com.tywr.orbital-bass-engine.vst3">vst3.pkg</pkg-ref>
-          </installer-gui-script>
-          DIST
+          printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' \
+            '<installer-gui-script minSpecVersion="2">' \
+            '  <title>Orbital Bass Engine</title>' \
+            '  <options customize="allow" require-scripts="false"/>' \
+            '  <choices-outline>' \
+            '    <line choice="standalone"/>' \
+            '    <line choice="au"/>' \
+            '    <line choice="vst3"/>' \
+            '  </choices-outline>' \
+            '  <choice id="standalone" title="Standalone App" description="Install to /Applications">' \
+            '    <pkg-ref id="com.tywr.orbital-bass-engine.standalone"/>' \
+            '  </choice>' \
+            '  <choice id="au" title="AU Plugin" description="Install to /Library/Audio/Plug-Ins/Components">' \
+            '    <pkg-ref id="com.tywr.orbital-bass-engine.au"/>' \
+            '  </choice>' \
+            '  <choice id="vst3" title="VST3 Plugin" description="Install to /Library/Audio/Plug-Ins/VST3">' \
+            '    <pkg-ref id="com.tywr.orbital-bass-engine.vst3"/>' \
+            '  </choice>' \
+            '  <pkg-ref id="com.tywr.orbital-bass-engine.standalone">standalone.pkg</pkg-ref>' \
+            '  <pkg-ref id="com.tywr.orbital-bass-engine.au">au.pkg</pkg-ref>' \
+            '  <pkg-ref id="com.tywr.orbital-bass-engine.vst3">vst3.pkg</pkg-ref>' \
+            '</installer-gui-script>' > distribution.xml
 
           productbuild --distribution distribution.xml \
             --package-path . \
