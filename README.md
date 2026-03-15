@@ -16,9 +16,9 @@ The plugin processes bass signals through a carefully crafted signal chain that 
 
 #### One off script
 
-Copy the following command inside the "Terminal" macOS app. This will 1. download the zip standalone file and unzip it directly in your /Applications folder for you to use:
+Copy the following command inside the "Terminal" macOS app. This will 1. download the zip standalone file and unzip it directly in your /Applications folder for you to use. Replace the {version} with the latest version such as `v1.x.x`
 ```bash
-curl -L "https://github.com/tywr/orbital-bass-engine/releases/download/v1.5.0/orbital-bass-engine-macos-standalone.zip" -o /tmp/orbital.zip && ditto -xk /tmp/orbital.zip /Applications/ && rm /tmp/orbital.zip
+curl -L "https://github.com/tywr/orbital-bass-engine/releases/download/v1.x.x/orbital-bass-engine-macos-standalone.zip" -o /tmp/orbital.zip && ditto -xk /tmp/orbital.zip /Applications/ && rm /tmp/orbital.zip
 ```
 
 
