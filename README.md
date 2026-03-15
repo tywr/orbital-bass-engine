@@ -14,12 +14,19 @@ The plugin processes bass signals through a carefully crafted signal chain that 
 
 ### MacOS
 
-#### One off script
+#### Terminal command
 
 Copy the following command inside the "Terminal" macOS app. This will 1. download the zip standalone file and unzip it directly in your /Applications folder for you to use. Replace the {version} with the latest version such as `v1.x.x`
+
 ```bash
-curl -L "https://github.com/tywr/orbital-bass-engine/releases/download/v1.x.x/orbital-bass-engine-macos-standalone.zip" -o /tmp/orbital.zip && ditto -xk /tmp/orbital.zip /Applications/ && rm /tmp/orbital.zip
+curl -L "https://github.com/tywr/orbital-bass-engine/releases/download/v1.7.0/orbital-bass-engine-macos-standalone.zip" -o /tmp/orbital.zip && ditto -xk /tmp/orbital.zip /Applications/ && rm /tmp/orbital.zip
 ```
+
+Alternatively:
+```bash
+curl -L "https://github.com/tywr/orbital-bass-engine/releases/download/v1.7.0/orbital-bass-engine-macos-standalone.zip" -o ~/Downloads/orbital.zip
+```
+Then click on the zip to decompress the standalone app.
 
 
 #### Manual bypass of quarantine
@@ -29,7 +36,7 @@ curl -L "https://github.com/tywr/orbital-bass-engine/releases/download/v1.x.x/or
 3. Unzip the file.
 4. Now you should be able to see the file `orbital-bass-engine.app`, `orbital-bass-engine.component` or `orbital-bass-engine.vst3`
 5. Right-click on the file and click on "Copy as filepath".
-6. Open the terminal app and type the command from 7.
+6. Open the terminal app and type the following command
 7. Either right-click and open to bypass the apple warning (or `xattr -cr <filepath_copied_from_above>`)
 8. Open the app if it's standalone, or copy the vst/au file inside your DAW plugin folder.
 
