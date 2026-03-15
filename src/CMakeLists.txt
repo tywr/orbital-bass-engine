@@ -1,4 +1,5 @@
 # set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "12.0" CACHE STRING "Minimum macOS version")
 
 juce_add_plugin(${PROJECT_NAME}
     PLIST_TO_MERGE "<key>NSMicrophoneUsageDescription</key><string>This app needs to use your microphone to process the audio signal.</string>"

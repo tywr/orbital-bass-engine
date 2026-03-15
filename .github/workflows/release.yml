@@ -16,7 +16,7 @@ jobs:
           submodules: recursive
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
 
       - name: Build
         run: cmake --build build --config Release
@@ -34,14 +34,20 @@ jobs:
           DMG_STAGING=dmg-staging
 
           mkdir -p "$DMG_STAGING"
-          cp -R "$ARTEFACTS/Standalone/orbital-bass-engine.app" "$DMG_STAGING/"
-          cp -R "$ARTEFACTS/AU/orbital-bass-engine.component" "$DMG_STAGING/"
-          cp -R "$ARTEFACTS/VST3/orbital-bass-engine.vst3" "$DMG_STAGING/"
+          ditto "$ARTEFACTS/Standalone/orbital-bass-engine.app" "$DMG_STAGING/orbital-bass-engine.app"
+          ditto "$ARTEFACTS/AU/orbital-bass-engine.component" "$DMG_STAGING/orbital-bass-engine.component"
+          ditto "$ARTEFACTS/VST3/orbital-bass-engine.vst3" "$DMG_STAGING/orbital-bass-engine.vst3"
 
           hdiutil create -volname "Orbital Bass Engine" \
             -srcfolder "$DMG_STAGING" \
-            -ov -format UDZO \
-            orbital-bass-engine-macos.dmg
+            -ov -format UDRW \
+            orbital-bass-engine-rw.dmg
+
+          hdiutil convert orbital-bass-engine-rw.dmg \
+            -format UDZO \
+            -o orbital-bass-engine-macos.dmg
+
+          rm orbital-bass-engine-rw.dmg
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
