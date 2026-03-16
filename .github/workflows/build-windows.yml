@@ -4,9 +4,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -14,13 +13,26 @@ jobs:
           submodules: recursive
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
 
       - name: Build
         run: cmake --build build --config Release
 
-      - name: Upload artifact
+      - name: Package
+        shell: pwsh
+        run: |
+          $artefacts = "build/src/orbital-bass-engine_artefacts/Release"
+
+          Compress-Archive -Path "$artefacts/Standalone/*.exe" `
+            -DestinationPath orbital-bass-engine-windows-standalone.zip
+
+          Compress-Archive -Path "$artefacts/VST3/orbital-bass-engine.vst3" `
+            -DestinationPath orbital-bass-engine-windows-vst3.zip
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: orbital-bass-engine-windows
-          path: build/src/orbital-bass-engine_artefacts/Release/Standalone/*.exe
+          path: |
+            orbital-bass-engine-windows-standalone.zip
+            orbital-bass-engine-windows-vst3.zip

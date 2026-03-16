@@ -1,0 +1,58 @@
+name: Build Linux
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pkg-config \
+            libasound2-dev \
+            libfreetype6-dev \
+            libfontconfig1-dev \
+            libfreetype-dev \
+            libtiff-dev \
+            libx11-dev \
+            libxcomposite-dev \
+            libxcursor-dev \
+            libxext-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libxrender-dev \
+            mesa-common-dev \
+            libgl-dev \
+            xclip
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Package
+        run: |
+          ARTEFACTS=build/src/orbital-bass-engine_artefacts/Release
+
+          tar -czf orbital-bass-engine-linux-standalone.tar.gz \
+            -C "$ARTEFACTS/Standalone" orbital-bass-engine
+
+          tar -czf orbital-bass-engine-linux-vst3.tar.gz \
+            -C "$ARTEFACTS/VST3" orbital-bass-engine.vst3
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: orbital-bass-engine-linux
+          path: |
+            orbital-bass-engine-linux-standalone.tar.gz
+            orbital-bass-engine-linux-vst3.tar.gz

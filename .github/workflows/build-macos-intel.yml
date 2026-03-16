@@ -1,11 +1,11 @@
-name: Build macOS (ARM)
+name: Build macOS (Intel)
 
 on:
   workflow_dispatch:
 
 jobs:
-  build-macos:
-    runs-on: macos-latest
+  build-macos-intel:
+    runs-on: macos-15-intel
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -13,7 +13,7 @@ jobs:
           submodules: recursive
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 -DCMAKE_OSX_ARCHITECTURES=x86_64
 
       - name: Build
         run: cmake --build build --config Release
@@ -42,7 +42,7 @@ jobs:
 
           hdiutil convert orbital-bass-engine-rw.dmg \
             -format UDZO \
-            -o orbital-bass-engine-macos.dmg
+            -o orbital-bass-engine-macos-intel.dmg
 
           rm orbital-bass-engine-rw.dmg
 
@@ -52,22 +52,22 @@ jobs:
 
           ditto -c -k --sequesterRsrc --keepParent \
             "$ARTEFACTS/Standalone/orbital-bass-engine.app" \
-            orbital-bass-engine-macos-standalone.zip
+            orbital-bass-engine-macos-intel-standalone.zip
 
           ditto -c -k --sequesterRsrc --keepParent \
             "$ARTEFACTS/AU/orbital-bass-engine.component" \
-            orbital-bass-engine-macos-au.zip
+            orbital-bass-engine-macos-intel-au.zip
 
           ditto -c -k --sequesterRsrc --keepParent \
             "$ARTEFACTS/VST3/orbital-bass-engine.vst3" \
-            orbital-bass-engine-macos-vst3.zip
+            orbital-bass-engine-macos-intel-vst3.zip
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: orbital-bass-engine-macos
+          name: orbital-bass-engine-macos-intel
           path: |
-            orbital-bass-engine-macos.dmg
-            orbital-bass-engine-macos-standalone.zip
-            orbital-bass-engine-macos-au.zip
-            orbital-bass-engine-macos-vst3.zip
+            orbital-bass-engine-macos-intel.dmg
+            orbital-bass-engine-macos-intel-standalone.zip
+            orbital-bass-engine-macos-intel-au.zip
+            orbital-bass-engine-macos-intel-vst3.zip
