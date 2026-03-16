@@ -44,6 +44,10 @@ public:
     bool selectCollection(const juce::String& collectionName);
     bool createCollection(const juce::String& collectionName);
 
+    // Loads the built-in factory session (no root folder required).
+    // Called on first launch when no user session has been saved.
+    void loadFactorySession();
+
     class Listener {
     public:
         virtual ~Listener() = default;
