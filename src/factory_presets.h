@@ -17,71 +17,56 @@ struct ParamDefault
 };
 
 // All parameter defaults in normalized form.
-// Order must match parameters.h (order doesn't actually matter for matching,
-// but keeping them aligned helps readability).
+// Baseline matches the "Clean" preset (Precision/preset_1.xml).
 static const ParamDefault kDefaults[] = {
-    // Gains                        actual: 0 dB
-    { "input_gain_db",          0.8775f },
-    { "output_gain_db",         0.7803f },
-    // Compressor                   threshold:-24 ratio:4 attack:10ms release:100ms
-    { "compressor_bypass",      0.0f   },
-    { "compressor_hpf",         0.0f   },
-    { "compressor_threshold",   0.5f   },
-    { "compressor_ratio",       0.1111f},
-    { "compressor_attack",      0.0003f},
-    { "compressor_release",     0.0002f},
-    { "compressor_level_db",    0.0f   },
-    { "compressor_mix",         0.5f   },
-    // Amp                          master:0 dB, amp active (bypass=false)
-    { "amp_master",             0.6667f},
-    { "amp_bypass",             0.0f   },
-    { "overdrive_level_db",     0.8889f},
-    { "overdrive_drive",        0.5f   },
-    { "overdrive_grunt",        0.5f   },
-    { "overdrive_attack",       0.5f   },
-    { "overdrive_era",          0.5f   },
-    { "overdrive_mix",          0.5f   },
-    // Chorus                       chorus active (bypass=false)
-    { "chorus_bypass",          0.0f   },
-    { "chorus_mix",             0.5f   },
-    { "chorus_rate",            0.5f   },
-    { "chorus_depth",           0.5f   },
-    { "chorus_crossover",       0.0073f},
-    // IR / cabinet                 B15, mix 50%, level -18 dB
-    { "ir_bypass",              0.0f   },
-    { "ir_mix",                 0.5f   },
-    { "ir_type",                0.0f   },
-    { "ir_level",               0.375f },
-    // Synth (bypassed by default)
-    { "synth_bypass",           1.0f   },
-    { "synth_octave_level",     0.6667f},
-    { "synth_square_level",     0.6667f},
-    { "synth_triangle_level",   0.6667f},
-    { "synth_raw_level",        0.6667f},
-    { "synth_master_level",     0.6667f},
-    // EQ (bypassed by default)
-    { "eq_bypass",              1.0f   },
-    { "eq_low_shelf_gain",      0.5f   },
-    { "eq_low_shelf_freq",      0.5f   },
-    { "eq_low_mid_freq",        0.3333f},
-    { "eq_low_mid_q",           0.1538f},
-    { "eq_low_mid_gain",        0.5f   },
-    { "eq_high_mid_freq",       0.4118f},
-    { "eq_high_mid_q",          0.1538f},
-    { "eq_high_mid_gain",       0.5f   },
-    { "eq_high_shelf_gain",     0.5f   },
-    { "eq_high_shelf_freq",     0.5f   },
-    { "eq_lpf",                 0.2222f},
+    // Gains                        input: 0.9 dB, output: 12 dB
+    {"input_gain_db",        0.0f   },
+    {"output_gain_db",       6.0f   },
+    {"compressor_bypass",    0.0f   },
+    {"compressor_hpf",       40.0f  },
+    {"compressor_threshold", -28.0f },
+    {"compressor_ratio",     4.0f   },
+    {"compressor_attack",    10.0f  },
+    {"compressor_release",   100.0f },
+    {"compressor_level_db",  1.0f   },
+    {"compressor_mix",       1.0f   },
+    {"amp_bypass",           1.0f   },
+    {"amp_master",           0.0f   },
+    {"overdrive_level_db",   -8.0f  },
+    {"overdrive_drive",      1.0f   },
+    {"overdrive_grunt",      10.0f  },
+    {"overdrive_attack",     5.0f   },
+    {"overdrive_era",        0.0f   },
+    {"overdrive_mix",        0.5f   },
+    {"chorus_bypass",        1.0f   },
+    {"chorus_mix",           0.17f  },
+    {"chorus_rate",          0.5f   },
+    {"chorus_depth",         0.5733f},
+    {"chorus_crossover",     0.0142f},
+    {"ir_bypass",            0.0f   },
+    {"ir_mix",               0.99f  },
+    {"ir_type",              0.0f   },
+    {"ir_level",             -18.0f },
+    {"eq_bypass",            1.0f   },
+    {"eq_low_shelf_gain",    0.5f   },
+    {"eq_low_shelf_freq",    0.5f   },
+    {"eq_low_mid_freq",      0.595f },
+    {"eq_low_mid_q",         0.1538f},
+    {"eq_low_mid_gain",      0.5f   },
+    {"eq_high_mid_freq",     0.4118f},
+    {"eq_high_mid_q",        0.1538f},
+    {"eq_high_mid_gain",     0.5f   },
+    {"eq_high_shelf_gain",   0.5f   },
+    {"eq_high_shelf_freq",   0.5f   },
+    {"eq_lpf",               0.3184f},
 };
 
-// ir_type choice indices (6 cabs: B15=0, EBS410=1, PPC212=2, SVT810=3, TC410=4, XL410=5)
-// normalized = index / (numChoices - 1) = index / 5.0
-static constexpr float kIR_B15    = 0.0f;   // index 0
-static constexpr float kIR_EBS410 = 0.2f;   // index 1
-static constexpr float kIR_PPC212 = 0.4f;   // index 2
-static constexpr float kIR_SVT810 = 0.6f;   // index 3
-static constexpr float kIR_TC410  = 0.8f;   // index 4
-static constexpr float kIR_XL410  = 1.0f;   // index 5
+static constexpr float kIR_B15 = 0.0f;    // index 0
+static constexpr float kIR_EBS410 = 1.0f; // index 1
+static constexpr float kIR_PPC212 = 2.0f; // index 2
+static constexpr float kIR_SVT810 = 3.0f; // index 3
+static constexpr float kIR_TC410 = 4.0f;  // index 4
+static constexpr float kIR_XL410 = 5.0f;  // index 5
 
 struct Override
 {
@@ -96,103 +81,126 @@ struct PresetDef
     int numOverrides;
 };
 
-// ── Preset definitions ────────────────────────────────────────────────────────
+// ── Preset definitions
+// ────────────────────────────────────────────────────────
 
 // 1. Clean — flat tone, amp bypassed, SVT810 cab
 static const Override kCleanOverrides[] = {
-    { "amp_bypass",         1.0f         },  // bypass amp/drive
-    { "chorus_bypass",      1.0f         },  // bypass chorus
-    { "compressor_mix",     0.6f         },  // slightly more compression in mix
-    { "ir_type",            kIR_SVT810   },  // SVT810 cabinet
+    {"amp_bypass",    0.0f      }, // bypass amp/drive
+    {"chorus_bypass", 1.0f      }, // bypass chorus
+    {"eq_bypass",     1.0f      }, // bypass chorus
+    {"ir_bypass",     1.0f      }, // bypass ir
+    {"ir_mix",        0.5f      },
+    {"ir_type",       kIR_EBS410}, // EBS410 cabinet
 };
 
-// 2. Punchy — heavy compression, amp bypassed, B15 cab
-static const Override kPunchyOverrides[] = {
-    { "amp_bypass",         1.0f         },
-    { "chorus_bypass",      1.0f         },
-    { "compressor_threshold", 0.25f      },  // -36 dB: ((-36+48)/48)
-    { "compressor_ratio",   0.3333f      },  // 8:1: (8-2)/18
-    { "compressor_mix",     0.75f        },
-    { "ir_type",            kIR_B15      },  // B15 cabinet
+// 2. Motown - wooly, saturated, B15 flavour
+static const Override kMotownOverrides[] = {
+    {"amp_bypass",         0.0f   },
+    {"chorus_bypass",      1.0f   },
+    {"overdrive_level_db", -12.0f },
+    {"overdrive_drive",    3.0f   },
+    {"overdrive_attack",   2.0f   },
+    {"ir_mix",             0.25f  },
+    {"eq_bypass",          1.0f   },
+    {"ir_mix",             0.5f   },
+    {"ir_type",            kIR_B15}, // B15 cabinet
 };
 
 // 3. Driven — amp active with more drive and grit, TC410 cab
 static const Override kDrivenOverrides[] = {
-    { "chorus_bypass",      1.0f         },
-    { "overdrive_drive",    0.7f         },  // 7/10
-    { "overdrive_mix",      0.7f         },
-    { "compressor_mix",     0.6f         },
-    { "ir_type",            kIR_TC410    },  // TC410 cabinet
+    {"amp_bypass",           0.0f      },
+    {"compressor_threshold", -32.0f    },
+    {"compressor_attack",    5.0f      },
+    {"chorus_bypass",        1.0f      },
+    {"overdrive_level_db",   -18.0f    },
+    {"overdrive_drive",      4.0f      },
+    {"overdrive_attack",     5.0f      },
+    {"overdrive_era",        5.0f      },
+    {"ir_mix",               0.4f      },
+    {"eq_bypass",            1.0f      },
+    {"ir_type",              kIR_SVT810}, // SVT cabinet
 };
 
-// 4. Scooped — mid scoop EQ, amp bypassed, SVT810 cab
-static const Override kScoopedOverrides[] = {
-    { "amp_bypass",         1.0f         },
-    { "chorus_bypass",      1.0f         },
-    { "eq_bypass",          0.0f         },  // enable EQ
-    { "eq_low_mid_gain",    0.25f        },  // -6 dB: (-6+12)/24
-    { "eq_high_mid_gain",   0.25f        },  // -6 dB
-    { "compressor_threshold", 0.625f     },  // -18 dB: ((-18+48)/48)
-    { "compressor_ratio",   0.2222f      },  // 6:1: (6-2)/18
-    { "ir_type",            kIR_SVT810   },
+// 4. SVT / Arena Rock — mid scoop EQ, amp bypassed, SVT810 cab
+static const Override kSVTOverrides[] = {
+    {"amp_bypass",           0.0f      },
+    {"compressor_threshold", -32.0f    },
+    {"compressor_attack",    3.0f      },
+    {"chorus_bypass",        0.0f      },
+    {"overdrive_level_db",   -22.0f    },
+    {"overdrive_drive",      5.0f      },
+    {"overdrive_attack",     6.0f      },
+    {"overdrive_era",        9.0f      },
+    {"ir_mix",               0.8f      },
+    {"eq_bypass",            1.0f      },
+    {"chorus_crossover",     250.0f    },
+    {"chorus_mix",           0.22f     },
+    {"ir_type",              kIR_SVT810}, // SVT cabinet
 };
 
-// 5. Airy — chorus + bright high shelf EQ, amp bypassed, EBS410 cab
-static const Override kAiryOverrides[] = {
-    { "amp_bypass",         1.0f         },
-    { "eq_bypass",          0.0f         },  // enable EQ
-    { "eq_high_shelf_gain", 0.625f       },  // +3 dB: (3+12)/24
-    { "ir_type",            kIR_EBS410   },  // EBS410 cabinet
+// 5. Metal — Aggressive drive, PCP212 cab
+static const Override kMetalOverrides[] = {
+    {"amp_bypass",           0.0f      },
+    {"compressor_threshold", -30.0f    },
+    {"compressor_attack",    2.0f      },
+    {"overdrive_level_db",   -25.0f    },
+    {"overdrive_drive",      10.0f     },
+    {"overdrive_attack",     8.0f      },
+    {"overdrive_era",        10.0f     },
+    {"overdrive_grunt",      5.0f      },
+    {"ir_mix",               0.9f      },
+    {"eq_bypass",            1.0f      },
+    {"ir_type",              kIR_PPC212}, // SVT cabinet
 };
 
 static const PresetDef kPresetDefs[5] = {
-    { "Clean",   kCleanOverrides,   4 },
-    { "Punchy",  kPunchyOverrides,  6 },
-    { "Driven",  kDrivenOverrides,  5 },
-    { "Scooped", kScoopedOverrides, 7 },
-    { "Airy",    kAiryOverrides,    4 },
+    {"Clean",  kCleanOverrides,  static_cast<int>(std::size(kCleanOverrides)) },
+    {"Motown", kMotownOverrides, static_cast<int>(std::size(kMotownOverrides))},
+    {"Driven", kDrivenOverrides, static_cast<int>(std::size(kDrivenOverrides))},
+    {"SVT",    kSVTOverrides,    static_cast<int>(std::size(kSVTOverrides))   },
+    {"Metal",  kMetalOverrides,  static_cast<int>(std::size(kMetalOverrides)) },
 };
 
-// ── Builder ───────────────────────────────────────────────────────────────────
+// ── Builder
+// ───────────────────────────────────────────────────────────────────
 
-inline Preset buildPreset (const PresetDef& def)
+inline Preset buildPreset(const PresetDef& def)
 {
-    juce::ValueTree state ("PluginParameters");
-    state.setProperty ("ir_filepath",           juce::String (""), nullptr);
-    state.setProperty ("session_folder_path",   juce::String (""), nullptr);
-    state.setProperty ("root_folder_path",      juce::String (""), nullptr);
+    juce::ValueTree state("PluginParameters");
+    state.setProperty("ir_filepath", juce::String(""), nullptr);
+    state.setProperty("session_folder_path", juce::String(""), nullptr);
+    state.setProperty("root_folder_path", juce::String(""), nullptr);
 
-    const int numDefaults = static_cast<int> (std::size (kDefaults));
+    const int numDefaults = static_cast<int>(std::size(kDefaults));
     for (int i = 0; i < numDefaults; ++i)
     {
         float v = kDefaults[i].value;
 
         for (int j = 0; j < def.numOverrides; ++j)
         {
-            if (std::strcmp (def.overrides[j].id, kDefaults[i].id) == 0)
+            if (std::strcmp(def.overrides[j].id, kDefaults[i].id) == 0)
             {
                 v = def.overrides[j].value;
                 break;
             }
         }
 
-        juce::ValueTree param ("PARAM");
-        param.setProperty ("id",    juce::String (kDefaults[i].id), nullptr);
-        param.setProperty ("value", v,                               nullptr);
-        state.appendChild (param, nullptr);
+        juce::ValueTree param("PARAM");
+        param.setProperty("id", juce::String(kDefaults[i].id), nullptr);
+        param.setProperty("value", v, nullptr);
+        state.appendChild(param, nullptr);
     }
 
-    return Preset (juce::String (def.name), state);
+    return Preset(juce::String(def.name), state);
 }
 
 inline std::array<Preset, 5> build()
 {
     return {
-        buildPreset (kPresetDefs[0]),
-        buildPreset (kPresetDefs[1]),
-        buildPreset (kPresetDefs[2]),
-        buildPreset (kPresetDefs[3]),
-        buildPreset (kPresetDefs[4]),
+        buildPreset(kPresetDefs[0]), buildPreset(kPresetDefs[1]),
+        buildPreset(kPresetDefs[2]), buildPreset(kPresetDefs[3]),
+        buildPreset(kPresetDefs[4]),
     };
 }
 
