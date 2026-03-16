@@ -143,6 +143,52 @@ jobs:
             orbital-bass-engine-macos-intel-au.zip
             orbital-bass-engine-macos-intel-vst3.zip
 
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libasound2-dev \
+            libfreetype-dev \
+            libx11-dev \
+            libxrandr-dev \
+            libxinerama-dev \
+            libxcursor-dev \
+            libxcomposite-dev \
+            mesa-common-dev \
+            libgl-dev
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Package
+        run: |
+          ARTEFACTS=build/src/orbital-bass-engine_artefacts/Release
+
+          tar -czf orbital-bass-engine-linux-standalone.tar.gz \
+            -C "$ARTEFACTS/Standalone" orbital-bass-engine
+
+          tar -czf orbital-bass-engine-linux-vst3.tar.gz \
+            -C "$ARTEFACTS/VST3" orbital-bass-engine.vst3
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: orbital-bass-engine-linux
+          path: |
+            orbital-bass-engine-linux-standalone.tar.gz
+            orbital-bass-engine-linux-vst3.tar.gz
+
   build-windows:
     runs-on: windows-latest
     steps:
@@ -177,7 +223,7 @@ jobs:
             orbital-bass-engine-windows-vst3.zip
 
   release:
-    needs: [build-macos, build-macos-intel, build-windows]
+    needs: [build-macos, build-macos-intel, build-linux, build-windows]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
@@ -192,6 +238,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: orbital-bass-engine-macos-intel
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: orbital-bass-engine-linux
 
       - name: Download Windows artifacts
         uses: actions/download-artifact@v4
@@ -211,5 +262,7 @@ jobs:
             orbital-bass-engine-macos-intel-standalone.zip
             orbital-bass-engine-macos-intel-au.zip
             orbital-bass-engine-macos-intel-vst3.zip
+            orbital-bass-engine-linux-standalone.tar.gz
+            orbital-bass-engine-linux-vst3.tar.gz
             orbital-bass-engine-windows-standalone.zip
             orbital-bass-engine-windows-vst3.zip
