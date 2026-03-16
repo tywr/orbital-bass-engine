@@ -14,6 +14,7 @@ public:
         deviceManager.getAudioDeviceSetup(setup);
         setup.inputChannels.clear();
         setup.inputChannels.set(1, true);  // channel 2 = index 1
+        setup.bufferSize = 64;
 
         // Apply the new setup
         deviceManager.setAudioDeviceSetup(setup, true);
@@ -23,7 +24,7 @@ public:
 class MonoStandaloneApp : public juce::JUCEApplication
 {
 public:
-    const juce::String getApplicationName() override       { return "MyPlugin"; }
+    const juce::String getApplicationName() override       { return "Orbital Bass Engine"; }
     const juce::String getApplicationVersion() override    { return "1.0"; }
 
     void initialise(const juce::String&) override
