@@ -1,5 +1,4 @@
 #include "session_manager.h"
-#include "factory_presets.h"
 
 SessionManager::SessionManager(PresetManager& pm)
     : presetManager(pm)
@@ -146,29 +145,18 @@ void SessionManager::setRootFolder(const juce::File& folder)
 juce::StringArray SessionManager::getCollectionNames() const
 {
     juce::StringArray names;
-    names.add ("Default"); // built-in factory collection, always available
+    if (!rootFolder.isDirectory())
+        return names;
 
-    if (rootFolder.isDirectory())
-    {
-        juce::StringArray userNames;
-        for (const auto& entry : juce::RangedDirectoryIterator(rootFolder, false, "*", juce::File::findDirectories))
-            userNames.add(entry.getFile().getFileName());
+    for (const auto& entry : juce::RangedDirectoryIterator(rootFolder, false, "*", juce::File::findDirectories))
+        names.add(entry.getFile().getFileName());
 
-        userNames.sort (true);
-        names.addArray (userNames);
-    }
-
+    names.sort(true);
     return names;
 }
 
 bool SessionManager::selectCollection(const juce::String& collectionName)
 {
-    if (collectionName == "Default")
-    {
-        loadFactorySession();
-        return true;
-    }
-
     if (!rootFolder.isDirectory())
         return false;
 
@@ -177,22 +165,6 @@ bool SessionManager::selectCollection(const juce::String& collectionName)
         return false;
 
     return loadSessionFromFolder(collectionFolder);
-}
-
-void SessionManager::loadFactorySession()
-{
-    for (auto& preset : presets)
-        preset = Preset();
-
-    sessionName = "Default";
-    sessionFolder = juce::File(); // no folder — factory presets are read-only
-    currentPresetIndex = -1;
-
-    auto factoryPresets = FactoryPresets::build();
-    for (int i = 0; i < MAX_PRESETS; ++i)
-        presets[i] = factoryPresets[static_cast<size_t> (i)];
-
-    notifySessionChanged();
 }
 
 bool SessionManager::createCollection(const juce::String& collectionName)
