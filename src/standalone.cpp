@@ -14,6 +14,7 @@ public:
         deviceManager.getAudioDeviceSetup(setup);
         setup.inputChannels.clear();
         setup.inputChannels.set(1, true);  // channel 2 = index 1
+        setup.sampleRate = 48000.0;
         setup.bufferSize = 64;
 
         // Apply the new setup
