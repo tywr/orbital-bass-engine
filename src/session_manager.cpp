@@ -141,6 +141,7 @@ void SessionManager::notifyCurrentPresetChanged()
 void SessionManager::setRootFolder(const juce::File& folder)
 {
     rootFolder = folder;
+    writeDefaultCollectionIfNeeded();
 }
 
 juce::StringArray SessionManager::getCollectionNames() const
@@ -152,7 +153,11 @@ juce::StringArray SessionManager::getCollectionNames() const
     {
         juce::StringArray userNames;
         for (const auto& entry : juce::RangedDirectoryIterator(rootFolder, false, "*", juce::File::findDirectories))
-            userNames.add(entry.getFile().getFileName());
+        {
+            juce::String dirName = entry.getFile().getFileName();
+            if (dirName != "Default") // already added above
+                userNames.add(dirName);
+        }
 
         userNames.sort (true);
         names.addArray (userNames);
@@ -165,6 +170,10 @@ bool SessionManager::selectCollection(const juce::String& collectionName)
 {
     if (collectionName == "Default")
     {
+        juce::File defaultFolder = rootFolder.getChildFile("Default");
+        if (rootFolder.isDirectory() && defaultFolder.isDirectory())
+            return loadSessionFromFolder(defaultFolder);
+
         loadFactorySession();
         return true;
     }
@@ -193,6 +202,32 @@ void SessionManager::loadFactorySession()
         presets[i] = factoryPresets[static_cast<size_t> (i)];
 
     notifySessionChanged();
+}
+
+void SessionManager::writeDefaultCollectionIfNeeded()
+{
+    if (!rootFolder.isDirectory())
+        return;
+
+    juce::File defaultFolder = rootFolder.getChildFile("Default");
+    if (!defaultFolder.exists())
+        defaultFolder.createDirectory();
+
+    auto factoryPresets = FactoryPresets::build();
+    for (int i = 0; i < MAX_PRESETS; ++i)
+    {
+        juce::File presetFile = defaultFolder.getChildFile("preset_" + juce::String(i + 1) + ".xml");
+        if (!presetFile.existsAsFile())
+        {
+            const auto& preset = factoryPresets[static_cast<size_t>(i)];
+            std::unique_ptr<juce::XmlElement> xml(preset.state.createXml());
+            if (xml != nullptr)
+            {
+                xml->setAttribute("presetName", preset.name);
+                xml->writeTo(presetFile);
+            }
+        }
+    }
 }
 
 bool SessionManager::createCollection(const juce::String& collectionName)

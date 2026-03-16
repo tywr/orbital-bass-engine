@@ -69,4 +69,5 @@ private:
 
     void notifySessionChanged();
     void notifyCurrentPresetChanged();
+    void writeDefaultCollectionIfNeeded();
 };
