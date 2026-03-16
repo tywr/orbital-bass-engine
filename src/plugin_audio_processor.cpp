@@ -514,8 +514,14 @@ void PluginAudioProcessor::loadSavedSession()
                     presetManager.applyPreset(preset);
                 sessionManager.setCurrentPresetIndex(savedPresetIndex);
             }
+            return;
         }
     }
+
+    // First launch: no saved session found — load built-in factory presets.
+    sessionManager.loadFactorySession();
+    sessionManager.setCurrentPresetIndex(0);
+    presetManager.applyPreset(sessionManager.getPreset(0));
 }
 
 bool PluginAudioProcessor::setRootFolder(const juce::File& folder)
