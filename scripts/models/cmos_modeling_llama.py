@@ -115,9 +115,11 @@ class ModelLlama:
 
 if __name__ == "__main__":
     model = ModelLlama()
-    vin = np.linspace(-1.8, 5.1, 2048)
+    vin = np.linspace(-1.8, 5.1, 100)
     vout = np.array([model.solve(v) for v in vin])
 
     plt.figure(figsize=(10, 6))
     plt.plot(vin, vout)
     plt.show()
+    print([float(x) for x in vin])
+    print([float(x) for x in vout])
