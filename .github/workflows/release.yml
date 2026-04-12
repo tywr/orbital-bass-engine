@@ -204,8 +204,16 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Download ASIO SDK
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://www.steinberg.net/asiosdk" -OutFile asiosdk.zip
+          Expand-Archive -Path asiosdk.zip -DestinationPath asiosdk
+          $sdkDir = (Get-ChildItem -Path asiosdk -Directory | Select-Object -First 1).FullName
+          echo "ASIO_SDK_DIR=$sdkDir/common" >> $env:GITHUB_ENV
+
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded "-DCMAKE_CXX_FLAGS=/I`"${{ env.ASIO_SDK_DIR }}`""
 
       - name: Build
         run: cmake --build build --config Release
