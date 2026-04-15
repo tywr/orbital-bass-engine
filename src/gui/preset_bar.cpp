@@ -1,5 +1,6 @@
 #include "preset_bar.h"
 #include "colours.h"
+#include "fonts.h"
 
 PresetSlot::PresetSlot(int slotIndex) : index(slotIndex)
 {
@@ -43,7 +44,7 @@ void PresetSlot::paint(juce::Graphics& g)
         }
     }
 
-    g.setFont(juce::Font("Typestar", 13.0f, juce::Font::plain));
+    g.setFont(Fonts::getIndexFont(13.0f));
 
     if (isEmptySlot)
     {

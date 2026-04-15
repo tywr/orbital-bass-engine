@@ -1,14 +1,14 @@
 #pragma once
 
 #include "../colours.h"
+#include "../fonts.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 
 class BaseLookAndFeel : public juce::LookAndFeel_V4
 {
   private:
     float strokeWidth = 2.0f;
-    juce::Font mainFont =
-        juce::Font(juce::FontOptions("Typestar", 11.0f, juce::Font::plain));
+    juce::Font mainFont = Fonts::getIndexFont(11.0f);
 
   public:
     BaseLookAndFeel();

@@ -70,6 +70,12 @@ if(JUCE_BUILD_STANDALONE)
 endif()
 
 
+juce_add_binary_data(FontData
+    SOURCES ${CMAKE_SOURCE_DIR}/fonts/Index-Regular.ttf
+)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE FontData)
+
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC
         JUCE_DISABLE_ASSERTIONS=1
