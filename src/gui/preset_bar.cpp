@@ -44,7 +44,7 @@ void PresetSlot::paint(juce::Graphics& g)
         }
     }
 
-    g.setFont(Fonts::getIndexFont(13.0f));
+    g.setFont(Fonts::getFont(14.0f));
 
     if (isEmptySlot)
     {

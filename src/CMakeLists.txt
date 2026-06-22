@@ -71,7 +71,7 @@ endif()
 
 
 juce_add_binary_data(FontData
-    SOURCES ${CMAKE_SOURCE_DIR}/fonts/Index-Regular.ttf
+    SOURCES ${CMAKE_SOURCE_DIR}/fonts/NordwandMono.ttf
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE FontData)

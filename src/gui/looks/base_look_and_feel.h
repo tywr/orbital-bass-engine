@@ -8,7 +8,7 @@ class BaseLookAndFeel : public juce::LookAndFeel_V4
 {
   private:
     float strokeWidth = 2.0f;
-    juce::Font mainFont = Fonts::getIndexFont(11.0f);
+    juce::Font mainFont = Fonts::getFont(12.0f);
 
   public:
     BaseLookAndFeel();

@@ -89,7 +89,6 @@ Cabinet IRs are embedded as binary data (`assets/ImpulseResponseBinary.{h,cpp}`)
 - Parameters are defined in `parameters.h` and accessed via `AudioProcessorValueTreeState`.
 - Listener pattern (`SessionManager::Listener`) for GUI updates on state changes.
 - DSP modules implement `prepare(ProcessSpec)` and `process(ProcessContextReplacing)`.
-- Font used: "Index" at 13pt for UI text.
 
 ## CI/CD
 

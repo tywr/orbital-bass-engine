@@ -1,21 +1,21 @@
 #pragma once
 
-#include <juce_graphics/juce_graphics.h>
 #include "BinaryData.h"
+#include <juce_graphics/juce_graphics.h>
 
 namespace Fonts
 {
 
-inline juce::Typeface::Ptr getIndexTypeface()
+inline juce::Typeface::Ptr getTypeface()
 {
     static auto typeface = juce::Typeface::createSystemTypefaceFor(
-        BinaryData::IndexRegular_ttf, BinaryData::IndexRegular_ttfSize);
+        BinaryData::NordwandMono_ttf, BinaryData::NordwandMono_ttfSize);
     return typeface;
 }
 
-inline juce::Font getIndexFont(float height, bool bold = false)
+inline juce::Font getFont(float height, bool bold = false)
 {
-    auto font = juce::Font(juce::FontOptions(getIndexTypeface()).withHeight(height));
+    auto font = juce::Font(juce::FontOptions(getTypeface()).withHeight(height));
     if (bold)
         font = font.boldened();
     return font;
